@@ -58,6 +58,17 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* Animation theme — light mode defaults */
+    --anim-focus: hsl(214 100% 50%);
+    --anim-focus-fg: hsl(0 0% 100%);
+    --anim-active: hsl(214 30% 85%);
+    --anim-active-fg: hsl(0 0% 15%);
+    --anim-inactive: hsl(0 0% 93%);
+    --anim-inactive-fg: hsl(0 0% 65%);
+    --anim-stage-bg: hsl(0 0% 100%);
+    --anim-connector: hsl(214 40% 60% / 0.4);
+    --anim-hover: hsl(214 100% 50% / 0.25);
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -84,6 +95,17 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Animation theme — dark mode defaults */
+    --anim-focus: hsl(214 100% 50%);
+    --anim-focus-fg: hsl(0 0% 100%);
+    --anim-active: hsl(214 40% 35%);
+    --anim-active-fg: hsl(0 0% 80%);
+    --anim-inactive: hsl(0 0% 20%);
+    --anim-inactive-fg: hsl(0 0% 45%);
+    --anim-stage-bg: hsl(222 47% 11%);
+    --anim-connector: hsl(214 60% 40% / 0.5);
+    --anim-hover: hsl(214 100% 50% / 0.4);
   }
 }
 

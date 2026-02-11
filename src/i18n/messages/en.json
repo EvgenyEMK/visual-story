@@ -30,7 +30,8 @@
     "profile": "Profile",
     "settings": "Settings",
     "dashboard": "Dashboard",
-    "voiceAssistant": "Voice Assistant Test"
+    "voiceAssistant": "Voice Assistant Test",
+    "demo": "Demo"
   },
   "actions": {
     "open": "Open",

@@ -1,0 +1,209 @@
+/**
+ * CSS Keyframe definitions for all VisualStory transition demos.
+ * Imported by the TransitionsDemoPage client component.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IN-SLIDE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes vs-smooth-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vs-staggered-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes vs-float-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vs-pulse-emphasis {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.1); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  60% { transform: scale(1); }
+}
+
+@keyframes vs-pop-zoom {
+  0% { opacity: 0; transform: scale(0); }
+  55% { opacity: 1; transform: scale(1.18); }
+  75% { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes vs-draw-line {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes vs-draw-arrowhead {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes vs-color-shift {
+  from { filter: grayscale(100%) brightness(0.6); }
+  to { filter: grayscale(0%) brightness(1); }
+}
+
+@keyframes vs-masked-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes vs-shimmer {
+  from { background-position: -200% center; }
+  to { background-position: 200% center; }
+}
+
+@keyframes vs-typewriter-blink {
+  0%, 100% { border-right-color: transparent; }
+  50% { border-right-color: #3b82f6; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLIDE-TO-SLIDE TRANSITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes vs-push-exit-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes vs-push-enter-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes vs-push-exit-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes vs-push-enter-down {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes vs-pan-canvas {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-33%, 0); }
+  50% { transform: translate(-33%, -33%); }
+  75% { transform: translate(-66%, -33%); }
+  100% { transform: translate(-66%, 0); }
+}
+
+@keyframes vs-zoom-dive {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes vs-zoom-arrive {
+  from { transform: scale(0.3); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes vs-cross-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vs-cross-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vs-morph-icon-move {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(var(--morph-tx), var(--morph-ty)) scale(var(--morph-scale, 1)); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GROUPED ITEM ANIMATIONS — HELPERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes vs-slide-to-sidebar {
+  from { transform: translate(0, 0) scale(1); opacity: 1; }
+  to { transform: translate(var(--sidebar-tx), var(--sidebar-ty)) scale(0.35); opacity: 1; }
+}
+
+@keyframes vs-hero-enter {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes vs-lift-up {
+  from { transform: translateY(0) scale(1); filter: grayscale(100%); }
+  to { transform: translateY(var(--lift-y, -120px)) scale(var(--lift-scale, 2.5)); filter: grayscale(0%); }
+}
+
+@keyframes vs-drop-down {
+  from { transform: translateY(var(--lift-y, -120px)) scale(var(--lift-scale, 2.5)); filter: grayscale(0%); }
+  to { transform: translateY(0) scale(1); filter: grayscale(100%); }
+}
+
+@keyframes vs-grid-expand {
+  from { transform: scale(1); }
+  to { transform: scale(1); }
+}
+
+@keyframes vs-satellite-emerge {
+  from { opacity: 0; transform: translate(0, 0) scale(0.3); }
+  to { opacity: 1; transform: translate(var(--sat-x), var(--sat-y)) scale(1); }
+}
+
+@keyframes vs-road-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--scroll-x, -200px)); }
+}
+
+@keyframes vs-card-fly-front {
+  from { transform: perspective(800px) rotateX(15deg) translateZ(0) translateY(0); }
+  to { transform: perspective(800px) rotateX(0deg) translateZ(100px) translateY(-20px); }
+}
+
+@keyframes vs-card-fly-away {
+  from { transform: perspective(800px) rotateX(0deg) translateZ(100px); opacity: 1; }
+  to { transform: perspective(800px) rotateX(0deg) translateZ(100px) translateX(200px); opacity: 0; }
+}
+
+@keyframes vs-fan-out {
+  from { transform: rotate(0deg) translateX(0); }
+  to { transform: rotate(var(--fan-angle)) translateX(var(--fan-dist, 60px)); }
+}
+
+@keyframes vs-highlight-ring {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+@keyframes vs-bud-out {
+  from { opacity: 0; transform: translate(0, 0) scale(0); }
+  to { opacity: 1; transform: translate(var(--bud-x), var(--bud-y)) scale(1); }
+}
+
+@keyframes vs-bond-grow {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes vs-cube-rotate {
+  from { transform: perspective(600px) rotateY(0deg); }
+  to { transform: perspective(600px) rotateY(-90deg); }
+}
+
+@keyframes vs-lens-move {
+  from { left: var(--lens-from-x, 15%); top: var(--lens-from-y, 25%); }
+  to { left: var(--lens-to-x, 60%); top: var(--lens-to-y, 55%); }
+}
+
+@keyframes vs-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

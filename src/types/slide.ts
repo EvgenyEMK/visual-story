@@ -12,6 +12,9 @@
 /** Supported element types within a slide. */
 export type ElementType = 'text' | 'icon' | 'shape' | 'image';
 
+/** Trigger mode for animations and transitions. */
+export type TriggerMode = 'auto' | 'click';
+
 /** Available animation types for individual elements. */
 export type AnimationType =
   | 'none'
@@ -51,6 +54,8 @@ export interface AnimationConfig {
   delay: number;
   /** Easing function. */
   easing: EasingType;
+  /** Override trigger mode for this specific animation (inherits from slide/project if unset). */
+  triggerMode?: TriggerMode;
 }
 
 /**
@@ -101,6 +106,10 @@ export interface Slide {
   duration: number;
   /** Transition type used when moving to the next slide. */
   transition: string;
+  /** Override trigger mode for this slide (inherits from project if unset). */
+  triggerMode?: TriggerMode;
+  /** Grouped animation config — present when this slide uses a grouped layout. */
+  groupedAnimation?: import('@/types/animation').GroupedAnimationConfig;
 }
 
 // ---------------------------------------------------------------------------

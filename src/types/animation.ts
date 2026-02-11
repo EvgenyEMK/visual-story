@@ -1,12 +1,12 @@
 /**
  * Animation engine types — templates, transitions, auto-animation.
  *
- * @source docs/modules/animation-engine/animation-templates.md
+ * @source docs/modules/animation-engine/element-animations/README.md
  * @source docs/modules/animation-engine/auto-animation.md
- * @source docs/modules/animation-engine/transition-library.md
+ * @source docs/modules/animation-engine/slide-transitions/README.md
  */
 
-import type { Slide, AnimationType, EasingType } from '@/types/slide';
+import type { Slide, AnimationType, EasingType, TriggerMode } from '@/types/slide';
 
 // ---------------------------------------------------------------------------
 // Animation Templates
@@ -21,7 +21,7 @@ export type TemplateCategory =
 
 /**
  * A keyframe in an animation sequence.
- * @source docs/modules/animation-engine/animation-templates.md — Template Definition Schema
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 export interface Keyframe {
   /** Offset within the animation (0–1). */
@@ -32,7 +32,7 @@ export interface Keyframe {
 
 /**
  * Selector that targets specific elements on a slide for template application.
- * @source docs/modules/animation-engine/animation-templates.md — Template Definition Schema
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 export interface ElementSelector {
   /** Target element type. */
@@ -45,7 +45,7 @@ export interface ElementSelector {
 
 /**
  * A single animation step within a template — maps a selector to keyframes.
- * @source docs/modules/animation-engine/animation-templates.md — Template Definition Schema
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 export interface AnimationSequence {
   /** Which elements this sequence targets. */
@@ -64,7 +64,7 @@ export interface AnimationSequence {
 
 /**
  * A complete animation template definition.
- * @source docs/modules/animation-engine/animation-templates.md — Template Definition Schema
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 export interface AnimationTemplate {
   id: string;
@@ -108,7 +108,7 @@ export type EasingFunction =
 
 /**
  * Configuration for a slide-to-slide transition.
- * @source docs/modules/animation-engine/transition-library.md — Transition Schema
+ * @source docs/modules/animation-engine/slide-transitions/README.md
  */
 export interface TransitionConfig {
   type: TransitionType;
@@ -123,7 +123,7 @@ export interface TransitionConfig {
 /**
  * Config for the advanced morph transition.
  * Matches shared elements between consecutive slides and animates them.
- * @source docs/modules/animation-engine/transition-library.md — Morph Transition
+ * @source docs/modules/animation-engine/slide-transitions/morph-smart-move.md
  */
 export interface MorphConfig {
   /** IDs of elements shared between the source and target slides. */
@@ -133,6 +133,90 @@ export interface MorphConfig {
   /** Easing function for the morph. */
   easing: EasingFunction;
 }
+
+// ---------------------------------------------------------------------------
+// Grouped Animations
+// ---------------------------------------------------------------------------
+
+/** Available grouped animation types. */
+export type GroupedAnimationType =
+  | 'list-accumulator'
+  | 'carousel-focus'
+  | 'bento-grid-expansion'
+  | 'circular-satellite'
+  | 'infinite-path'
+  | 'stack-reveal'
+  | 'fan-out'
+  | 'molecular-bond'
+  | 'perspective-pivot'
+  | 'magnifying-glass';
+
+/**
+ * Hover effect configuration for inactive items in grouped animations.
+ * @source docs/modules/animation-engine/README.md — Configurable Hover Effects
+ */
+export interface HoverEffect {
+  /** Base effect applied to all inactive items on hover. */
+  type: 'zoom' | 'lift' | 'brighten' | 'pulse' | 'none';
+  /** Scale factor for zoom/lift effects. Default: 1.08 */
+  scale?: number;
+  /** Whether to show a text label on hover (for icon-only items). */
+  showLabel?: boolean;
+  /** Position of the label relative to the item. */
+  labelPosition?: 'top' | 'right' | 'bottom' | 'left';
+  /** Whether to show a tooltip with the item description. */
+  showTooltip?: boolean;
+  /** Duration of the hover transition in ms. Default: 150 */
+  transitionMs?: number;
+}
+
+/**
+ * A single item in a grouped animation sequence.
+ * @source docs/modules/animation-engine/grouped-animations/README.md
+ */
+export interface GroupedItem {
+  /** Unique identifier for this group item. */
+  id: string;
+  /** Icon or emoji displayed for the item. */
+  icon?: string;
+  /** Short title displayed in both hero and list views. */
+  title: string;
+  /** Optional longer description shown when item is in hero/focus state. */
+  description?: string;
+  /** Override theme color for this specific item. */
+  color?: string;
+  /** Slide element IDs mapped to this group item. */
+  elementIds: string[];
+}
+
+/**
+ * Configuration for grouped item animations on a slide.
+ * @source docs/modules/animation-engine/grouped-animations/README.md
+ */
+export interface GroupedAnimationConfig {
+  /** Which grouped animation to use. */
+  type: GroupedAnimationType;
+  /** Ordered list of items to reveal. */
+  items: GroupedItem[];
+  /** Auto-mode: time between steps in ms. Default: 1800 */
+  stepDuration: number;
+  /** Hover effect configuration for inactive items. */
+  hoverEffect: HoverEffect;
+  /** Click-mode: allow clicking inactive items to jump to them. */
+  allowOutOfOrder: boolean;
+  /** Override trigger mode (inherits from slide/project if unset). */
+  triggerMode?: TriggerMode;
+}
+
+/** Default hover effect configuration. */
+export const DEFAULT_HOVER_EFFECT: Readonly<HoverEffect> = {
+  type: 'zoom',
+  scale: 1.08,
+  showLabel: false,
+  labelPosition: 'bottom',
+  showTooltip: false,
+  transitionMs: 150,
+};
 
 // ---------------------------------------------------------------------------
 // Auto-Animation — Content Analysis

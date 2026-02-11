@@ -1,7 +1,7 @@
 /**
  * "Fade Simple" animation template — elements fade in sequentially with stagger.
  * Part of the "Minimal" template category.
- * @source docs/modules/animation-engine/animation-templates.md
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 
 import {

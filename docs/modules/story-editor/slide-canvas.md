@@ -76,4 +76,5 @@ The slide canvas is the main visual workspace where users view and edit individu
 ## Related Features
 - [Element Properties](./element-properties.md)
 - [Timeline View](./timeline-view.md)
-- [Animation Templates](../animation-engine/animation-templates.md)
+- [Animation Engine](../animation-engine/README.md)
+- [Animation Catalog](../animation-engine/catalog.md)

@@ -4,7 +4,7 @@
  * Each entry corresponds to a row in the template library tables from the docs.
  * Full AnimationTemplate objects (with sequences/keyframes) are loaded at runtime.
  *
- * @source docs/modules/animation-engine/animation-templates.md — Template Library (MVP)
+ * @source docs/modules/animation-engine/catalog.md
  */
 
 import type { TemplateCategory } from '@/types/animation';
@@ -33,7 +33,7 @@ export interface TemplateCatalogEntry {
 
 /**
  * MVP animation template catalog.
- * @source docs/modules/animation-engine/animation-templates.md
+ * @source docs/modules/animation-engine/element-animations/README.md
  */
 export const ANIMATION_TEMPLATE_CATALOG: readonly TemplateCatalogEntry[] = [
   // ── Minimal ──────────────────────────────────────────────────────────────

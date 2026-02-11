@@ -14,7 +14,8 @@
     "profile": "Profil",
     "settings": "Paramètres",
     "dashboard": "Tableau de bord",
-    "voiceAssistant": "Test Assistant Vocal"
+    "voiceAssistant": "Test Assistant Vocal",
+    "demo": "Démo"
   },
   "actions": {
     "open": "Ouvrir",

@@ -1,4 +1,4 @@
-// Extracted from docs/modules/animation-engine/animation-templates.md
+// Extracted from docs/modules/animation-engine/element-animations/README.md
 
 import {
   ANIMATION_TEMPLATE_CATALOG,

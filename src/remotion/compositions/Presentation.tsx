@@ -2,7 +2,7 @@
  * Full presentation Remotion composition — renders slides in sequence with
  * voice-over audio and optional watermark overlay.
  * @source docs/modules/export-publish/video-export.md
- * @source docs/modules/animation-engine/transition-library.md
+ * @source docs/modules/animation-engine/slide-transitions/README.md
  */
 
 import {

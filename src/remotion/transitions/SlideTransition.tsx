@@ -1,6 +1,6 @@
 /**
  * Slide-to-slide transition wrapper — handles fade, slide, zoom, and other transitions.
- * @source docs/modules/animation-engine/transition-library.md
+ * @source docs/modules/animation-engine/slide-transitions/README.md
  */
 
 import {

@@ -68,6 +68,11 @@ export function AppNavbarWrapper() {
           label: t('navigation.home'),
           active: pathname === '/' || pathname === '/en' || pathname === '/fr'
         },
+        {
+          href: '/transitions-demo',
+          label: t('navigation.demo'),
+          active: pathname.includes('/transitions-demo')
+        },
       ];
 
   return (
