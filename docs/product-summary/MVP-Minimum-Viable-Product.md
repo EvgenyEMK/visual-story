@@ -64,11 +64,19 @@ Deliver the **simplest product that proves the core value proposition**:
 #### Module 6: User Management
 | Feature | MVP Scope | Details |
 |---------|-----------|---------|
-| Authentication | ✅ IN | Email + Google OAuth |
+| Authentication | ✅ IN | Supabase Auth — Email + Google OAuth |
 | Projects library | ✅ IN | Save/load projects |
 | Freemium limits | ✅ IN | Track exports, enforce limits |
 | Stripe billing | ✅ IN | Subscription management |
 | Team collaboration | ❌ OUT | Phase 2 |
+
+### 2.3. Cross-Cutting Requirements
+
+| Requirement | MVP Scope | Details |
+|-------------|-----------|---------|
+| UI Component Library | ✅ IN | **shadcn/ui** — accessible, customizable components built on Radix UI + Tailwind CSS |
+| Multi-language UI (i18n) | ✅ IN | All UI text externalized from day one. URL-based locale routing: `vstory.app/{locale}/...` (e.g., `/EN/dashboard`, `/DE/editor`). English only for MVP launch, but architecture **must** support adding languages without code changes. |
+| Multi-tenant architecture | ✅ IN | Every new user signup auto-creates a personal tenant (workspace). One user can belong to multiple tenants/workspaces. Projects are scoped to a tenant. Data isolation via Supabase RLS per tenant. MVP: personal workspaces only; invite/collaboration is Phase 2. |
 
 ---
 
@@ -77,10 +85,10 @@ Deliver the **simplest product that proves the core value proposition**:
 | Feature | Reason for Exclusion |
 |---------|---------------------|
 | Data source linking (Jira/Asana) | Different user segment, adds complexity |
-| Multi-language voice-over | Adds TTS complexity, can layer on later |
+| Multi-language voice-over | Adds TTS complexity, can layer on later (UI i18n **is** in MVP) |
 | Image/video generation | Expensive, use stock library + placeholders |
 | Custom keyframe animation editor | Too complex, defeats "simple" value prop |
-| Collaboration features | Solo creators are MVP target |
+| Workspace invitations & collaboration | Multi-tenant data model is in MVP; invite flow and real-time collab are Phase 2 |
 | Brand kit / custom themes | Nice-to-have, not core value |
 | Mobile app | Web-first for MVP |
 
@@ -133,137 +141,9 @@ Deliver the **simplest product that proves the core value proposition**:
 
 ## 5. Technical MVP Requirements
 
-### 5.1. Technology Stack
+> Full technical details (tech stack, architecture diagram, data models, API endpoints) have been moved to **[MVP Architecture](./MVP-architecture.md)**.
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| Frontend | Next.js 14+ (App Router) | SSR, API routes, great DX |
-| Language | TypeScript | Type safety, better tooling |
-| Styling | Tailwind CSS | Rapid UI development |
-| State | Zustand or Jotai | Simple, performant state management |
-| Video Rendering | Remotion | React-based video, serverless rendering |
-| Backend | Next.js API Routes | Unified codebase, serverless |
-| Database | PostgreSQL (Supabase) | Projects, users, subscriptions |
-| Auth | NextAuth.js or Clerk | OAuth + email, session management |
-| AI - Script | OpenAI GPT-4 | Script analysis, suggestions |
-| AI - Voice | ElevenLabs | High-quality TTS |
-| Storage | Cloudflare R2 | Cost-effective, S3-compatible |
-| Payments | Stripe | Subscriptions, usage tracking |
-| Hosting | Vercel | Optimal for Next.js |
-
-### 5.2. Architecture Diagram
-
-```mermaid
-flowchart TB
-    subgraph client [Client Browser]
-        UI[Next.js Frontend]
-        Preview[Remotion Preview]
-    end
-    
-    subgraph vercel [Vercel Edge]
-        API[API Routes]
-        Auth[NextAuth]
-    end
-    
-    subgraph services [External Services]
-        OpenAI[OpenAI API]
-        ElevenLabs[ElevenLabs TTS]
-        Stripe[Stripe]
-    end
-    
-    subgraph data [Data Layer]
-        Supabase[(Supabase DB)]
-        R2[(Cloudflare R2)]
-    end
-    
-    subgraph render [Rendering]
-        Lambda[Remotion Lambda]
-    end
-    
-    UI --> API
-    UI --> Preview
-    API --> Auth
-    API --> OpenAI
-    API --> ElevenLabs
-    API --> Supabase
-    API --> R2
-    API --> Lambda
-    Lambda --> R2
-    API --> Stripe
-```
-
-### 5.3. Data Models (Core)
-
-```typescript
-// User
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  plan: 'free' | 'creator' | 'pro';
-  exportsThisMonth: number;
-  stripeCustomerId?: string;
-  createdAt: Date;
-}
-
-// Project
-interface Project {
-  id: string;
-  userId: string;
-  name: string;
-  script: string;
-  intent: 'educational' | 'promotional' | 'storytelling';
-  slides: Slide[];
-  voiceSettings: VoiceSettings;
-  status: 'draft' | 'generated' | 'exported';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Slide
-interface Slide {
-  id: string;
-  order: number;
-  content: string;
-  animationTemplate: string;
-  elements: SlideElement[];
-  duration: number; // milliseconds
-  transition: TransitionType;
-}
-
-// SlideElement
-interface SlideElement {
-  id: string;
-  type: 'text' | 'icon' | 'shape' | 'image';
-  content: string;
-  animation: AnimationConfig;
-  position: { x: number; y: number };
-  style: ElementStyle;
-}
-
-// VoiceSettings
-interface VoiceSettings {
-  voiceId: string;
-  audioUrl?: string;
-  syncPoints: SyncPoint[]; // timestamp -> slide/element mapping
-}
-```
-
-### 5.4. API Endpoints (MVP)
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/auth/*` | * | NextAuth handlers |
-| `/api/projects` | GET, POST | List/create projects |
-| `/api/projects/[id]` | GET, PUT, DELETE | Project CRUD |
-| `/api/projects/[id]/generate` | POST | Generate slides from script |
-| `/api/projects/[id]/regenerate-slide` | POST | Regenerate single slide |
-| `/api/projects/[id]/voice` | POST | Generate voice-over |
-| `/api/projects/[id]/export` | POST | Trigger video render |
-| `/api/ai/script-feedback` | POST | Get AI script suggestions |
-| `/api/billing/checkout` | POST | Create Stripe checkout |
-| `/api/billing/portal` | POST | Stripe customer portal |
-| `/api/webhooks/stripe` | POST | Stripe webhook handler |
+**Key technologies:** Next.js 14+, TypeScript, Tailwind CSS, shadcn/ui, Supabase (DB + Auth), Remotion, OpenAI, ElevenLabs, Cloudflare R2, Stripe, Vercel.
 
 ---
 

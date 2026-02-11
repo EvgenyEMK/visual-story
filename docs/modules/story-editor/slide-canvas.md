@@ -65,33 +65,8 @@ The slide canvas is the main visual workspace where users view and edit individu
 ## Technical Specifications
 
 ### Component: `SlideCanvas`
-```typescript
-interface SlideCanvasProps {
-  slide: Slide;
-  selectedElementId?: string;
-  zoom: number;
-  showGrid: boolean;
-  isPlaying: boolean;
-  currentTime: number;
-  onElementSelect: (elementId: string | null) => void;
-  onElementUpdate: (elementId: string, updates: Partial<SlideElement>) => void;
-  onTimeChange: (time: number) => void;
-}
-```
 
-### Remotion Integration
-The canvas uses Remotion's `<Player>` component for animation preview:
-```typescript
-import { Player } from '@remotion/player';
-
-<Player
-  component={SlideComposition}
-  inputProps={{ slide }}
-  durationInFrames={slide.duration * 30}
-  fps={30}
-  style={{ width: '100%', aspectRatio: '16/9' }}
-/>
-```
+> **Implementation**: See `src/components/editor/slide-canvas.tsx` for the SlideCanvas component (SlideCanvasProps) and its Remotion `<Player>` integration for animation preview
 
 ## Dependencies
 - Remotion Player

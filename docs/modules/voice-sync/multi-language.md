@@ -98,100 +98,15 @@ flowchart LR
 
 ### Translation with Context Preservation
 
-```typescript
-interface TranslationRequest {
-  text: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  context: {
-    intent: ContentIntent;
-    slideNumber: number;
-    totalSlides: number;
-  };
-}
-
-async function translateScript(request: TranslationRequest): Promise<string> {
-  const prompt = `
-Translate the following text from ${request.sourceLanguage} to ${request.targetLanguage}.
-
-Context:
-- This is slide ${request.slideNumber} of ${request.totalSlides}
-- Content intent: ${request.context.intent}
-
-Requirements:
-- Maintain the same tone and emotion
-- Keep technical terms consistent
-- Preserve emphasis markers (**, __)
-- Keep the translation concise (similar word count)
-
-Original text:
-"""
-${request.text}
-"""
-
-Translated text:`;
-
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [{ role: 'user', content: prompt }],
-  });
-  
-  return response.choices[0].message.content;
-}
-```
+> **Implementation**: See `src/types/voice.ts` for TranslationRequest interface and `src/services/translation/translate.ts` for the `translateScript` function (GPT-4 translation with context, tone, and emphasis preservation)
 
 ### Multi-Language Data Model
 
-```typescript
-interface LanguageVersion {
-  id: string;
-  projectId: string;
-  languageCode: string;
-  isOriginal: boolean;
-  
-  // Translated content
-  slides: {
-    slideId: string;
-    translatedContent: string;
-    audioUrl?: string;
-    syncPoints?: SyncPoint[];
-  }[];
-  
-  // Metadata
-  translatedAt: Date;
-  translatedBy: 'ai' | 'human';
-  reviewedAt?: Date;
-  reviewedBy?: string;
-}
-
-// Project with language versions
-interface Project {
-  // ... existing fields
-  
-  defaultLanguage: string;
-  languageVersions: LanguageVersion[];
-}
-```
+> **Implementation**: See `src/types/voice.ts` for the LanguageVersion interface (translated content per slide, audio URLs, sync points, review metadata)
 
 ### Voice Selection per Language
 
-```typescript
-const languageVoices: Record<string, VoiceOption[]> = {
-  en: [
-    { id: 'adam', name: 'Adam', gender: 'male' },
-    { id: 'rachel', name: 'Rachel', gender: 'female' },
-  ],
-  es: [
-    { id: 'carlos', name: 'Carlos', gender: 'male' },
-    { id: 'sofia', name: 'Sofia', gender: 'female' },
-  ],
-  fr: [
-    { id: 'pierre', name: 'Pierre', gender: 'male' },
-    { id: 'marie', name: 'Marie', gender: 'female' },
-  ],
-  // ... more languages
-};
-```
+> **Implementation**: See `src/config/voices.ts` for the `languageVoices` configuration (voice options per language code with gender and name)
 
 ## UI Design (Phase 2)
 

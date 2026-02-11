@@ -56,22 +56,7 @@ Video Export renders the presentation as an MP4 video file with synchronized ani
 
 ### Remotion Lambda Setup
 
-```typescript
-// remotion.config.ts
-import { Config } from '@remotion/cli/config';
-
-Config.setVideoImageFormat('jpeg');
-Config.setOverwriteOutput(true);
-
-// Lambda configuration
-export const lambdaConfig = {
-  region: 'us-east-1',
-  functionName: 'visualstory-render',
-  memorySizeInMb: 2048,
-  timeoutInSeconds: 240,
-  diskSizeInMb: 2048,
-};
-```
+> **Implementation**: See `remotion.config.ts` for Remotion CLI configuration and Lambda settings (region, memory, timeout)
 
 ### Rendering Pipeline
 
@@ -105,208 +90,19 @@ sequenceDiagram
 
 ### API Endpoints
 
-```typescript
-// POST /api/projects/{id}/export
-interface ExportRequest {
-  quality: '720p' | '1080p' | '4k';
-  includeVoiceover: boolean;
-}
-
-interface ExportResponse {
-  exportId: string;
-  status: 'queued' | 'rendering' | 'complete' | 'failed';
-  estimatedTime?: number; // seconds
-}
-
-// GET /api/exports/{id}/status
-interface ExportStatusResponse {
-  exportId: string;
-  status: 'queued' | 'rendering' | 'complete' | 'failed';
-  progress?: number; // 0-100
-  downloadUrl?: string;
-  expiresAt?: string; // ISO date
-  error?: string;
-}
-```
+> **Implementation**: See `src/types/billing.ts` for ExportRequest, ExportResponse, and ExportStatusResponse interfaces
 
 ### Export Handler
 
-```typescript
-import { renderMediaOnLambda, getRenderProgress } from '@remotion/lambda/client';
-
-export async function POST(req: Request) {
-  const { projectId } = req.params;
-  const { quality, includeVoiceover } = await req.json();
-  const user = await getAuthUser(req);
-  
-  // Check quota
-  const quota = await checkExportQuota(user.id);
-  if (!quota.allowed) {
-    return Response.json({ error: 'Export limit reached' }, { status: 403 });
-  }
-  
-  // Check quality permissions
-  if (quality === '4k' && user.plan === 'free') {
-    return Response.json({ error: '4K requires Pro plan' }, { status: 403 });
-  }
-  
-  const project = await getProject(projectId);
-  
-  // Create export record
-  const exportRecord = await createExport({
-    projectId,
-    userId: user.id,
-    quality,
-    status: 'queued',
-  });
-  
-  // Trigger Lambda render
-  const { renderId } = await renderMediaOnLambda({
-    region: 'us-east-1',
-    functionName: 'visualstory-render',
-    composition: 'Presentation',
-    inputProps: {
-      project,
-      includeVoiceover,
-      watermark: user.plan === 'free',
-    },
-    codec: 'h264',
-    imageFormat: 'jpeg',
-    ...getQualityConfig(quality),
-    outName: `${projectId}-${Date.now()}.mp4`,
-    downloadBehavior: { type: 'download', fileName: `${project.name}.mp4` },
-  });
-  
-  // Update record with render ID
-  await updateExport(exportRecord.id, { renderId, status: 'rendering' });
-  
-  // Increment usage
-  await incrementExportUsage(user.id);
-  
-  return Response.json({
-    exportId: exportRecord.id,
-    status: 'rendering',
-    estimatedTime: estimateRenderTime(project, quality),
-  });
-}
-
-function getQualityConfig(quality: string) {
-  switch (quality) {
-    case '720p':
-      return { width: 1280, height: 720, crf: 23 };
-    case '1080p':
-      return { width: 1920, height: 1080, crf: 20 };
-    case '4k':
-      return { width: 3840, height: 2160, crf: 18 };
-    default:
-      return { width: 1920, height: 1080, crf: 20 };
-  }
-}
-```
+> **Implementation**: See `src/services/export/video-export.ts` for the export logic (quota checking, quality config, Lambda render trigger) and `src/app/api/projects/[id]/export/route.ts` for the API route handler
 
 ### Remotion Composition
 
-```typescript
-// remotion/compositions/Presentation.tsx
-import { Composition, AbsoluteFill, Audio, Sequence } from 'remotion';
-
-interface PresentationProps {
-  project: Project;
-  includeVoiceover: boolean;
-  watermark: boolean;
-}
-
-export const Presentation: React.FC<PresentationProps> = ({
-  project,
-  includeVoiceover,
-  watermark,
-}) => {
-  const { fps } = useVideoConfig();
-  
-  // Calculate total frames
-  const totalFrames = project.slides.reduce(
-    (acc, slide) => acc + (slide.duration * fps),
-    0
-  );
-  
-  let currentFrame = 0;
-  
-  return (
-    <AbsoluteFill style={{ backgroundColor: '#ffffff' }}>
-      {/* Slides */}
-      {project.slides.map((slide, index) => {
-        const startFrame = currentFrame;
-        const durationFrames = slide.duration * fps;
-        currentFrame += durationFrames;
-        
-        return (
-          <Sequence
-            key={slide.id}
-            from={startFrame}
-            durationInFrames={durationFrames}
-          >
-            <SlideComposition
-              slide={slide}
-              transition={slide.transition}
-            />
-          </Sequence>
-        );
-      })}
-      
-      {/* Voice-over audio */}
-      {includeVoiceover && project.voiceConfig?.globalAudioUrl && (
-        <Audio src={project.voiceConfig.globalAudioUrl} />
-      )}
-      
-      {/* Watermark for free tier */}
-      {watermark && <Watermark />}
-    </AbsoluteFill>
-  );
-};
-
-const Watermark: React.FC = () => (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-      opacity: 0.5,
-      fontSize: 14,
-      color: '#666',
-      fontFamily: 'sans-serif',
-    }}
-  >
-    Made with VisualStory
-  </div>
-);
-```
+> **Implementation**: See `src/remotion/compositions/Presentation.tsx` for the Presentation component (slide sequencing, voice-over audio, watermark overlay)
 
 ### Progress Polling
 
-```typescript
-// Client-side progress polling
-function useExportProgress(exportId: string) {
-  const [status, setStatus] = useState<ExportStatusResponse | null>(null);
-  
-  useEffect(() => {
-    if (!exportId) return;
-    
-    const pollInterval = setInterval(async () => {
-      const response = await fetch(`/api/exports/${exportId}/status`);
-      const data = await response.json();
-      setStatus(data);
-      
-      if (data.status === 'complete' || data.status === 'failed') {
-        clearInterval(pollInterval);
-      }
-    }, 3000); // Poll every 3 seconds
-    
-    return () => clearInterval(pollInterval);
-  }, [exportId]);
-  
-  return status;
-}
-```
+> **Implementation**: See `src/hooks/use-export-progress.ts` for the `useExportProgress` hook (client-side polling with 3-second intervals)
 
 ## UI Components
 

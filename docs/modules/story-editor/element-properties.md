@@ -89,33 +89,8 @@ The element properties panel allows users to configure styling, position, and an
 ## Technical Specifications
 
 ### Component: `ElementPropertiesPanel`
-```typescript
-interface ElementPropertiesPanelProps {
-  element: SlideElement | null;
-  onUpdate: (updates: Partial<SlideElement>) => void;
-  onPreviewAnimation: () => void;
-}
 
-interface SlideElement {
-  id: string;
-  type: 'text' | 'icon' | 'shape' | 'image';
-  content: string;
-  position: { x: number; y: number };
-  size: { width: number; height: number | 'auto' };
-  style: ElementStyle;
-  animation: AnimationConfig;
-}
-
-interface AnimationConfig {
-  type: AnimationType;
-  duration: number; // seconds
-  delay: number; // seconds
-  easing: EasingType;
-}
-
-type AnimationType = 'none' | 'fadeIn' | 'slideUp' | 'slideLeft' | 'scale' | 'typewriter';
-type EasingType = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'spring';
-```
+> **Implementation**: See `src/types/slide.ts` for SlideElement, AnimationConfig, AnimationType, and EasingType interfaces, and `src/components/editor/element-properties-panel.tsx` for the ElementPropertiesPanel component (ElementPropertiesPanelProps)
 
 ## Dependencies
 - Color picker component

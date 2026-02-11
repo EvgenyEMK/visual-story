@@ -97,142 +97,11 @@ flowchart TB
 
 ### Core Sync Logic
 
-```typescript
-interface SyncPoint {
-  elementId: string;
-  triggerTime: number; // milliseconds from slide start
-  wordIndex: number; // which word triggers this element
-}
-
-interface SlideSync {
-  slideId: string;
-  startTime: number; // global timeline position
-  duration: number;
-  syncPoints: SyncPoint[];
-}
-
-function calculateSync(
-  slide: Slide,
-  audioTimestamps: WordTimestamp[]
-): SlideSync {
-  const syncPoints: SyncPoint[] = [];
-  
-  // Get ordered elements (title first, then body, etc.)
-  const orderedElements = orderElementsByPriority(slide.elements);
-  
-  // Extract key phrases from each element
-  const elementPhrases = orderedElements.map(el => ({
-    element: el,
-    keywords: extractKeywords(el.content),
-  }));
-  
-  // Match keywords to audio timestamps
-  let lastMatchedIndex = 0;
-  
-  for (const { element, keywords } of elementPhrases) {
-    // Find when this element's content is spoken
-    const matchIndex = findKeywordInTimestamps(
-      keywords,
-      audioTimestamps,
-      lastMatchedIndex
-    );
-    
-    if (matchIndex !== -1) {
-      // Trigger element slightly BEFORE word is spoken (anticipation)
-      const triggerTime = Math.max(0, audioTimestamps[matchIndex].startTime - 200);
-      
-      syncPoints.push({
-        elementId: element.id,
-        triggerTime,
-        wordIndex: matchIndex,
-      });
-      
-      lastMatchedIndex = matchIndex;
-    } else {
-      // Fallback: stagger elements evenly
-      const staggerTime = lastMatchedIndex * 500 + syncPoints.length * 300;
-      syncPoints.push({
-        elementId: element.id,
-        triggerTime: staggerTime,
-        wordIndex: -1, // no match
-      });
-    }
-  }
-  
-  // Calculate slide duration (last timestamp + padding)
-  const lastTimestamp = audioTimestamps[audioTimestamps.length - 1];
-  const duration = lastTimestamp.endTime + 500; // 0.5s padding
-  
-  return {
-    slideId: slide.id,
-    startTime: 0, // set by timeline
-    duration,
-    syncPoints,
-  };
-}
-
-function findKeywordInTimestamps(
-  keywords: string[],
-  timestamps: WordTimestamp[],
-  startIndex: number
-): number {
-  for (let i = startIndex; i < timestamps.length; i++) {
-    const word = timestamps[i].word.toLowerCase();
-    if (keywords.some(kw => word.includes(kw.toLowerCase()))) {
-      return i;
-    }
-  }
-  return -1;
-}
-```
+> **Implementation**: See `src/types/voice.ts` for SyncPoint and SlideSync interfaces, and `src/lib/tts/sync.ts` for the `calculateSync` algorithm (keyword extraction, timestamp matching with anticipation offset, stagger fallback, duration calculation)
 
 ### Remotion Integration
 
-```typescript
-// Synced slide component
-const SyncedSlide: React.FC<{
-  slide: Slide;
-  sync: SlideSync;
-  audioUrl: string;
-}> = ({ slide, sync, audioUrl }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  
-  // Convert frame to milliseconds
-  const currentTimeMs = (frame / fps) * 1000;
-  
-  return (
-    <AbsoluteFill>
-      {/* Audio layer */}
-      <Audio src={audioUrl} />
-      
-      {/* Elements with sync-based animation */}
-      {slide.elements.map(element => {
-        const syncPoint = sync.syncPoints.find(sp => sp.elementId === element.id);
-        const triggerFrame = syncPoint 
-          ? (syncPoint.triggerTime / 1000) * fps
-          : 0;
-        
-        // Element is visible after trigger
-        const progress = interpolate(
-          frame,
-          [triggerFrame, triggerFrame + 15], // 0.5s animation
-          [0, 1],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-        );
-        
-        return (
-          <AnimatedElement
-            key={element.id}
-            element={element}
-            progress={progress}
-          />
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-```
+> **Implementation**: See `src/remotion/elements/AnimatedElement.tsx` for the synced slide component that uses sync points to trigger element animations via Remotion's `interpolate`
 
 ## UI Components
 
@@ -258,67 +127,11 @@ const SyncedSlide: React.FC<{
 
 ### Sync Point Editor
 
-```typescript
-interface SyncPointEditorProps {
-  slideId: string;
-  syncPoints: SyncPoint[];
-  audioUrl: string;
-  onSyncPointChange: (elementId: string, newTime: number) => void;
-}
-
-const SyncPointEditor: React.FC<SyncPointEditorProps> = ({
-  slideId,
-  syncPoints,
-  audioUrl,
-  onSyncPointChange,
-}) => {
-  const [waveformData, setWaveformData] = useState<number[]>([]);
-  
-  useEffect(() => {
-    // Generate waveform visualization
-    generateWaveform(audioUrl).then(setWaveformData);
-  }, [audioUrl]);
-  
-  return (
-    <div className="sync-editor">
-      <WaveformDisplay data={waveformData} />
-      <SyncPointMarkers
-        points={syncPoints}
-        onDrag={(elementId, newTime) => onSyncPointChange(elementId, newTime)}
-      />
-      <PlaybackScrubber audioUrl={audioUrl} />
-    </div>
-  );
-};
-```
+> **Implementation**: See `src/components/editor/` for the SyncPointEditor component (waveform display, draggable sync point markers, playback scrubber) — TODO
 
 ## Data Model
 
-```typescript
-interface VoiceConfig {
-  id: string;
-  projectId: string;
-  voiceId: string;
-  globalAudioUrl?: string; // combined audio for full presentation
-  slideConfigs: SlideVoiceConfig[];
-}
-
-interface SlideVoiceConfig {
-  slideId: string;
-  audioUrl: string;
-  duration: number;
-  timestamps: WordTimestamp[];
-  syncPoints: SyncPoint[];
-  manualAdjustments: SyncAdjustment[];
-}
-
-interface SyncAdjustment {
-  elementId: string;
-  originalTime: number;
-  adjustedTime: number;
-  adjustedBy: 'user' | 'auto';
-}
-```
+> **Implementation**: See `src/types/voice.ts` for VoiceConfig, SlideVoiceConfig, and SyncAdjustment interfaces
 
 ## Dependencies
 - Text-to-Speech module for audio + timestamps

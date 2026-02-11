@@ -1,0 +1,65 @@
+{
+  "common": {
+    "appName": "VisualStory",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search...",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "upgrade": "Upgrade"
+  },
+  "navigation": {
+    "home": "Home",
+    "aboutMe": "About Me",
+    "experience": "Experience",
+    "jobHistory": "Job History",
+    "skills": "Skills",
+    "media": "Media",
+    "projects": "Projects",
+    "auth": "Authentication",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "logout": "Log Out",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "voiceAssistant": "Voice Assistant Test"
+  },
+  "actions": {
+    "open": "Open",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggleTheme": "Toggle Theme"
+  },
+  "language": {
+    "switch": "Switch Language",
+    "current": "Current Language"
+  },
+  "warnings": {
+    "contentNotYetTranslated": "This content is not yet translated."
+  }
+}

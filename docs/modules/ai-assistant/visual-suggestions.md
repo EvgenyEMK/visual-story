@@ -63,122 +63,11 @@ Visual Suggestions provides AI-powered recommendations for icons, images, and vi
 
 ### Suggestion Algorithm
 
-```typescript
-interface IconSuggestion {
-  elementId: string; // which element to enhance
-  suggestions: SuggestedIcon[];
-  reasoning: string;
-}
-
-interface SuggestedIcon {
-  iconName: string;
-  iconSet: 'lucide' | 'heroicons' | 'phosphor';
-  relevanceScore: number;
-  category: string;
-}
-
-async function suggestIcons(slide: Slide): Promise<IconSuggestion[]> {
-  const suggestions: IconSuggestion[] = [];
-  
-  for (const element of slide.elements) {
-    if (element.type === 'text' && !hasAssociatedIcon(element)) {
-      // Extract keywords from text
-      const keywords = extractKeywords(element.content);
-      
-      // Match against icon library
-      const matches = await matchIconsToKeywords(keywords);
-      
-      if (matches.length > 0) {
-        suggestions.push({
-          elementId: element.id,
-          suggestions: matches.slice(0, 5),
-          reasoning: `Icons related to: ${keywords.join(', ')}`,
-        });
-      }
-    }
-  }
-  
-  return suggestions;
-}
-```
-
-### Icon Matching with AI
-
-```typescript
-const iconMatchingPrompt = `
-Given this text content from a presentation slide, suggest relevant icons.
-
-Text: "${elementContent}"
-
-Available icon categories: business, technology, communication, education, arrows, people, abstract
-
-Return JSON:
-{
-  "suggestions": [
-    {
-      "iconName": "<lucide icon name>",
-      "category": "<category>",
-      "reasoning": "<why this icon fits>"
-    }
-  ]
-}
-
-Suggest 3-5 icons that visually represent the concept. Prefer specific over generic icons.
-`;
-```
+> **Implementation**: See `src/types/ai.ts` for interfaces (IconSuggestion, SuggestedIcon) and `src/lib/ai/icon-suggestions.ts` for the `suggestIcons` function and AI icon matching prompt
 
 ### Icon Library Index
 
-```typescript
-// Pre-built searchable index
-interface IconIndex {
-  icons: IconEntry[];
-}
-
-interface IconEntry {
-  name: string;
-  set: string;
-  category: string;
-  tags: string[]; // searchable keywords
-  svg: string; // SVG content
-}
-
-// Example entries
-const iconLibrary: IconEntry[] = [
-  {
-    name: 'trending-up',
-    set: 'lucide',
-    category: 'business',
-    tags: ['growth', 'increase', 'chart', 'progress', 'success', 'profit'],
-    svg: '<svg>...</svg>',
-  },
-  {
-    name: 'lightbulb',
-    set: 'lucide',
-    category: 'education',
-    tags: ['idea', 'innovation', 'thinking', 'creative', 'insight'],
-    svg: '<svg>...</svg>',
-  },
-  // ... 300+ icons
-];
-
-function searchIcons(query: string): IconEntry[] {
-  const normalizedQuery = query.toLowerCase();
-  
-  return iconLibrary
-    .filter(icon => 
-      icon.name.includes(normalizedQuery) ||
-      icon.tags.some(tag => tag.includes(normalizedQuery))
-    )
-    .sort((a, b) => {
-      // Exact name match first
-      const aNameMatch = a.name === normalizedQuery ? 1 : 0;
-      const bNameMatch = b.name === normalizedQuery ? 1 : 0;
-      return bNameMatch - aNameMatch;
-    })
-    .slice(0, 20);
-}
-```
+> **Implementation**: See `src/types/ai.ts` for interfaces (IconIndex, IconEntry) and `src/config/icon-library.ts` for the searchable icon library and `searchIcons` function
 
 ## UI Components
 
@@ -214,73 +103,13 @@ function searchIcons(query: string): IconEntry[] {
 
 ### Component Implementation
 
-```typescript
-interface IconPanelProps {
-  slide: Slide;
-  onAddIcon: (elementId: string | null, icon: IconEntry) => void;
-}
-
-const IconPanel: React.FC<IconPanelProps> = ({ slide, onAddIcon }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<IconSuggestion[]>([]);
-  
-  useEffect(() => {
-    // Generate suggestions when slide changes
-    suggestIcons(slide).then(setSuggestions);
-  }, [slide]);
-  
-  const searchResults = searchQuery 
-    ? searchIcons(searchQuery) 
-    : [];
-  
-  return (
-    <div className="space-y-4">
-      <SearchInput 
-        value={searchQuery} 
-        onChange={setSearchQuery}
-        placeholder="Search icons..."
-      />
-      
-      {searchQuery ? (
-        <IconGrid 
-          icons={searchResults} 
-          onSelect={(icon) => onAddIcon(null, icon)} 
-        />
-      ) : (
-        <>
-          {suggestions.map(suggestion => (
-            <SuggestionGroup
-              key={suggestion.elementId}
-              suggestion={suggestion}
-              onSelect={(icon) => onAddIcon(suggestion.elementId, icon)}
-            />
-          ))}
-          <RecentIcons onSelect={(icon) => onAddIcon(null, icon)} />
-        </>
-      )}
-    </div>
-  );
-};
-```
+> **Implementation**: See `src/components/ai/icon-panel.tsx` for the IconPanel component (IconPanelProps, SearchInput, IconGrid, SuggestionGroup, RecentIcons)
 
 ## Phase 2: Image Generation
 
-In Phase 2, we plan to add AI image generation:
+In Phase 2, we plan to add AI image generation.
 
-```typescript
-// Future: Image generation via DALL-E or Midjourney API
-interface ImageGenerationRequest {
-  prompt: string;
-  style: 'realistic' | 'illustration' | 'abstract';
-  aspectRatio: '16:9' | '1:1' | '4:3';
-}
-
-// Not in MVP - placeholder for future
-async function generateImage(request: ImageGenerationRequest): Promise<string> {
-  // TODO: Implement in Phase 2
-  throw new Error('Image generation not available in MVP');
-}
-```
+> **Implementation**: See `src/types/ai.ts` for planned Phase 2 types (ImageGenerationRequest) — not implemented in MVP
 
 ## Dependencies
 - Lucide React for icon components

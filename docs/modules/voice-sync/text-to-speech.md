@@ -55,146 +55,15 @@ Text-to-Speech (TTS) converts the script text into natural-sounding voice-over a
 
 ### ElevenLabs Integration
 
-```typescript
-import { ElevenLabsClient } from 'elevenlabs';
-
-const client = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
-});
-
-interface TTSRequest {
-  text: string;
-  voiceId: string;
-  modelId?: string;
-}
-
-interface TTSResponse {
-  audioBuffer: Buffer;
-  audioUrl: string;
-  wordTimestamps: WordTimestamp[];
-}
-
-interface WordTimestamp {
-  word: string;
-  startTime: number; // milliseconds
-  endTime: number;
-}
-
-async function generateSpeech(request: TTSRequest): Promise<TTSResponse> {
-  const audio = await client.textToSpeech.convertWithTimestamps(
-    request.voiceId,
-    {
-      text: request.text,
-      model_id: request.modelId || 'eleven_turbo_v2_5',
-      output_format: 'mp3_44100_128',
-    }
-  );
-  
-  // Upload to R2
-  const audioUrl = await uploadToR2(audio.audio, `audio/${projectId}/${slideId}.mp3`);
-  
-  return {
-    audioBuffer: audio.audio,
-    audioUrl,
-    wordTimestamps: audio.alignment.characters.map(char => ({
-      word: char.character,
-      startTime: char.start_time_ms,
-      endTime: char.end_time_ms,
-    })),
-  };
-}
-```
+> **Implementation**: See `src/lib/tts/elevenlabs.ts` for the ElevenLabs client setup and `generateSpeech` function (TTS with word timestamps, R2 upload)
 
 ### API Endpoint
-```typescript
-// POST /api/projects/{id}/voice
-interface GenerateVoiceRequest {
-  voiceId: string;
-  slideIds?: string[]; // Optional: specific slides only
-}
 
-interface GenerateVoiceResponse {
-  voiceConfig: VoiceConfig;
-  slides: {
-    slideId: string;
-    audioUrl: string;
-    duration: number;
-  }[];
-}
-
-// Handler
-export async function POST(req: Request) {
-  const { projectId } = req.params;
-  const { voiceId, slideIds } = await req.json();
-  
-  const project = await getProject(projectId);
-  const slidesToProcess = slideIds 
-    ? project.slides.filter(s => slideIds.includes(s.id))
-    : project.slides;
-  
-  const results = await Promise.all(
-    slidesToProcess.map(async (slide) => {
-      const tts = await generateSpeech({
-        text: slide.content,
-        voiceId,
-      });
-      
-      return {
-        slideId: slide.id,
-        audioUrl: tts.audioUrl,
-        duration: tts.wordTimestamps[tts.wordTimestamps.length - 1].endTime,
-        timestamps: tts.wordTimestamps,
-      };
-    })
-  );
-  
-  // Save to database
-  await updateVoiceConfig(projectId, {
-    voiceId,
-    slides: results,
-  });
-  
-  return Response.json({ slides: results });
-}
-```
+> **Implementation**: See `src/types/voice.ts` for GenerateVoiceRequest and GenerateVoiceResponse interfaces, and the voice generation handler logic (per-slide TTS, database persistence)
 
 ### Voice Preview Component
-```typescript
-interface VoiceSelectorProps {
-  selectedVoiceId: string;
-  onSelect: (voiceId: string) => void;
-}
 
-const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoiceId, onSelect }) => {
-  const [previewPlaying, setPreviewPlaying] = useState<string | null>(null);
-  
-  const voices = [
-    { id: 'adam', name: 'Adam', sample: '/samples/adam.mp3' },
-    { id: 'rachel', name: 'Rachel', sample: '/samples/rachel.mp3' },
-    // ...
-  ];
-  
-  return (
-    <Select value={selectedVoiceId} onValueChange={onSelect}>
-      <SelectTrigger>
-        <SelectValue placeholder="Select voice" />
-      </SelectTrigger>
-      <SelectContent>
-        {voices.map(voice => (
-          <SelectItem key={voice.id} value={voice.id}>
-            <div className="flex items-center gap-2">
-              <span>{voice.name}</span>
-              <button onClick={() => playPreview(voice.sample)}>
-                🔊
-              </button>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
-```
+> **Implementation**: See `src/components/` for the VoiceSelector component (voice list with preview playback) — TODO
 
 ## Cost Considerations
 

@@ -66,138 +66,20 @@ The transition library provides slide-to-slide transition effects. Unlike elemen
 ## Technical Specifications
 
 ### Transition Schema
-```typescript
-interface TransitionConfig {
-  type: TransitionType;
-  duration: number; // seconds
-  easing: EasingType;
-  direction?: 'left' | 'right' | 'up' | 'down';
-}
 
-type TransitionType = 
-  | 'none'
-  | 'fade'
-  | 'fade-black'
-  | 'slide'
-  | 'zoom'
-  | 'morph';
-```
+> **Implementation**: See `src/types/animation.ts` for TransitionConfig interface and TransitionType union type (none, fade, fade-black, slide, zoom, morph)
 
 ### Remotion Implementation
-```typescript
-// Transition wrapper component
-const SlideTransition: React.FC<{
-  transition: TransitionConfig;
-  children: React.ReactNode;
-  entering: boolean;
-}> = ({ transition, children, entering }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const durationFrames = transition.duration * fps;
-  
-  switch (transition.type) {
-    case 'fade':
-      return (
-        <div style={{
-          opacity: entering
-            ? interpolate(frame, [0, durationFrames], [0, 1])
-            : interpolate(frame, [0, durationFrames], [1, 0]),
-        }}>
-          {children}
-        </div>
-      );
-      
-    case 'slide':
-      const offset = entering ? 100 : 0;
-      const translateX = interpolate(
-        frame,
-        [0, durationFrames],
-        [offset, 0],
-        { easing: Easing.out(Easing.cubic) }
-      );
-      return (
-        <div style={{ transform: `translateX(${translateX}%)` }}>
-          {children}
-        </div>
-      );
-      
-    // ... other transitions
-  }
-};
-```
+
+> **Implementation**: See `src/remotion/transitions/SlideTransition.tsx` for the transition wrapper component handling fade, slide, and other transition effects using Remotion's `interpolate` and `Easing`
 
 ### Transition Sequencing
-```typescript
-// Full presentation composition
-const PresentationComposition: React.FC<{ project: Project }> = ({ project }) => {
-  const { fps } = useVideoConfig();
-  
-  // Calculate frame ranges for each slide
-  const slideFrames = project.slides.map((slide, index) => {
-    const startFrame = project.slides
-      .slice(0, index)
-      .reduce((acc, s) => acc + (s.duration * fps) + (s.transition.duration * fps), 0);
-    
-    return {
-      slide,
-      startFrame,
-      endFrame: startFrame + (slide.duration * fps),
-      transitionFrames: slide.transition.duration * fps,
-    };
-  });
-  
-  return (
-    <AbsoluteFill>
-      {slideFrames.map(({ slide, startFrame, endFrame, transitionFrames }) => (
-        <Sequence
-          key={slide.id}
-          from={startFrame}
-          durationInFrames={endFrame - startFrame + transitionFrames}
-        >
-          <SlideTransition transition={slide.transition} entering>
-            <SlideComposition slide={slide} />
-          </SlideTransition>
-        </Sequence>
-      ))}
-    </AbsoluteFill>
-  );
-};
-```
+
+> **Implementation**: See `src/remotion/compositions/Presentation.tsx` for the full presentation composition that calculates frame ranges and sequences slides with their transitions
 
 ### Morph Transition (Advanced)
-```typescript
-// Morph identifies shared elements and animates them
-interface MorphConfig {
-  sharedElements: {
-    fromElementId: string;
-    toElementId: string;
-  }[];
-}
 
-function identifySharedElements(
-  fromSlide: Slide,
-  toSlide: Slide
-): MorphConfig {
-  const shared: MorphConfig['sharedElements'] = [];
-  
-  // Match elements by similar content or explicit linking
-  for (const fromEl of fromSlide.elements) {
-    const match = toSlide.elements.find(toEl =>
-      toEl.content === fromEl.content ||
-      toEl.morphId === fromEl.morphId
-    );
-    
-    if (match) {
-      shared.push({
-        fromElementId: fromEl.id,
-        toElementId: match.id,
-      });
-    }
-  }
-  
-  return { sharedElements: shared };
-}
-```
+> **Implementation**: See `src/types/animation.ts` for MorphConfig interface and shared element identification logic
 
 ## Dependencies
 - Remotion for transition rendering

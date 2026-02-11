@@ -73,112 +73,16 @@ Animation templates are pre-built animation patterns that define how elements ap
 ## Technical Specifications
 
 ### Template Definition Schema
-```typescript
-interface AnimationTemplate {
-  id: string;
-  name: string;
-  category: 'minimal' | 'dynamic' | 'professional' | 'storytelling';
-  description: string;
-  previewUrl: string;
-  
-  // Default timing
-  defaultDuration: number; // seconds
-  
-  // Element animation rules
-  elementAnimations: {
-    // Apply to elements by type or role
-    selector: ElementSelector;
-    animation: AnimationSequence;
-  }[];
-  
-  // Slide-level settings
-  backgroundColor?: string;
-  transition?: TransitionConfig;
-}
 
-interface ElementSelector {
-  type?: 'text' | 'icon' | 'shape' | 'image';
-  role?: 'title' | 'body' | 'accent' | 'background';
-  index?: number; // nth element of type
-}
-
-interface AnimationSequence {
-  keyframes: Keyframe[];
-  duration: number;
-  delay: number | 'stagger'; // 'stagger' = auto-calculate based on order
-  easing: EasingFunction;
-}
-
-interface Keyframe {
-  offset: number; // 0-1
-  opacity?: number;
-  transform?: string;
-  filter?: string;
-}
-```
+> **Implementation**: See `src/types/animation.ts` for AnimationTemplate, ElementSelector, AnimationSequence, and Keyframe interfaces
 
 ### Template Application Logic
-```typescript
-function applyTemplate(slide: Slide, template: AnimationTemplate): Slide {
-  const updatedElements = slide.elements.map((element, index) => {
-    // Find matching animation rule
-    const rule = template.elementAnimations.find(rule => 
-      matchesSelector(element, rule.selector, index)
-    );
-    
-    if (!rule) return element;
-    
-    // Calculate actual delay if staggered
-    const delay = rule.animation.delay === 'stagger'
-      ? index * 0.15 // 150ms stagger
-      : rule.animation.delay;
-    
-    return {
-      ...element,
-      animation: {
-        ...rule.animation,
-        delay,
-      },
-    };
-  });
-  
-  return {
-    ...slide,
-    elements: updatedElements,
-    duration: template.defaultDuration,
-    transition: template.transition,
-  };
-}
-```
+
+> **Implementation**: See `src/services/animation/apply-template.ts` for the `applyTemplate` function that matches selectors and applies animation rules to slide elements
 
 ### Remotion Implementation
-```typescript
-// Template rendered as Remotion composition
-const FadeSimpleTemplate: React.FC<{ slide: Slide }> = ({ slide }) => {
-  const frame = useCurrentFrame();
-  const fps = useVideoConfig().fps;
-  
-  return (
-    <AbsoluteFill>
-      {slide.elements.map((element, i) => {
-        const delay = i * 0.15 * fps;
-        const opacity = interpolate(
-          frame,
-          [delay, delay + 15],
-          [0, 1],
-          { extrapolateRight: 'clamp' }
-        );
-        
-        return (
-          <div key={element.id} style={{ opacity }}>
-            <ElementRenderer element={element} />
-          </div>
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-```
+
+> **Implementation**: See `src/remotion/templates/FadeSimpleTemplate.tsx` for the Remotion composition that renders template animations using interpolation and element rendering
 
 ## Dependencies
 - Remotion for animation rendering

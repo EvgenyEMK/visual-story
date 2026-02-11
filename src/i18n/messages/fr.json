@@ -1,0 +1,49 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "aboutMe": "À Propos",
+    "experience": "Expérience",
+    "jobHistory": "Historique emploi",
+    "skills": "Compétences",
+    "media": "Médias",
+    "projects": "Projets",
+    "auth": "Authentification",
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "dashboard": "Tableau de bord",
+    "voiceAssistant": "Test Assistant Vocal"
+  },
+  "actions": {
+    "open": "Ouvrir",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "submit": "Soumettre",
+    "reset": "Réinitialiser",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "continue": "Continuer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "toggleTheme": "Basculer le thème"
+  },
+  "language": {
+    "switch": "Changer de langue",
+    "current": "Langue actuelle"
+  },
+  "warnings": {
+    "contentNotYetTranslated": "Ce contenu n'est pas encore traduit. Seule la version anglaise est disponible."
+  }
+}

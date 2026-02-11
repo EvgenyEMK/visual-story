@@ -83,149 +83,22 @@ flowchart LR
 ```
 
 ### Content Type Detection
-```typescript
-interface ContentAnalysis {
-  type: ContentType;
-  elementCount: number;
-  wordCount: number;
-  hasTitle: boolean;
-  hasList: boolean;
-  hasImage: boolean;
-  sentiment: 'neutral' | 'positive' | 'urgent' | 'serious';
-  complexity: 'simple' | 'moderate' | 'complex';
-}
 
-type ContentType = 
-  | 'title-only'      // Single title/headline
-  | 'title-body'      // Title + paragraph
-  | 'bullet-list'     // List of points
-  | 'comparison'      // Side-by-side elements
-  | 'process-flow'    // Sequential steps
-  | 'feature-grid'    // Multiple features
-  | 'quote'           // Testimonial/quote
-  | 'call-to-action'; // CTA slide
-```
+> **Implementation**: See `src/types/animation.ts` for ContentAnalysis interface and ContentType union type (title-only, title-body, bullet-list, comparison, process-flow, feature-grid, quote, call-to-action)
 
-### Template Matching Rules
-```typescript
-const templateMatchingRules: MatchingRule[] = [
-  {
-    conditions: {
-      contentType: 'title-only',
-      intent: 'promotional',
-    },
-    templates: ['scale-pop', 'bounce-in'],
-    weight: 1.0,
-  },
-  {
-    conditions: {
-      contentType: 'bullet-list',
-      intent: 'educational',
-    },
-    templates: ['slide-up', 'stack-build'],
-    weight: 0.9,
-  },
-  {
-    conditions: {
-      contentType: 'quote',
-      intent: 'storytelling',
-    },
-    templates: ['typewriter', 'cinematic-fade'],
-    weight: 1.0,
-  },
-  // ... more rules
-];
+### Template Matching Rules & Duration Calculation
 
-function selectTemplate(analysis: ContentAnalysis, intent: ContentIntent): string {
-  const matchedRules = templateMatchingRules.filter(rule =>
-    matchesConditions(analysis, intent, rule.conditions)
-  );
-  
-  // Score and rank templates
-  const scored = matchedRules
-    .flatMap(rule => rule.templates.map(t => ({ template: t, score: rule.weight })))
-    .sort((a, b) => b.score - a.score);
-  
-  // Add some randomness for variety
-  const topTemplates = scored.slice(0, 3);
-  return weightedRandom(topTemplates);
-}
-```
-
-### Duration Calculation
-```typescript
-function calculateDuration(
-  slide: Slide,
-  voiceOverDuration?: number
-): number {
-  // If voice-over exists, use that as primary guide
-  if (voiceOverDuration) {
-    return Math.max(voiceOverDuration, 3); // minimum 3s
-  }
-  
-  // Calculate based on content
-  const wordCount = countWords(slide);
-  const elementCount = slide.elements.length;
-  
-  // Base: 150 words per minute reading speed
-  const readingTime = (wordCount / 150) * 60;
-  
-  // Add time for element animations (0.5s per element)
-  const animationTime = elementCount * 0.5;
-  
-  // Total with bounds
-  const total = readingTime + animationTime;
-  return Math.min(Math.max(total, 3), 30); // 3-30 seconds
-}
-```
+> **Implementation**: See `src/services/animation/auto-animation.ts` for template matching rules, `selectTemplate` function, and `calculateDuration` function (word count based timing with voice-over sync support)
 
 ## Technical Specifications
 
 ### API Endpoint
-```typescript
-// POST /api/projects/{id}/generate
-interface GenerateRequest {
-  script: string;
-  intent: ContentIntent;
-}
 
-interface GenerateResponse {
-  slides: GeneratedSlide[];
-  totalDuration: number;
-}
-
-interface GeneratedSlide {
-  id: string;
-  content: string;
-  elements: SlideElement[];
-  template: string;
-  duration: number;
-  transition: TransitionType;
-}
-```
+> **Implementation**: See `src/types/animation.ts` for GenerateRequest, GenerateResponse, and GeneratedSlide interfaces
 
 ### AI Integration (OpenAI)
-```typescript
-const prompt = `
-Analyze this script section and return JSON with:
-- contentType: one of [title-only, title-body, bullet-list, comparison, process-flow, feature-grid, quote, call-to-action]
-- elements: array of { type, content, role } for each visual element
-- sentiment: one of [neutral, positive, urgent, serious]
 
-Script section:
-"""
-${scriptSection}
-"""
-
-Intent: ${intent}
-`;
-
-const analysis = await openai.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: prompt }],
-  response_format: { type: 'json_object' },
-});
-```
+> **Implementation**: See `src/services/animation/auto-animation.ts` for the OpenAI content analysis prompt and integration logic
 
 ## Dependencies
 - OpenAI API for content analysis

@@ -85,112 +85,11 @@ flowchart LR
 
 ### API Endpoint
 
-```typescript
-// POST /api/ai/script-feedback
-interface ScriptFeedbackRequest {
-  script: string;
-  intent: ContentIntent;
-}
+> **Implementation**: See `src/types/ai.ts` for API interfaces (ScriptFeedbackRequest, ScriptFeedbackResponse, FeedbackCategory, Suggestion)
 
-interface ScriptFeedbackResponse {
-  overallScore: number; // 1-100
-  categories: FeedbackCategory[];
-  suggestions: Suggestion[];
-}
+### OpenAI Prompt & Feedback Logic
 
-interface FeedbackCategory {
-  name: string;
-  score: number; // 1-10
-  summary: string;
-}
-
-interface Suggestion {
-  id: string;
-  category: string;
-  severity: 'low' | 'medium' | 'high';
-  issue: string;
-  suggestion: string;
-  originalText?: string;
-  suggestedText?: string;
-  position?: { start: number; end: number };
-}
-```
-
-### OpenAI Prompt
-
-```typescript
-const feedbackPrompt = `
-You are an expert content strategist analyzing a script for a visual presentation.
-
-Script:
-"""
-${script}
-"""
-
-Content Intent: ${intent}
-
-Analyze this script and provide feedback in the following JSON format:
-
-{
-  "overallScore": <1-100>,
-  "categories": [
-    {
-      "name": "Hook",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    },
-    {
-      "name": "Structure",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    },
-    {
-      "name": "Clarity",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    },
-    {
-      "name": "Engagement",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    },
-    {
-      "name": "CTA",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    },
-    {
-      "name": "Conclusion",
-      "score": <1-10>,
-      "summary": "<brief assessment>"
-    }
-  ],
-  "suggestions": [
-    {
-      "category": "<category name>",
-      "severity": "low|medium|high",
-      "issue": "<what's wrong>",
-      "suggestion": "<how to fix>",
-      "originalText": "<text to replace, if applicable>",
-      "suggestedText": "<replacement text, if applicable>"
-    }
-  ]
-}
-
-Focus on actionable, specific suggestions. Limit to 5 most impactful suggestions.
-Tailor feedback to the ${intent} intent.
-`;
-
-async function getScriptFeedback(script: string, intent: ContentIntent) {
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [{ role: 'user', content: feedbackPrompt }],
-    response_format: { type: 'json_object' },
-  });
-  
-  return JSON.parse(response.choices[0].message.content);
-}
-```
+> **Implementation**: See `src/lib/ai/script-feedback.ts` for the OpenAI prompt template and `getScriptFeedback` function
 
 ## UI Components
 
@@ -236,49 +135,7 @@ async function getScriptFeedback(script: string, intent: ContentIntent) {
 
 ### Component Implementation
 
-```typescript
-interface FeedbackPanelProps {
-  feedback: ScriptFeedbackResponse | null;
-  isLoading: boolean;
-  onApplySuggestion: (suggestion: Suggestion) => void;
-  onDismissSuggestion: (suggestionId: string) => void;
-  onRefresh: () => void;
-}
-
-const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
-  feedback,
-  isLoading,
-  onApplySuggestion,
-  onDismissSuggestion,
-  onRefresh,
-}) => {
-  if (isLoading) {
-    return <FeedbackSkeleton />;
-  }
-  
-  if (!feedback) {
-    return (
-      <EmptyState
-        title="No feedback yet"
-        description="Click 'Get Feedback' to analyze your script"
-        action={<Button onClick={onRefresh}>Get Feedback</Button>}
-      />
-    );
-  }
-  
-  return (
-    <div className="space-y-6">
-      <ScoreOverview score={feedback.overallScore} />
-      <CategoryScores categories={feedback.categories} />
-      <SuggestionList
-        suggestions={feedback.suggestions}
-        onApply={onApplySuggestion}
-        onDismiss={onDismissSuggestion}
-      />
-    </div>
-  );
-};
-```
+> **Implementation**: See `src/components/ai/feedback-panel.tsx` for the FeedbackPanel component (FeedbackPanelProps, ScoreOverview, CategoryScores, SuggestionList)
 
 ## Cost Considerations
 

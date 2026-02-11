@@ -63,31 +63,16 @@ The script input feature allows users to enter their narrative content that will
 ## Technical Specifications
 
 ### Component: `ScriptInput`
-```typescript
-interface ScriptInputProps {
-  projectId: string;
-  initialValue?: string;
-  onSave: (script: string) => Promise<void>;
-  onIntentChange: (intent: ContentIntent) => void;
-}
 
-type ContentIntent = 'educational' | 'promotional' | 'storytelling';
-```
+> **Implementation**: See `src/types/project.ts` for ScriptInputProps and ContentIntent type, and `src/components/editor/script-input.tsx` for the ScriptInput component
 
 ### API Endpoints
 - `PUT /api/projects/{id}` - Save script content
 - `POST /api/projects/{id}/parse-sections` - Parse script into sections
 
 ### Data Model
-```typescript
-interface ScriptSection {
-  id: string;
-  order: number;
-  content: string;
-  wordCount: number;
-  estimatedDuration: number; // seconds
-}
-```
+
+> **Implementation**: See `src/types/project.ts` for the ScriptSection interface (id, order, content, wordCount, estimatedDuration)
 
 ## Dependencies
 - None (standalone input component)

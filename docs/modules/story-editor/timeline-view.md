@@ -85,38 +85,12 @@ The timeline view provides a horizontal overview of all slides and their relativ
 ## Technical Specifications
 
 ### Component: `TimelineView`
-```typescript
-interface TimelineViewProps {
-  slides: Slide[];
-  currentSlideIndex: number;
-  currentTime: number; // global playhead position
-  totalDuration: number;
-  onSlideSelect: (index: number) => void;
-  onSlideReorder: (fromIndex: number, toIndex: number) => void;
-  onSlideDurationChange: (slideId: string, duration: number) => void;
-  onSlideAdd: (afterIndex: number) => void;
-  onSlideDelete: (slideId: string) => void;
-}
-```
 
-### Drag and Drop
-Using `@dnd-kit/core` for drag and drop:
-```typescript
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-```
+> **Implementation**: See `src/components/editor/timeline-view.tsx` for the TimelineView component (TimelineViewProps) with `@dnd-kit/core` drag-and-drop support
 
 ### Thumbnail Generation
-Thumbnails generated using Remotion's `renderStill`:
-```typescript
-// Server-side thumbnail generation
-const thumbnail = await renderStill({
-  composition: slideComposition,
-  output: thumbnailPath,
-  frame: 0,
-  scale: 0.2,
-});
-```
+
+> **Implementation**: See `src/services/projects/thumbnail.ts` for server-side thumbnail generation using Remotion's `renderStill`
 
 ## Dependencies
 - @dnd-kit/core for drag-drop
