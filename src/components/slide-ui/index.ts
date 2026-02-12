@@ -3,7 +3,7 @@
  *
  * Three tiers:
  * - Atoms:     SlideTitle, SlideText, IconBadge, MetricDisplay, ProgressBar, StatusDot, SlideImage, CTAButton
- * - Molecules: FeatureCard, StatCard, QuoteBlock, HeroSpotlight, FlowNode, TitleBar, ItemThumbnail, DetailPopup
+ * - Molecules: FeatureCard, StatCard, QuoteBlock, HeroSpotlight, FlowNode, TitleBar, ItemThumbnail, DetailPopup, ItemsList, StatusLegend
  * - Layouts:   GridOfCards, SidebarDetail, CenterStageShelf, BentoLayout, HorizontalTimeline, HubSpoke, TitleSlide, StackOfCards, StatDashboard
  *
  * Icon libraries available:
@@ -46,6 +46,10 @@ export { FlowNode } from './molecules/FlowNode';
 export { TitleBar } from './molecules/TitleBar';
 export { ItemThumbnail } from './molecules/ItemThumbnail';
 export { DetailPopup } from './molecules/DetailPopup';
+export { ItemsList } from './molecules/ItemsList';
+export type { ListItem, ListHeader, ListRow } from './molecules/ItemsList';
+export { StatusLegend } from './molecules/StatusLegend';
+export type { LegendEntry } from './molecules/StatusLegend';
 
 // Layouts
 export { GridOfCards } from './layouts/GridOfCards';

@@ -54,7 +54,7 @@ export function UIComponentsClient() {
       <Tabs defaultValue="atoms" className="w-full">
         <TabsList>
           <TabsTrigger value="atoms">Atoms (8)</TabsTrigger>
-          <TabsTrigger value="molecules">Molecules (8)</TabsTrigger>
+          <TabsTrigger value="molecules">Molecules (10)</TabsTrigger>
           <TabsTrigger value="layouts">Layouts (9)</TabsTrigger>
         </TabsList>
 

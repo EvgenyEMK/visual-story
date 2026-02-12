@@ -6,3 +6,7 @@ export { FlowNode } from './FlowNode';
 export { TitleBar } from './TitleBar';
 export { ItemThumbnail } from './ItemThumbnail';
 export { DetailPopup } from './DetailPopup';
+export { ItemsList } from './ItemsList';
+export type { ListItem, ListHeader, ListRow } from './ItemsList';
+export { StatusLegend } from './StatusLegend';
+export type { LegendEntry } from './StatusLegend';
