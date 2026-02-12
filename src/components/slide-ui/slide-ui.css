@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   slide-ui — CSS animations for presentation components
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes slide-ui-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes slide-ui-pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
