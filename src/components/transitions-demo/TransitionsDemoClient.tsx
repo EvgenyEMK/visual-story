@@ -1,12 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import './demo-animations.css';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { InSlideSection } from './InSlideSection';
 import { SlideTransitionSection } from './SlideTransitionSection';
 import { GroupedSection } from './GroupedSection';
+import { Sun, Moon, Play, MousePointerClick } from 'lucide-react';
+import type { ThemeMode, TriggerMode } from './DemoStage';
 
 export function TransitionsDemoClient() {
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [triggerMode, setTriggerMode] = useState<TriggerMode>('auto');
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -15,10 +21,71 @@ export function TransitionsDemoClient() {
           Visual Transitions Library
         </h1>
         <p className="text-muted-foreground max-w-2xl">
-          A comprehensive collection of 25 animations and transitions for
+          A comprehensive collection of 28 animations and transitions for
           storytelling presentations. Each demo auto-plays on load — hover over
           any card and click the replay button to watch it again.
         </p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-6">
+        {/* Theme mode toggle */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Stage:</span>
+          <div className="inline-flex items-center rounded-lg border bg-muted p-0.5">
+            <button
+              onClick={() => setThemeMode('light')}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                themeMode === 'light'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sun className="h-3.5 w-3.5" />
+              Light
+            </button>
+            <button
+              onClick={() => setThemeMode('dark')}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                themeMode === 'dark'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Moon className="h-3.5 w-3.5" />
+              Dark
+            </button>
+          </div>
+        </div>
+
+        {/* Trigger mode toggle (grouped only) */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Grouped:</span>
+          <div className="inline-flex items-center rounded-lg border bg-muted p-0.5">
+            <button
+              onClick={() => setTriggerMode('auto')}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                triggerMode === 'auto'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Play className="h-3.5 w-3.5" />
+              Auto play
+            </button>
+            <button
+              onClick={() => setTriggerMode('click')}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                triggerMode === 'click'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <MousePointerClick className="h-3.5 w-3.5" />
+              Click transitions
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -26,7 +93,7 @@ export function TransitionsDemoClient() {
         <TabsList>
           <TabsTrigger value="in-slide">
             In-Slide Animations
-            <span className="ml-1.5 text-[10px] opacity-60">(10)</span>
+            <span className="ml-1.5 text-[10px] opacity-60">(12)</span>
           </TabsTrigger>
           <TabsTrigger value="transitions">
             Slide Transitions
@@ -34,7 +101,7 @@ export function TransitionsDemoClient() {
           </TabsTrigger>
           <TabsTrigger value="grouped">
             Grouped Items
-            <span className="ml-1.5 text-[10px] opacity-60">(10)</span>
+            <span className="ml-1.5 text-[10px] opacity-60">(11)</span>
           </TabsTrigger>
         </TabsList>
 
@@ -48,7 +115,7 @@ export function TransitionsDemoClient() {
               charts) within a single slide.
             </p>
           </div>
-          <InSlideSection />
+          <InSlideSection themeMode={themeMode} />
         </TabsContent>
 
         <TabsContent value="transitions" className="space-y-4">
@@ -61,7 +128,7 @@ export function TransitionsDemoClient() {
               between slides.`}
             </p>
           </div>
-          <SlideTransitionSection />
+          <SlideTransitionSection themeMode={themeMode} />
         </TabsContent>
 
         <TabsContent value="grouped" className="space-y-4">
@@ -74,7 +141,7 @@ export function TransitionsDemoClient() {
               engaging visual layouts and transition logic.
             </p>
           </div>
-          <GroupedSection />
+          <GroupedSection themeMode={themeMode} triggerMode={triggerMode} />
         </TabsContent>
       </Tabs>
     </div>

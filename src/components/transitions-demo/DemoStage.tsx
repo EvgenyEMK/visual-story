@@ -5,6 +5,13 @@ import { RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type ThemeMode = 'dark' | 'light';
+export type TriggerMode = 'auto' | 'click';
+
+// ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
 
@@ -55,6 +62,12 @@ interface DemoStageProps {
   children: React.ReactNode;
   /** Optional extra class on the stage area. */
   stageClassName?: string;
+  /** Theme mode for the stage background (default: 'dark'). */
+  themeMode?: ThemeMode;
+  /** Click handler for the stage area (used in click trigger mode). */
+  onStageClick?: () => void;
+  /** Keyboard handler for the stage area (arrow keys, etc.). */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
 export function DemoStage({
@@ -66,19 +79,30 @@ export function DemoStage({
   onReplay,
   children,
   stageClassName,
+  themeMode = 'dark',
+  onStageClick,
+  onKeyDown,
 }: DemoStageProps) {
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden group">
       {/* Stage Area */}
       <div
-        className={`aspect-video bg-slate-900 relative overflow-hidden flex items-center justify-center ${stageClassName ?? ''}`}
+        data-demo-theme={themeMode}
+        className={`aspect-video relative overflow-hidden flex items-center justify-center ${onStageClick ? 'cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-inset' : ''} ${stageClassName ?? ''}`}
+        style={{ backgroundColor: themeMode === 'dark' ? '#0f172a' : '#ffffff' }}
+        onClick={onStageClick}
+        onKeyDown={onKeyDown}
+        tabIndex={onStageClick ? 0 : undefined}
       >
         {children}
 
         {/* Replay button overlay */}
         <button
-          onClick={onReplay}
-          className="absolute top-3 right-3 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onReplay();
+          }}
+          className="demo-replay-btn absolute top-3 right-3 z-30 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
           title="Replay animation"
         >
           <RotateCcw className="w-4 h-4" />

@@ -12,11 +12,20 @@ The slide is divided into two zones: a **center stage** (upper ~75% of the slide
 
 ### Animation Sequence
 
-1. **Initial state**: All items are visible on the bottom shelf as small, grayed-out icons. The center stage is empty or shows a placeholder.
-2. **Step 1 (Item 1 appears)**: Item 1 lifts from its shelf position, grows to 3× size, gains full color and opacity, and settles into the center stage. Its shelf position shows a filled indicator (●).
-3. **Step 2 (Item 1 transitions, Item 2 appears)**: Item 1 shrinks back down, loses color (returns to grayscale), and drops back to its shelf position. Simultaneously, Item 2 lifts from the shelf, expands, and takes center stage.
-4. **Step N (Item N-1 transitions, Item N appears)**: The previous active item returns to the shelf. The next item lifts and expands to center stage.
+1. **Initial state**: All items are visible on the bottom shelf as small, grayed-out icons (or shown as faint placeholders if `showAllFromStart` is enabled). The center stage is empty or shows the first item.
+2. **Step 1 (Item 1 appears)**: Item 1 lifts from its shelf position, grows in size, gains full color and opacity, and settles into the center stage. Its shelf position shows a filled indicator (●).
+3. **Step 2 (Item 1 transitions, Item 2 appears)**: The current hero **visually shrinks and drops toward the shelf** (scale 1.0 → 0.35, translateY toward bottom) with smooth `cubic-bezier(0.16, 1, 0.3, 1)` easing. Simultaneously, Item 2 appears in center stage.
+4. **Step N (Item N-1 transitions, Item N appears)**: The previous active item drops to the shelf with the shrinking animation. The next item takes center stage.
 5. **Final state**: The last item is displayed on center stage. All items remain visible on the shelf with the last item's position highlighted.
+
+### Click on Shelf Item (Reverse Animation)
+
+When a user clicks a **previously revealed item** in the shelf:
+- The clicked item rises from its shelf position to the center stage, growing in size
+- The CSS transition handles the smooth movement from shelf to center
+- The previously displayed hero item fades out
+- All other revealed items remain visible in the shelf with full color
+- This is a **non-destructive review** — no items are hidden by this action
 
 ### Visual Layout Diagram
 
@@ -63,6 +72,7 @@ The slide is divided into two zones: a **center stage** (upper ~75% of the slide
 | `liftScale`      | `number`              | `3.0`    | 2.0–4.0     | Scale multiplier when item lifts to center stage      |
 | `shelfHeight`    | `string`              | `25%`    | 15%–35%     | Height of the bottom shelf zone                       |
 | `desaturation`   | `number`              | `100`    | 50–100%     | Grayscale percentage for inactive shelf items         |
+| `showAllFromStart`| `boolean`            | `false`  | —           | Show all items in shelf as faint placeholders from the start (20% opacity) |
 
 ## Best For
 

@@ -12,6 +12,7 @@ import {
   Easing,
 } from 'remotion';
 import type { Slide, SlideElement } from '@/types/slide';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -110,7 +111,10 @@ export function FadeSimpleTemplate({ slide }: FadeSimpleTemplateProps) {
         position: 'relative',
       }}
     >
-      {slide.elements.map((element, index) => (
+      {(slide.items.length > 0
+        ? flattenItemsAsElements(slide.items)
+        : slide.elements
+      ).map((element, index) => (
         <FadeElement
           key={element.id}
           element={element}

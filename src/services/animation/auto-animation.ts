@@ -2,6 +2,7 @@
 
 import type { Slide } from '@/types/slide';
 import type { ContentAnalysis, ContentType } from '@/types/animation';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 /**
  * Internal rule shape for auto-animation template matching.
@@ -138,11 +139,15 @@ export function calculateDuration(
     return Math.max(voiceOverDuration, 3);
   }
 
-  const wordCount = slide.elements.reduce(
+  // Derive elements from the item tree when available
+  const elements = slide.items.length > 0
+    ? flattenItemsAsElements(slide.items)
+    : slide.elements;
+  const wordCount = elements.reduce(
     (acc, el) => acc + el.content.split(/\s+/).length,
-    0
+    0,
   );
-  const elementCount = slide.elements.length;
+  const elementCount = elements.length;
 
   // Base: 150 words per minute reading speed
   const readingTime = (wordCount / 150) * 60;

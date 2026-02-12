@@ -29,7 +29,9 @@ animation-engine/
 │   ├── path-follow.md
 │   ├── color-shift.md
 │   ├── masked-reveal.md
-│   └── shimmer.md
+│   ├── shimmer.md
+│   ├── slide-title.md                ← NEW: Structured slide header element
+│   └── zoom-in-word.md               ← NEW: Word-by-word zoom-in reveal
 │
 ├── grouped-animations/                ← Layer 2: Grouped items within a slide
 │   ├── README.md                      ← Overview, trigger modes, interaction model
@@ -42,7 +44,8 @@ animation-engine/
 │   ├── fan-out.md
 │   ├── molecular-bond.md
 │   ├── perspective-pivot.md
-│   └── magnifying-glass.md
+│   ├── magnifying-glass.md
+│   └── items-grid.md                 ← NEW: Configurable row/column grid
 │
 └── slide-transitions/                 ← Layer 3: Between slides
     ├── README.md                      ← Overview, trigger modes, sequencing
@@ -88,16 +91,40 @@ Used when a **human presenter** advances the deck in real time, similar to Power
 
 Grouped animations have the richest interaction model because they manage multiple items with distinct active/inactive/not-yet-shown states.
 
+#### Interaction Modes
+
+Each grouped animation has an **`interactionMode`** that determines how items respond to clicks:
+
+| Mode | Relationship | Click on Shown Item | Example Animations |
+|------|-------------|--------------------|--------------------|
+| **`sequential-focus`** | Peer items (no parent-child) | Changes the hero/focus to the clicked item **without hiding other already-revealed items** | List Accumulator, Carousel Focus, Bento Grid, Infinite Path, Fan-Out, Magnifying Glass |
+| **`hub-spoke`** | Parent-child (hub in center, children as satellites) | Toggles a detail popup for the clicked child; does not affect other children | Circular Satellite, Molecular Bond |
+
+Animations that don't support out-of-order navigation (Stack Reveal, Perspective Pivot) set `allowOutOfOrder: false` and ignore item-level clicks entirely.
+
+#### Two Navigation Channels
+
+In Click mode, navigation is split into two independent channels:
+
+| Channel | Controls | What it Drives | State Affected |
+|---------|----------|----------------|----------------|
+| **Sequence flow** (keyboard) | `→` / Space, `←`, `↑`, `↓` | Progressive reveal — which items are shown/hidden | `step` (reveal progress) |
+| **Review focus** (mouse click) | Click on a **previously shown** item | Which item is the hero — without changing what is revealed | `focusOverride` (hero position) |
+
+**Key principle**: Keyboard left/right arrows drive the visual flow to progressively show or hide content. Clicking on a shown item is to come back and review it without hiding already-shown information. This is particularly important when the final state (all items shown) is reached and the presenter wants to revisit one of them.
+
+When a review focus is active and any keyboard action is taken, the focus override is cleared and the keyboard action drives the sequence flow as usual.
+
 #### Full Keyboard & Mouse Controls
 
 | Interaction | Behavior | Purpose |
 |-------------|----------|---------|
-| **Click on active area / Space / →** | Advances to the next item in the group sequence | Primary forward navigation |
-| **← (Back)** | Goes back to the previous item | Backward navigation within group |
-| **↑ (Jump to Start)** | Resets the group to its **initial state** — all items hidden, hero area empty | `toGroupAnimationStartState` — start the sequence over |
-| **↓ (Jump to End)** | Instantly reveals **all items** in their final state — full list visible, no hero | `toGroupAnimationEndState` — skip to completed state |
+| **Click on active area / Space / →** | Clears any focus override; advances to the next item in the group sequence (reveals the next item) | Primary forward navigation (sequence flow) |
+| **← (Back)** | Clears any focus override; goes back — hides the most recently revealed item | Backward navigation within group (sequence flow) |
+| **↑ (Jump to Start)** | Clears any focus override; resets the group to its **initial state** — all items hidden, hero area empty | `toGroupAnimationStartState` — start the sequence over |
+| **↓ (Jump to End)** | Clears any focus override; instantly reveals **all items** in their final state — full list visible, no hero | `toGroupAnimationEndState` — skip to completed state |
 | **Hover on inactive (small) item** | Configurable hover effect (see below) | Allows presenter to preview items |
-| **Click on inactive item** | Jumps directly to that item (out-of-order navigation) | Allows presenter to skip ahead or revisit |
+| **Click on shown (revealed) item** | Sets focus override to that item — it becomes the hero; all other revealed items remain visible in their "small" positions | Non-destructive review — presenter can spotlight any shown item without losing progress |
 
 #### Configurable Hover Effects on Inactive Items
 
@@ -273,9 +300,14 @@ interface HoverEffect {
   transitionMs?: number;
 }
 
+/** Interaction mode determines click behavior on child items. */
+type GroupedInteractionMode = 'sequential-focus' | 'hub-spoke';
+
 /** Configuration for grouped item animations. */
 interface GroupedAnimationConfig {
   type: GroupedAnimationType;
+  /** How items respond to clicks — see "Interaction Modes" above. */
+  interactionMode: GroupedInteractionMode;
   items: GroupedItem[];
   stepDuration: number;
   hoverEffect: HoverEffect;
@@ -316,7 +348,7 @@ interface AnimationThemePalette {
 | Animation theme types | `src/types/animation-theme.ts` | Exists |
 | Animation types | `src/types/animation.ts` | Exists |
 | Slide types | `src/types/slide.ts` | Exists |
-| Transition catalog | `src/config/transition-catalog.ts` | Exists — 25 entries |
+| Transition catalog | `src/config/transition-catalog.ts` | Exists — 28 entries |
 | Element animation demos | `src/components/transitions-demo/InSlideSection.tsx` | Exists |
 | Grouped animation demos | `src/components/transitions-demo/GroupedSection.tsx` | Exists |
 | Slide transition demos | `src/components/transitions-demo/SlideTransitionSection.tsx` | Exists |

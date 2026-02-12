@@ -73,6 +73,16 @@ export function AppNavbarWrapper() {
           label: t('navigation.demo'),
           active: pathname.includes('/transitions-demo')
         },
+        {
+          href: '/slide-editor',
+          label: t('navigation.slideEditor'),
+          active: pathname.includes('/slide-editor')
+        },
+        {
+          href: '/slide-play',
+          label: t('navigation.slidePlay'),
+          active: pathname.includes('/slide-play')
+        },
       ];
 
   return (

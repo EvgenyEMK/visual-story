@@ -207,3 +207,138 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEMO STAGE THEME — CSS Custom Properties & Light-Mode Overrides
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* --- Theme CSS custom properties (used by inline styles) --- */
+
+[data-demo-theme="dark"] {
+  --demo-text: rgba(255, 255, 255, 0.9);
+  --demo-text-40: rgba(255, 255, 255, 0.4);
+  --demo-surface-muted: rgba(255, 255, 255, 0.1);
+  --demo-surface-strong: rgba(255, 255, 255, 0.2);
+  --demo-center-gradient: linear-gradient(to bottom right, #334155, #1e293b);
+  --demo-node-bg: #1e293b;
+  --demo-node-text: white;
+}
+
+[data-demo-theme="light"] {
+  --demo-text: rgba(15, 23, 42, 0.9);
+  --demo-text-40: rgba(100, 116, 139, 0.6);
+  --demo-surface-muted: rgba(0, 0, 0, 0.08);
+  --demo-surface-strong: rgba(0, 0, 0, 0.12);
+  --demo-center-gradient: linear-gradient(to bottom right, #e2e8f0, #cbd5e1);
+  --demo-node-bg: #f1f5f9;
+  --demo-node-text: #0f172a;
+}
+
+/* --- Light-mode overrides for Tailwind text-white utilities --- */
+
+[data-demo-theme="light"] .text-white\/90 { color: rgba(15, 23, 42, 0.9); }
+[data-demo-theme="light"] .text-white\/80 { color: rgba(30, 41, 59, 0.85); }
+[data-demo-theme="light"] .text-white\/70 { color: rgba(51, 65, 85, 0.8); }
+[data-demo-theme="light"] .text-white\/60 { color: rgba(71, 85, 105, 0.75); }
+[data-demo-theme="light"] .text-white\/50 { color: rgba(100, 116, 139, 0.7); }
+[data-demo-theme="light"] .text-white\/40 { color: rgba(148, 163, 184, 0.6); }
+[data-demo-theme="light"] .text-white\/30 { color: rgba(148, 163, 184, 0.5); }
+[data-demo-theme="light"] .text-white\/20 { color: rgba(148, 163, 184, 0.35); }
+
+/* --- Light-mode overrides for Tailwind background utilities --- */
+
+[data-demo-theme="light"] .bg-white\/5 { background-color: rgba(0, 0, 0, 0.03); }
+[data-demo-theme="light"] .bg-white\/10 { background-color: rgba(0, 0, 0, 0.06); }
+[data-demo-theme="light"] .bg-slate-800\/50 { background-color: rgba(241, 245, 249, 0.8); }
+[data-demo-theme="light"] .bg-black\/50 { background-color: rgba(0, 0, 0, 0.12); }
+
+/* --- Light-mode overrides for Tailwind border utilities --- */
+
+[data-demo-theme="light"] .border-white\/5 { border-color: rgba(0, 0, 0, 0.05); }
+[data-demo-theme="light"] .border-white\/10 { border-color: rgba(0, 0, 0, 0.08); }
+[data-demo-theme="light"] .border-white\/20 { border-color: rgba(0, 0, 0, 0.12); }
+[data-demo-theme="light"] .border-white\/30 { border-color: rgba(0, 0, 0, 0.15); }
+
+/* --- Demo replay button (theme-aware) --- */
+
+.demo-replay-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+.demo-replay-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
+[data-demo-theme="light"] .demo-replay-btn {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.5);
+}
+[data-demo-theme="light"] .demo-replay-btn:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* --- Click hint (theme-aware) --- */
+
+[data-demo-theme="dark"] .demo-click-hint {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+}
+[data-demo-theme="light"] .demo-click-hint {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.4);
+}
+
+/* --- Detail popup (hub-spoke interaction) --- */
+
+@keyframes vs-popup-enter {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW ELEMENT ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Slide Title — fade + slide from top */
+@keyframes vs-title-enter {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vs-subtitle-enter {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vs-title-right-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Zoom-In Word Reveal — each word zooms in from behind */
+@keyframes vs-word-zoom-in {
+  0% { opacity: 0; transform: scale(0.3) translateZ(-50px); filter: blur(4px); }
+  60% { opacity: 1; filter: blur(0); }
+  80% { transform: scale(1.05) translateZ(0); }
+  100% { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0); }
+}
+
+/* Section title → slide title morph transition */
+@keyframes vs-section-to-title {
+  from { transform: translate(0, 0) scale(1); opacity: 1; }
+  to { transform: translate(var(--morph-tx, 0), var(--morph-ty, -40%)) scale(var(--morph-scale, 0.5)); opacity: 1; }
+}
+
+/* Items Grid — callout box enter */
+@keyframes vs-callout-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Items Grid — item opacity highlight */
+@keyframes vs-item-highlight {
+  0% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}

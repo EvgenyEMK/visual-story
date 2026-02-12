@@ -15,7 +15,9 @@
     "settings": "Paramètres",
     "dashboard": "Tableau de bord",
     "voiceAssistant": "Test Assistant Vocal",
-    "demo": "Démo"
+    "demo": "Démo",
+    "slideEditor": "Éditeur de diapositives",
+    "slidePlay": "Lecture de diapositives"
   },
   "actions": {
     "open": "Ouvrir",

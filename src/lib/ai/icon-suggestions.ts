@@ -4,6 +4,7 @@ import { openai } from './openai';
 import type { Slide } from '@/types/slide';
 import type { IconSuggestion, SuggestedIcon, IconEntry } from '@/types/ai';
 import { searchIcons as searchIconLibrary } from '@/config/icon-library';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 /**
  * AI prompt template for icon matching.
@@ -42,7 +43,10 @@ Suggest 3-5 icons. Use only standard Lucide icon names.
 export async function suggestIcons(slide: Slide): Promise<IconSuggestion[]> {
   const suggestions: IconSuggestion[] = [];
 
-  for (const element of slide.elements) {
+  const elements = slide.items.length > 0
+    ? flattenItemsAsElements(slide.items)
+    : slide.elements;
+  for (const element of elements) {
     if (element.type === 'text') {
       const keywords = extractKeywords(element.content);
       const matches = matchIconsToKeywords(keywords);

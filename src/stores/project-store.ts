@@ -148,10 +148,12 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set, get) 
       ...slide,
       id: newId,
       order: slide.order + 1,
+      // Duplicate both legacy elements and new items arrays
       elements: slide.elements.map((el) => ({
         ...el,
         id: crypto.randomUUID(),
       })),
+      items: slide.items, // TODO: deep-clone with new IDs when item editing is implemented
     };
 
     const idx = state.slides.findIndex((s) => s.id === slideId);

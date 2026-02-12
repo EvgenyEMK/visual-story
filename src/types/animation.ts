@@ -149,7 +149,8 @@ export type GroupedAnimationType =
   | 'fan-out'
   | 'molecular-bond'
   | 'perspective-pivot'
-  | 'magnifying-glass';
+  | 'magnifying-glass'
+  | 'items-grid';
 
 /**
  * Hover effect configuration for inactive items in grouped animations.
@@ -185,7 +186,11 @@ export interface GroupedItem {
   description?: string;
   /** Override theme color for this specific item. */
   color?: string;
-  /** Slide element IDs mapped to this group item. */
+  /**
+   * IDs of slide elements/items mapped to this group item.
+   * In the new SlideItem model, these reference item IDs (atoms, cards, or layouts).
+   * Legacy: references SlideElement IDs.
+   */
   elementIds: string[];
 }
 

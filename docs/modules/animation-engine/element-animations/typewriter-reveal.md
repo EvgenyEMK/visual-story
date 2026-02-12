@@ -6,9 +6,9 @@ Characters appear one by one as if being typed on a keyboard, accompanied by a b
 ## Visual Behavior
 
 ### Stages
-1. **Initial state**: The text container is visible but empty (or shows only the blinking cursor). No characters are rendered yet.
-2. **Animation**: Characters are revealed sequentially from left to right at the configured speed. A blinking cursor (optional) follows the last revealed character, creating the illusion of live typing.
-3. **Final state**: The full text is visible. The blinking cursor either disappears after a brief pause or remains blinking (configurable), and the element stays visible for the rest of the slide.
+1. **Initial state**: The text container is visible but empty. No characters are rendered yet. Text is **left-aligned** (not centered) to maintain readability during the typing animation.
+2. **Animation**: Characters are revealed sequentially from left to right at the configured speed. A blinking cursor (optional, **hidden by default**) may follow the last revealed character, creating the illusion of live typing.
+3. **Final state**: The full text is visible. The blinking cursor is always **hidden** at the end of the animation. The element stays visible for the rest of the slide.
 
 ### CSS Properties Animated
 - JavaScript-driven character reveal (not pure CSS animation). Each character is added to the DOM progressively.
@@ -37,7 +37,7 @@ Characters appear one by one as if being typed on a keyboard, accompanied by a b
 | `delay` | `number` | `0` | 0–10s | Delay from slide start (auto mode) |
 | `easing` | `EasingType` | `'linear'` | linear, ease-in, ease-out, ease-in-out, spring | Easing curve (affects acceleration of character speed) |
 | `charDelay` | `number` | `45` | 15–120ms | Milliseconds between each character reveal |
-| `cursorBlink` | `boolean` | `true` | true, false | Whether to show a blinking cursor during and after typing |
+| `isTypingCursorVisible` | `boolean` | `false` | true, false | Whether to show a blinking cursor during typing (cursor is always hidden after typing completes) |
 
 ## Best For
 - Inspirational quotes that should land word by word

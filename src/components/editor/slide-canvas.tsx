@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Slide, SlideElement, TriggerMode } from '@/types/slide';
 import type { GroupedAnimationConfig, HoverEffect } from '@/types/animation';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 /**
  * Slide canvas — main visual editor workspace.
@@ -235,7 +236,10 @@ export function SlideCanvas({
         )}
 
         {/* Slide elements */}
-        {slide.elements.map((element) => (
+        {(slide.items.length > 0
+          ? flattenItemsAsElements(slide.items)
+          : slide.elements
+        ).map((element) => (
           <div
             key={element.id}
             className={`absolute cursor-pointer border-2 p-2 transition-colors ${

@@ -12,11 +12,19 @@ The slide is divided into two zones: a **left sidebar** (30% width) that holds a
 
 ### Animation Sequence
 
-1. **Initial state**: The slide is empty — no sidebar items, no hero.
+1. **Initial state**: The slide is empty — no sidebar items, no hero. (If `showAllFromStart` is enabled, all items appear as faint placeholders in the sidebar at 20% opacity.)
 2. **Step 1 (Item 1 appears)**: Item 1 fades in and pops into the center hero area at full size with a subtle scale-up (0.9 → 1.0) and opacity (0 → 1) transition.
-3. **Step 2 (Item 1 transitions, Item 2 appears)**: Item 1 glides from the center to the top of the left sidebar, shrinking from hero size to compact list size (30% width). Simultaneously, Item 2 fades and pops into the center hero area.
-4. **Step N (Item N-1 transitions, Item N appears)**: The previous hero glides to the next open slot in the sidebar list. The new item takes the center stage.
+3. **Step 2 (Item 1 transitions, Item 2 appears)**: Item 1 **visually moves from the center hero area to the sidebar**, shrinking in size during the motion (scale 1.6 → 1.0) with a smooth `cubic-bezier(0.16, 1, 0.3, 1)` easing. Simultaneously, Item 2 appears in the center hero area.
+4. **Step N (Item N-1 transitions, Item N appears)**: The previous hero migrates to the sidebar with the shrinking animation. The new item takes center stage.
 5. **Final state**: All items are visible in the left sidebar as a complete vertical list. The last item remains displayed as the hero in the center.
+
+### Click on Sidebar Item (Reverse Animation)
+
+When a user clicks a **previously shown item** in the sidebar:
+- The clicked item becomes the hero in the center, with the CSS transition animating it from its sidebar position (small) to the center (large)
+- The previously displayed hero item fades out as the new hero takes focus
+- All other committed items remain visible in the sidebar
+- This is a **non-destructive review** — no items are hidden by this action
 
 ### Visual Layout Diagram
 
@@ -60,6 +68,7 @@ The slide is divided into two zones: a **left sidebar** (30% width) that holds a
 | `sidebarWidth`   | `string`              | `30%`    | 20%–40%     | Width of the left sidebar zone                        |
 | `heroScale`      | `number`              | `1.0`    | 0.8–1.2     | Scale factor for the hero item in the center          |
 | `migrateDuration`| `number`              | `600`    | 300–1000ms  | Duration of the hero-to-sidebar migration animation   |
+| `showAllFromStart`| `boolean`            | `false`  | —           | Show all items as faint placeholders in sidebar from the start (20% opacity) |
 
 ## Best For
 

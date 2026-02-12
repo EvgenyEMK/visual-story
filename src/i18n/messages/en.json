@@ -31,7 +31,9 @@
     "settings": "Settings",
     "dashboard": "Dashboard",
     "voiceAssistant": "Voice Assistant Test",
-    "demo": "Demo"
+    "demo": "Demo",
+    "slideEditor": "Slide Editor",
+    "slidePlay": "Slide Play"
   },
   "actions": {
     "open": "Open",

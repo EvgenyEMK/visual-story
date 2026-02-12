@@ -2,7 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { DemoStage } from './DemoStage';
+import type { ThemeMode } from './DemoStage';
 import { SLIDE_TRANSITIONS } from '@/config/transition-catalog';
+
+type ThemeProps = { themeMode: ThemeMode };
 
 // ---------------------------------------------------------------------------
 // Shared mock slide components
@@ -69,7 +72,7 @@ function useTransitionCycle(durationMs: number = 2000) {
 // 1. Morph (Smart Move)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function MorphDemo() {
+function MorphDemo({ themeMode }: ThemeProps) {
   const entry = SLIDE_TRANSITIONS[0];
   const [phase, setPhase] = useState<'a' | 'morphing' | 'b'>('a');
   const [runId, setRunId] = useState(0);
@@ -104,7 +107,7 @@ function MorphDemo() {
   });
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay} themeMode={themeMode}>
       <div className="absolute inset-0" style={bgStyle()}>
         {/* The shared morphing element */}
         <div style={iconStyle()}>
@@ -138,7 +141,7 @@ function MorphDemo() {
 // 2. Push (Directional)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PushDemo() {
+function PushDemo({ themeMode }: ThemeProps) {
   const entry = SLIDE_TRANSITIONS[1];
   const { phase, replay, runId } = useTransitionCycle(800);
 
@@ -153,7 +156,7 @@ function PushDemo() {
   });
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay} themeMode={themeMode}>
       <div key={runId} className="absolute inset-0 overflow-hidden">
         <div style={slideAStyle()}>
           <MockSlideA />
@@ -170,14 +173,14 @@ function PushDemo() {
 // 3. Pan (Cinematic)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PanDemo() {
+function PanDemo({ themeMode }: ThemeProps) {
   const entry = SLIDE_TRANSITIONS[2];
   const [runId, setRunId] = useState(0);
 
   const replay = useCallback(() => setRunId((r) => r + 1), []);
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay} themeMode={themeMode}>
       <div className="absolute inset-0 overflow-hidden">
         {/* Large canvas that pans */}
         <div
@@ -225,7 +228,7 @@ function PanDemo() {
 // 4. Zoom (Focus)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function ZoomDemo() {
+function ZoomDemo({ themeMode }: ThemeProps) {
   const entry = SLIDE_TRANSITIONS[3];
   const [phase, setPhase] = useState<'overview' | 'zooming' | 'detail'>('overview');
   const [runId, setRunId] = useState(0);
@@ -255,7 +258,7 @@ function ZoomDemo() {
   });
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay} themeMode={themeMode}>
       <div className="absolute inset-0 overflow-hidden">
         {/* Overview slide */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center" style={overviewStyle()}>
@@ -290,12 +293,12 @@ function ZoomDemo() {
 // 5. Cross-Fade
 // ═══════════════════════════════════════════════════════════════════════════
 
-function CrossFadeDemo() {
+function CrossFadeDemo({ themeMode }: ThemeProps) {
   const entry = SLIDE_TRANSITIONS[4];
   const { phase, replay, runId } = useTransitionCycle(1200);
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Transition" onReplay={replay} themeMode={themeMode}>
       <div key={runId} className="absolute inset-0 overflow-hidden">
         {/* Slide A */}
         <div
@@ -326,14 +329,14 @@ function CrossFadeDemo() {
 // Section Export
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function SlideTransitionSection() {
+export function SlideTransitionSection({ themeMode }: { themeMode: ThemeMode }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <MorphDemo />
-      <PushDemo />
-      <PanDemo />
-      <ZoomDemo />
-      <CrossFadeDemo />
+      <MorphDemo themeMode={themeMode} />
+      <PushDemo themeMode={themeMode} />
+      <PanDemo themeMode={themeMode} />
+      <ZoomDemo themeMode={themeMode} />
+      <CrossFadeDemo themeMode={themeMode} />
     </div>
   );
 }

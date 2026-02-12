@@ -14,6 +14,7 @@ import {
 import type { Project } from '@/types/project';
 import type { Slide } from '@/types/slide';
 import type { VoiceConfig } from '@/types/voice';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 import { SlideTransition } from '../transitions/SlideTransition';
 import { Watermark } from './Watermark';
 
@@ -58,6 +59,11 @@ function getSlideFrameRanges(
 function SlideRenderer({ slide }: { slide: Slide }) {
   // TODO: Use FadeSimpleTemplate or matched animation template
   // TODO: Render each element with AnimatedElement + sync points
+  // Use flattenItemsAsElements for backward compat with new item tree
+  const elements = slide.items.length > 0
+    ? flattenItemsAsElements(slide.items)
+    : slide.elements;
+
   return (
     <AbsoluteFill
       style={{
@@ -81,7 +87,7 @@ function SlideRenderer({ slide }: { slide: Slide }) {
       >
         {slide.content}
       </div>
-      {slide.elements.map((el) => (
+      {elements.map((el) => (
         <div
           key={el.id}
           style={{

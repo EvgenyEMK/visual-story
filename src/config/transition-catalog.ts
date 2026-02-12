@@ -141,6 +141,28 @@ export const IN_SLIDE_ANIMATIONS: readonly TransitionCatalogEntry[] = [
     category: 'in-slide',
     bestFor: 'CTAs, buttons, key terms',
   },
+  {
+    id: 'slide-title',
+    index: 11,
+    name: 'Slide Title',
+    description:
+      'A structured slide header with title, optional subtitle, and an optional right-side status/legend area.',
+    whyGreat:
+      'Provides consistent, professional slide framing — anchoring content with clear hierarchy.',
+    category: 'in-slide',
+    bestFor: 'Slide headers, section openers',
+  },
+  {
+    id: 'zoom-in-word',
+    index: 12,
+    name: 'Zoom-In Word Reveal',
+    description:
+      'Text appears word by word, each zooming in from behind (small → full size) creating a dramatic reveal.',
+    whyGreat:
+      'Creates cinematic impact for section openers. The zoom adds weight to each word, making the audience feel the gravity of the statement.',
+    category: 'in-slide',
+    bestFor: 'Section openers, dramatic statements, topic titles',
+  },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -319,6 +341,17 @@ export const GROUPED_ANIMATIONS: readonly TransitionCatalogEntry[] = [
       'A "Big Picture" canvas where the audience always knows their position in the overall map.',
     category: 'grouped-item',
     bestFor: 'Complex diagrams, overview + detail',
+  },
+  {
+    id: 'items-grid',
+    index: 11,
+    name: 'Items Grid (Row / Column)',
+    description:
+      'A configurable grid of 2–8 items arranged in rows/columns. Each item is an icon with optional text or a short title with subtitle. Multiple animation modes: one-by-one reveal, opacity highlight, and optional callout boxes.',
+    whyGreat:
+      'The perfect "structure overview" slide — introduces topics, features, or agenda items with clear visual hierarchy before diving into details.',
+    category: 'grouped-item',
+    bestFor: 'Section overviews, topic structure, feature introductions',
   },
 ] as const;
 

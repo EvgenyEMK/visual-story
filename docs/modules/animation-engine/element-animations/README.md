@@ -4,7 +4,7 @@
 
 Element animations control how a **single element** — a text block, icon, shape, or image — appears, is emphasized, or exits within a slide. They are the most granular level of motion in VisualStory.
 
-These 10 animations are the building blocks. They can be used standalone or as part of a [Grouped Animation](../grouped-animations/) sequence.
+These 12 animations are the building blocks. They can be used standalone or as part of a [Grouped Animation](../grouped-animations/) sequence.
 
 ## Catalog
 
@@ -20,6 +20,8 @@ These 10 animations are the building blocks. They can be used standalone or as p
 | 8 | [Color Shift](./color-shift.md) | `color-shift` | Gray → full color | Before/after |
 | 9 | [Masked Reveal](./masked-reveal.md) | `masked-reveal` | Curtain-style reveal | Hero visuals |
 | 10 | [The Shimmer](./shimmer.md) | `shimmer` | Light streak over element | CTAs |
+| 11 | [Slide Title](./slide-title.md) | `slide-title` | Structured slide header with title + subtitle + status | Slide headers, section openers |
+| 12 | [Zoom-In Word Reveal](./zoom-in-word.md) | `zoom-in-word` | Words zoom in one by one from behind | Section openers, dramatic statements |
 
 ## Trigger Modes
 

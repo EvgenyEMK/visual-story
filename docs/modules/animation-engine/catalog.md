@@ -1,6 +1,6 @@
 # Animation & Transition Catalog
 
-> Consolidated reference of all 25 animations and transitions in VisualStory.
+> Consolidated reference of all 28 animations and transitions in VisualStory.
 > For detailed specifications, follow the link in each entry's name.
 
 ---
@@ -21,6 +21,8 @@ Used to introduce or emphasize a **single element** (text, icon, chart, image) w
 | 8 | [Color Shift](./element-animations/color-shift.md) | `color-shift` | Grayed-out element turns full brand color | Before/after, feature activation | Auto / Click |
 | 9 | [Masked Reveal](./element-animations/masked-reveal.md) | `masked-reveal` | Content appears from behind invisible curtain | Product images, hero visuals | Auto / Click |
 | 10 | [The Shimmer](./element-animations/shimmer.md) | `shimmer` | Subtle light streak passes over element | CTAs, buttons, key terms | Auto / Click |
+| 11 | [Slide Title](./element-animations/slide-title.md) | `slide-title` | Structured slide header: title + subtitle + right status | Slide headers, section openers | Auto / Click |
+| 12 | [Zoom-In Word Reveal](./element-animations/zoom-in-word.md) | `zoom-in-word` | Words appear one by one zooming in from behind | Section openers, dramatic statements | Auto / Click |
 
 ---
 
@@ -40,6 +42,7 @@ Used to present **multiple related items** (features, steps, concepts) within a 
 | 8 | [The "Molecular Bond"](./grouped-animations/molecular-bond.md) | `molecular-bond` | Child bubbles bud from central node with growing lines | Mind maps, concept relationships | Auto / Click / Hover |
 | 9 | [The "Perspective Pivot"](./grouped-animations/perspective-pivot.md) | `perspective-pivot` | 3D cube rotates to reveal content on each face | Multi-faceted concepts, comparisons | Auto / Click / Hover |
 | 10 | [The "Magnifying Glass"](./grouped-animations/magnifying-glass.md) | `magnifying-glass` | Lens moves over blurred canvas, enlarging items | Complex diagrams, overview + detail | Auto / Click / Hover |
+| 11 | [Items Grid](./grouped-animations/items-grid.md) | `items-grid` | Configurable row/column grid with one-by-one or opacity-highlight modes | Section overviews, topic structure | Auto / Click / Hover |
 
 ---
 
@@ -63,8 +66,10 @@ Used to visually connect **Slide N → Slide N+1** into a continuous narrative t
 
 | Content | Recommended Element Anim. | Recommended Grouped Anim. | Recommended Slide Trans. |
 |---------|--------------------------|---------------------------|--------------------------|
-| Title slide | Smooth Fade, Masked Reveal | — | Cross-Fade |
+| Title slide | Slide Title, Smooth Fade, Masked Reveal | — | Cross-Fade |
+| Section opener | Zoom-In Word Reveal, Slide Title | Items Grid | Cross-Fade, Morph |
 | Feature list | Float In | List Accumulator, Carousel Focus | Push |
+| Topic structure | — | Items Grid | Morph (grid → sidebar) |
 | Data/charts | Staggered Wipe | Bento Grid | Morph |
 | Process flow | Path Follow | Infinite Path | Push |
 | Key stat | Pulse Emphasis | — | Zoom Focus |
@@ -78,10 +83,10 @@ Used to visually connect **Slide N → Slide N+1** into a continuous narrative t
 
 | Style | Element Animations | Grouped Animations | Slide Transitions |
 |-------|-------------------|-------------------|-------------------|
-| **Minimal / Corporate** | Smooth Fade, Float In | List Accumulator, Bento Grid | Cross-Fade, Push |
-| **Dynamic / Energetic** | Pop Zoom, Shimmer | Fan-Out, Stack Reveal | Zoom Focus, Push |
-| **Storytelling / Cinematic** | Masked Reveal, Path Follow | Infinite Path, Magnifying Glass | Pan, Morph |
-| **Data-Heavy / Analytical** | Staggered Wipe, Color Shift | Carousel Focus, Bento Grid | Morph, Cross-Fade |
+| **Minimal / Corporate** | Slide Title, Smooth Fade, Float In | List Accumulator, Bento Grid, Items Grid | Cross-Fade, Push |
+| **Dynamic / Energetic** | Zoom-In Word Reveal, Pop Zoom, Shimmer | Fan-Out, Stack Reveal, Items Grid | Zoom Focus, Push |
+| **Storytelling / Cinematic** | Zoom-In Word Reveal, Masked Reveal, Path Follow | Infinite Path, Magnifying Glass | Pan, Morph |
+| **Data-Heavy / Analytical** | Slide Title, Staggered Wipe, Color Shift | Carousel Focus, Bento Grid | Morph, Cross-Fade |
 
 ---
 

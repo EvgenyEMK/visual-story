@@ -2,18 +2,21 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { DemoStage, useReplay } from './DemoStage';
+import type { ThemeMode } from './DemoStage';
 import { IN_SLIDE_ANIMATIONS } from '@/config/transition-catalog';
+
+type ThemeProps = { themeMode: ThemeMode };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 1. Smooth Fade
 // ═══════════════════════════════════════════════════════════════════════════
 
-function SmoothFadeDemo() {
+function SmoothFadeDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[0];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Element" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Element" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex flex-col items-center gap-3 p-6">
         <div style={{ animation: 'vs-smooth-fade 0.8s ease-out forwards', opacity: 0 }}>
           <div className="text-white/90 text-lg font-bold tracking-tight">Revenue Growth</div>
@@ -43,7 +46,7 @@ function SmoothFadeDemo() {
 // 2. Staggered Wipe
 // ═══════════════════════════════════════════════════════════════════════════
 
-function StaggeredWipeDemo() {
+function StaggeredWipeDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[1];
   const data = [
@@ -54,7 +57,7 @@ function StaggeredWipeDemo() {
   ];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Data" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Data" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex flex-col gap-3 w-full px-8 py-6">
         {data.map((d, i) => (
           <div key={d.label} className="flex items-center gap-3">
@@ -87,7 +90,7 @@ function StaggeredWipeDemo() {
 // 3. Float In (Gentle)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function FloatInDemo() {
+function FloatInDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[2];
   const items = [
@@ -97,7 +100,7 @@ function FloatInDemo() {
   ];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Element" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Element" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex gap-4 p-6">
         {items.map((item, i) => (
           <div
@@ -122,12 +125,12 @@ function FloatInDemo() {
 // 4. Pulse (Emphasis)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PulseDemo() {
+function PulseDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[3];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Emphasis" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Emphasis" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex flex-col items-center gap-2 p-6">
         <div className="text-white/50 text-xs uppercase tracking-widest">Annual Revenue</div>
         <div
@@ -149,40 +152,50 @@ function PulseDemo() {
 // 5. Typewriter Reveal
 // ═══════════════════════════════════════════════════════════════════════════
 
-function TypewriterDemo() {
+function TypewriterDemo({ themeMode }: ThemeProps) {
   const [key, setKey] = useState(0);
   const [displayText, setDisplayText] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
   const fullText = '"Innovation distinguishes between a leader and a follower."';
   const entry = IN_SLIDE_ANIMATIONS[4];
+  // Option: set to true to show blinking cursor during typing
+  const isTypingCursorVisible = false;
 
   const replay = useCallback(() => {
     setDisplayText('');
+    setIsTyping(true);
     setKey((k) => k + 1);
   }, []);
 
   useEffect(() => {
     let idx = 0;
     setDisplayText('');
+    setIsTyping(true);
     const interval = setInterval(() => {
       if (idx < fullText.length) {
         setDisplayText(fullText.slice(0, idx + 1));
         idx++;
       } else {
         clearInterval(interval);
+        setIsTyping(false);
       }
     }, 45);
     return () => clearInterval(interval);
   }, [key]);
 
+  const showCursor = isTypingCursorVisible && isTyping;
+
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Text" onReplay={replay}>
-      <div className="flex flex-col items-center gap-3 px-8 py-6">
-        <div className="text-white/90 text-base italic leading-relaxed min-h-[3em] font-serif">
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Text" onReplay={replay} themeMode={themeMode}>
+      <div className="flex flex-col items-start gap-3 px-8 py-6 w-full">
+        <div className="text-white/90 text-base italic leading-relaxed min-h-[3em] font-serif text-left">
           {displayText}
-          <span
-            className="inline-block w-[2px] h-[1.1em] bg-blue-400 ml-0.5 align-text-bottom"
-            style={{ animation: 'vs-typewriter-blink 0.8s step-end infinite' }}
-          />
+          {showCursor && (
+            <span
+              className="inline-block w-[2px] h-[1.1em] bg-blue-400 ml-0.5 align-text-bottom"
+              style={{ animation: 'vs-typewriter-blink 0.8s step-end infinite' }}
+            />
+          )}
         </div>
         <div
           className="text-white/40 text-xs mt-2"
@@ -202,12 +215,12 @@ function TypewriterDemo() {
 // 6. Pop / Zoom
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PopZoomDemo() {
+function PopZoomDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[5];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Highlight" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Highlight" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex flex-col items-center gap-3 p-6">
         <div
           className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30"
@@ -246,12 +259,12 @@ function PopZoomDemo() {
 // 7. Path Follow (Lines)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function PathFollowDemo() {
+function PathFollowDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[6];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Flow" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Flow" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="w-full h-full flex items-center justify-center p-4">
         <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
           {/* Connection line */}
@@ -275,10 +288,10 @@ function PathFollowDemo() {
                 cx={s.cx}
                 cy={50}
                 r={12}
-                fill="#1e293b"
                 stroke="#3b82f6"
                 strokeWidth="2"
                 style={{
+                  fill: 'var(--demo-node-bg)',
                   animation: `vs-pop-zoom 0.4s ease-out ${0.3 + i * 0.5}s forwards`,
                   opacity: 0,
                   transformOrigin: `${s.cx}px 50px`,
@@ -290,10 +303,10 @@ function PathFollowDemo() {
                 y={50}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill="white"
                 fontSize="8"
                 fontWeight="bold"
                 style={{
+                  fill: 'var(--demo-node-text)',
                   animation: `vs-smooth-fade 0.3s ease-out ${0.5 + i * 0.5}s forwards`,
                   opacity: 0,
                 }}
@@ -334,7 +347,7 @@ function PathFollowDemo() {
 // 8. Color Shift
 // ═══════════════════════════════════════════════════════════════════════════
 
-function ColorShiftDemo() {
+function ColorShiftDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[7];
   const features = [
@@ -345,7 +358,7 @@ function ColorShiftDemo() {
   ];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Emphasis" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Emphasis" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex gap-4 p-6">
         {features.map((f, i) => (
           <div
@@ -374,12 +387,12 @@ function ColorShiftDemo() {
 // 9. Masked Reveal
 // ═══════════════════════════════════════════════════════════════════════════
 
-function MaskedRevealDemo() {
+function MaskedRevealDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[8];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Visual" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Visual" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="w-full h-full flex items-center justify-center p-6">
         <div
           className="w-[200px] h-[120px] rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center relative overflow-hidden"
@@ -408,12 +421,12 @@ function MaskedRevealDemo() {
 // 10. Shimmer
 // ═══════════════════════════════════════════════════════════════════════════
 
-function ShimmerDemo() {
+function ShimmerDemo({ themeMode }: ThemeProps) {
   const { key, replay } = useReplay();
   const entry = IN_SLIDE_ANIMATIONS[9];
 
   return (
-    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="CTA" onReplay={replay}>
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="CTA" onReplay={replay} themeMode={themeMode}>
       <div key={key} className="flex flex-col items-center gap-4 p-6">
         <div className="text-white/60 text-xs">Ready to transform your workflow?</div>
         <button
@@ -440,22 +453,184 @@ function ShimmerDemo() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 11. Slide Title
+// ═══════════════════════════════════════════════════════════════════════════
+
+function SlideTitleDemo({ themeMode }: ThemeProps) {
+  const { key, replay } = useReplay();
+  const entry = IN_SLIDE_ANIMATIONS[10];
+
+  return (
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Structure" onReplay={replay} themeMode={themeMode}>
+      <div key={key} className="absolute inset-0 flex flex-col">
+        {/* Title bar area */}
+        <div className="px-6 pt-5 pb-3 border-b border-white/5">
+          <div className="flex items-start justify-between gap-4">
+            {/* Left: Title + Subtitle */}
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
+              <div
+                className="text-white/90 text-base font-bold tracking-tight"
+                style={{
+                  animation: 'vs-title-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards',
+                  opacity: 0,
+                }}
+              >
+                Market Analysis 2025
+              </div>
+              <div
+                className="text-white/40 text-[10px]"
+                style={{
+                  animation: 'vs-subtitle-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards',
+                  opacity: 0,
+                }}
+              >
+                Quarterly performance & growth metrics
+              </div>
+            </div>
+            {/* Right: Status / Legend placeholder */}
+            <div
+              className="flex items-center gap-2 shrink-0"
+              style={{
+                animation: 'vs-title-right-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards',
+                opacity: 0,
+              }}
+            >
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-white/50 text-[8px]">On Track</span>
+              </div>
+              <div className="text-white/20 text-[8px]">|</div>
+              <span className="text-white/40 text-[8px]">Q4</span>
+            </div>
+          </div>
+        </div>
+        {/* Placeholder body content */}
+        <div className="flex-1 flex items-center justify-center">
+          <div
+            className="flex flex-col items-center gap-2"
+            style={{
+              animation: 'vs-smooth-fade 0.6s ease-out 0.8s forwards',
+              opacity: 0,
+            }}
+          >
+            <div className="flex gap-3">
+              {[65, 82, 45, 90, 73].map((h, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <div className="w-5 rounded-sm bg-blue-500/50" style={{ height: `${h * 0.5}px` }} />
+                  <div className="text-[6px] text-white/30">Q{i + 1}</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-white/20 text-[8px] mt-1">Slide content area</div>
+          </div>
+        </div>
+      </div>
+    </DemoStage>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 12. Zoom-In Word Reveal
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ZoomInWordDemo({ themeMode }: ThemeProps) {
+  const [key, setKey] = useState(0);
+  const [visibleWords, setVisibleWords] = useState(0);
+  const entry = IN_SLIDE_ANIMATIONS[11];
+  const lines = ['The Future of', 'Digital Innovation'];
+  const allWords = lines.flatMap((line, lineIdx) =>
+    line.split(' ').map((word, wordIdx) => ({ word, lineIdx, wordIdx }))
+  );
+  const wordDelay = 180; // ms between each word
+
+  const replay = useCallback(() => {
+    setVisibleWords(0);
+    setKey((k) => k + 1);
+  }, []);
+
+  useEffect(() => {
+    let count = 0;
+    setVisibleWords(0);
+    const interval = setInterval(() => {
+      count++;
+      if (count <= allWords.length) {
+        setVisibleWords(count);
+      } else {
+        clearInterval(interval);
+      }
+    }, wordDelay);
+    return () => clearInterval(interval);
+  }, [key, allWords.length]);
+
+  return (
+    <DemoStage index={entry.index} title={entry.name} description={entry.description} whyGreat={entry.whyGreat} category="Text" onReplay={replay} themeMode={themeMode}>
+      <div className="absolute inset-0 flex items-center justify-center p-6" style={{ perspective: '400px' }}>
+        <div className="flex flex-col items-center gap-1">
+          {lines.map((line, lineIdx) => {
+            const words = line.split(' ');
+            // Calculate the global offset for this line
+            const lineOffset = lines.slice(0, lineIdx).reduce((sum, l) => sum + l.split(' ').length, 0);
+
+            return (
+              <div key={lineIdx} className="flex gap-2 justify-center flex-wrap">
+                {words.map((word, wordIdx) => {
+                  const globalIdx = lineOffset + wordIdx;
+                  const isVisible = globalIdx < visibleWords;
+
+                  return (
+                    <span
+                      key={`${lineIdx}-${wordIdx}`}
+                      className="text-white/90 text-lg font-black tracking-tight"
+                      style={{
+                        opacity: isVisible ? 1 : 0,
+                        transform: isVisible ? 'scale(1) translateZ(0)' : 'scale(0.3) translateZ(-50px)',
+                        filter: isVisible ? 'blur(0)' : 'blur(4px)',
+                        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {word}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+          {/* Subtitle that appears after all words */}
+          <div
+            className="text-white/40 text-[10px] mt-3"
+            style={{
+              opacity: visibleWords >= allWords.length ? 1 : 0,
+              transition: 'opacity 0.5s ease 0.2s',
+            }}
+          >
+            Section 3 of 5
+          </div>
+        </div>
+      </div>
+    </DemoStage>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Section Export
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function InSlideSection() {
+export function InSlideSection({ themeMode }: { themeMode: ThemeMode }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <SmoothFadeDemo />
-      <StaggeredWipeDemo />
-      <FloatInDemo />
-      <PulseDemo />
-      <TypewriterDemo />
-      <PopZoomDemo />
-      <PathFollowDemo />
-      <ColorShiftDemo />
-      <MaskedRevealDemo />
-      <ShimmerDemo />
+      <SmoothFadeDemo themeMode={themeMode} />
+      <StaggeredWipeDemo themeMode={themeMode} />
+      <FloatInDemo themeMode={themeMode} />
+      <PulseDemo themeMode={themeMode} />
+      <TypewriterDemo themeMode={themeMode} />
+      <PopZoomDemo themeMode={themeMode} />
+      <PathFollowDemo themeMode={themeMode} />
+      <ColorShiftDemo themeMode={themeMode} />
+      <MaskedRevealDemo themeMode={themeMode} />
+      <ShimmerDemo themeMode={themeMode} />
+      <SlideTitleDemo themeMode={themeMode} />
+      <ZoomInWordDemo themeMode={themeMode} />
     </div>
   );
 }

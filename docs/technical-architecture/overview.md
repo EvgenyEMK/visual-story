@@ -21,7 +21,8 @@
 | **Styling** | Tailwind CSS | 3.x | Utility-first CSS |
 | **UI Components** | shadcn/ui | latest | Accessible, customizable components |
 | **State** | Zustand | 4.x | Lightweight global state |
-| **Video Engine** | Remotion | 4.x | React-based video rendering |
+| **Animation (web)** | motion (motion.dev) | 12.x | DOM animations, layout transitions, cross-boundary flights |
+| **Video Engine** | Remotion | 4.x | React-based video rendering (lazy-loaded) |
 | **Database** | PostgreSQL | 15+ | Via Supabase |
 | **ORM** | Prisma | 5.x | Type-safe database access |
 | **Auth** | NextAuth.js | 5.x (Auth.js) | OAuth + credentials |
@@ -34,10 +35,11 @@
 
 ### 2.2. Stack Rationale
 
-#### Why Next.js + Remotion?
+#### Why Next.js + Remotion + motion.dev?
 - **Next.js**: Industry standard for React apps, excellent DX, built-in API routes eliminates need for separate backend
-- **Remotion**: Only production-ready React-based video framework; enables reusing React components for video
-- **Synergy**: Same component can render in browser preview AND in final video export
+- **Remotion**: Only production-ready React-based video framework; enables reusing React components for video. Isolated in a separate route (`/slide-play-video`) and lazy-loaded via `next/dynamic` to keep the main player bundle small
+- **motion.dev**: Powers the web animation layer — cross-boundary element flights, layout animations, and hover micro-interactions. Works alongside (not inside) Remotion: web player uses motion.dev, video export uses Remotion's `interpolate()`
+- **Synergy**: Shared `SlideItem` data model consumed by both engines; `flattenItemsAsElements()` bridges the item tree to Remotion's flat rendering
 
 #### Why Supabase over Firebase?
 - PostgreSQL = relational queries, better for project/slide relationships
@@ -127,7 +129,8 @@ flowchart LR
         Home[Home]
         Dashboard[Dashboard]
         Editor[Editor]
-        Player[Player]
+        WebPlayer[Web Player]
+        VideoPlayer["Video Player (Remotion, lazy)"]
     end
     
     subgraph features [Feature Modules]
@@ -155,6 +158,42 @@ flowchart LR
     features --> state
 ```
 
+### 3.3. Slide Rendering Architecture (Approach E — Hybrid DOM + Overlay)
+
+The web player uses a three-layer architecture inside a `SlideFrame` container:
+
+```mermaid
+graph TB
+    subgraph SlideFrame ["SlideFrame (static 16:9, ResizeObserver debounce)"]
+        direction TB
+        LayoutLayer["Layout Layer (z:0)<br/>DOM flex/grid via ItemRenderer<br/>Renders SlideItem tree recursively"]
+        AnimLayer["Animation Layer (z:50)<br/>motion.dev AnimatePresence<br/>Cross-boundary flight clones"]
+        HUDLayer["HUD Layer (z:100)<br/>Controls, debug labels, badges"]
+    end
+    
+    subgraph DataModel [Data Model]
+        SlideItem["SlideItem (discriminated union)"]
+        LayoutItem["LayoutItem — flex/grid/sidebar/split/stack"]
+        CardItem["CardItem — styled container"]
+        AtomItem["AtomItem — text/icon/shape/image"]
+    end
+    
+    SlideItem --> LayoutItem
+    SlideItem --> CardItem
+    SlideItem --> AtomItem
+    LayoutLayer --> SlideItem
+    AnimLayer --> MotionDev["motion.div<br/>initial → animate → exit"]
+```
+
+**Key concepts:**
+
+- **SlideItem tree**: Recursive `LayoutItem | CardItem | AtomItem` union replacing the flat `SlideElement[]` array. Layouts hold children, cards group items visually, atoms are leaf content nodes.
+- **ItemRenderer**: Recursively walks the tree, rendering layouts as CSS flex/grid, cards as styled containers, atoms as content elements. Uses motion.dev for entrance/focus micro-animations.
+- **AnimationLayer**: Renders "flight" clones for cross-boundary animations (e.g., moving an item from a grid to a sidebar). Uses `AnimatePresence` and absolute positioning within the slide frame.
+- **SlideAnimationProvider**: React context exposing `promote(flight)` / `dismiss(id)` to any component in the tree.
+- **Remotion isolation**: The video player lives at `/slide-play-video` and lazy-loads Remotion via `next/dynamic({ ssr: false })`. It uses `flattenItemsAsElements(slide.items)` to feed the existing frame-based rendering pipeline.
+- **Backward compatibility**: `Slide.elements` (deprecated) is kept alongside `Slide.items`. All consumers use `flattenItemsAsElements()` with fallback to `slide.elements`.
+
 ---
 
 ## 4. Data Architecture
@@ -166,7 +205,9 @@ erDiagram
     USER ||--o{ PROJECT : owns
     USER ||--o{ SUBSCRIPTION : has
     PROJECT ||--o{ SLIDE : contains
-    SLIDE ||--o{ ELEMENT : contains
+    SLIDE ||--o{ SLIDE_ITEM : "contains (tree)"
+    SLIDE ||--o{ ELEMENT : "contains (deprecated flat)"
+    SLIDE_ITEM ||--o{ SLIDE_ITEM : "children (recursive)"
     PROJECT ||--o| VOICE_CONFIG : has
     PROJECT ||--o{ EXPORT : generates
     
@@ -201,13 +242,28 @@ erDiagram
         string template_id
         int duration_ms
         enum transition
+        jsonb items_tree "SlideItem[] (new)"
         jsonb animation_config
+    }
+
+    SLIDE_ITEM {
+        string id PK
+        enum item_type "layout | card | atom"
+        enum layout_type "grid | flex | sidebar | split | stack"
+        enum atom_type "text | icon | shape | image"
+        text content
+        jsonb position "optional abs x,y"
+        jsonb style
+        jsonb animation
+        jsonb layout_config "columns, gap, direction"
+        jsonb global_item "optional {id} ref"
+        jsonb children "SlideItem[] (recursive)"
     }
     
     ELEMENT {
         uuid id PK
         uuid slide_id FK
-        enum type
+        enum type "deprecated - use SLIDE_ITEM"
         text content
         jsonb position
         jsonb style
@@ -240,6 +296,8 @@ erDiagram
         timestamp current_period_end
     }
 ```
+
+> **Note on SLIDE_ITEM**: In the TypeScript codebase this is the `SlideItem` discriminated union stored as a JSON tree in `Slide.items`. The ERD above shows it as a conceptual entity for clarity. The actual storage is a single `jsonb items` column on the SLIDE row containing the recursive tree.
 
 ### 4.2. Storage Strategy
 
@@ -462,45 +520,62 @@ pnpm dev
 ```
 visualstory/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (auth)/            # Auth pages
-│   │   ├── (dashboard)/       # Dashboard pages
-│   │   ├── editor/[id]/       # Editor page
-│   │   ├── player/[id]/       # Public player
-│   │   └── api/               # API routes
+│   ├── app/[locale]/(app)/         # Next.js App Router (i18n)
+│   │   ├── slide-editor/           # Slide editor page
+│   │   ├── slide-play/             # Web player (no Remotion)
+│   │   ├── slide-play-video/       # Video player (Remotion, lazy-loaded)
+│   │   ├── transitions-demo/       # Animation demo showcase
+│   │   └── api/                    # API routes
 │   │
-│   ├── components/            # React components
-│   │   ├── ui/               # shadcn/ui components
-│   │   ├── editor/           # Editor-specific
-│   │   ├── player/           # Player-specific
-│   │   └── shared/           # Shared components
+│   ├── components/                 # React components
+│   │   ├── ui/                    # shadcn/ui components
+│   │   ├── animation/             # Animation architecture (NEW)
+│   │   │   ├── SlideFrame.tsx     # 3-layer slide container
+│   │   │   ├── AnimationLayer.tsx # motion.dev flight overlay
+│   │   │   └── ItemRenderer.tsx   # Recursive SlideItem renderer
+│   │   ├── slide-editor/          # Editor components
+│   │   ├── slide-play/            # Web player components
+│   │   ├── slide-play-video/      # Video player (Remotion wrapper)
+│   │   ├── editor/                # Legacy editor components
+│   │   ├── player/                # Shared player components
+│   │   └── transitions-demo/      # Demo page components
 │   │
-│   ├── features/             # Feature modules
-│   │   ├── story-editor/
-│   │   ├── animation-engine/
-│   │   ├── voice-sync/
-│   │   ├── ai-assistant/
-│   │   └── export-publish/
+│   ├── hooks/                     # Custom React hooks (NEW)
+│   │   ├── useSlideFrame.ts       # Frame sizing + resize debounce
+│   │   └── useSlideAnimation.tsx  # Flight animation context/provider
 │   │
-│   ├── lib/                  # Utilities
-│   │   ├── db/              # Prisma client
-│   │   ├── ai/              # OpenAI helpers
-│   │   ├── storage/         # R2 helpers
-│   │   └── utils/           # General utils
+│   ├── lib/                       # Utilities
+│   │   ├── flatten-items.ts       # SlideItem tree ↔ flat helpers (NEW)
+│   │   ├── ai/                    # OpenAI helpers
+│   │   ├── tts/                   # TTS sync
+│   │   ├── storage/               # R2 helpers
+│   │   ├── supabase/              # Supabase client
+│   │   └── utils/                 # General utils
 │   │
-│   ├── remotion/            # Remotion compositions
-│   │   ├── compositions/
-│   │   ├── templates/
-│   │   └── components/
+│   ├── remotion/                  # Remotion compositions (lazy-loaded)
+│   │   ├── compositions/          # Presentation, slides
+│   │   ├── templates/             # Animation templates
+│   │   └── elements/              # Element renderers
 │   │
-│   ├── stores/              # Zustand stores
-│   └── types/               # TypeScript types
+│   ├── services/animation/        # Animation services
+│   │   ├── apply-template.ts      # Template → element mapping
+│   │   └── auto-animation.ts      # AI-based template selection
+│   │
+│   ├── config/                    # App configuration
+│   │   ├── demo-slides.ts         # Demo data (items + elements)
+│   │   └── transition-catalog.ts  # Animation catalog
+│   │
+│   ├── stores/                    # Zustand stores
+│   │   ├── project-store.ts       # Project/slide CRUD
+│   │   └── player-store.ts        # Playback state
+│   │
+│   └── types/                     # TypeScript types
+│       ├── slide.ts               # SlideItem tree + legacy SlideElement
+│       ├── animation.ts           # Templates, transitions, groups
+│       └── ...
 │
-├── prisma/
-│   └── schema.prisma        # Database schema
-│
-├── public/                  # Static assets
-├── tests/                   # Test files
+├── docs/                          # Documentation
+├── public/                        # Static assets
 └── package.json
 ```
 

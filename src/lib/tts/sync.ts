@@ -2,6 +2,7 @@
 
 import type { Slide, SlideElement } from '@/types/slide';
 import type { SyncPoint, SlideSync, WordTimestamp } from '@/types/voice';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 /**
  * Calculate sync points between audio timestamps and slide elements.
@@ -22,7 +23,10 @@ export function calculateSync(
   audioTimestamps: WordTimestamp[]
 ): SlideSync {
   const syncPoints: SyncPoint[] = [];
-  const orderedElements = orderElementsByPriority(slide.elements);
+  const elements = slide.items.length > 0
+    ? flattenItemsAsElements(slide.items)
+    : slide.elements;
+  const orderedElements = orderElementsByPriority(elements);
 
   const elementPhrases = orderedElements.map((el) => ({
     element: el,
