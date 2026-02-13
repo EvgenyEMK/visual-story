@@ -10,6 +10,9 @@ export type { ShelfItem } from './CenterStageShelf';
 export { BentoLayout } from './BentoLayout';
 export type { BentoItem } from './BentoLayout';
 
+export { CardExpandLayout } from './CardExpandLayout';
+export type { CardExpandItem, CardExpandVariant, CollapsedCardType } from './CardExpandLayout';
+
 export { HorizontalTimeline } from './HorizontalTimeline';
 export type { TimelineItem } from './HorizontalTimeline';
 

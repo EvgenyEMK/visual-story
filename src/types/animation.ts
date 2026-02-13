@@ -143,6 +143,7 @@ export type GroupedAnimationType =
   | 'list-accumulator'
   | 'carousel-focus'
   | 'bento-grid-expansion'
+  | 'card-expand'
   | 'circular-satellite'
   | 'infinite-path'
   | 'stack-reveal'
@@ -195,6 +196,17 @@ export interface GroupedItem {
 }
 
 /**
+ * Controls when a grouped animation is active during presentation.
+ *
+ * - `'auto-and-manual'` (default) — the animation plays in both auto-present
+ *   and click/manual modes.
+ * - `'manual-only'` — the animation is skipped during auto-present and only
+ *   shown when the user explicitly clicks (e.g., for "if questions come up"
+ *   content or offline-review detail views).
+ */
+export type PresentationMode = 'auto-and-manual' | 'manual-only';
+
+/**
  * Configuration for grouped item animations on a slide.
  * @source docs/modules/animation-engine/grouped-animations/README.md
  */
@@ -211,6 +223,17 @@ export interface GroupedAnimationConfig {
   allowOutOfOrder: boolean;
   /** Override trigger mode (inherits from slide/project if unset). */
   triggerMode?: TriggerMode;
+  /**
+   * Controls when this grouped animation is active during presentation.
+   * Default: `'auto-and-manual'`.
+   */
+  presentationMode?: PresentationMode;
+  /**
+   * Visual variant for `card-expand` animations.
+   * Only used when `type === 'card-expand'`.
+   * Maps to `CardExpandLayout` variant prop.
+   */
+  cardExpandVariant?: 'grid-to-overlay' | 'center-popup' | 'row-to-split' | 'sidebar-detail';
 }
 
 /** Default hover effect configuration. */

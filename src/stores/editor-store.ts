@@ -15,6 +15,15 @@ interface EditorState {
   currentSlideIndex: number;
   /** ID of the currently selected element (null = no selection). */
   selectedElementId: string | null;
+
+  // -- Scene-level state (ADR-001) --
+  /** Index of the currently active scene within the slide (0-based). */
+  currentSceneIndex: number;
+  /** Current animation step within the active scene (0-based). */
+  currentStepIndex: number;
+  /** Whether to show scenes in the sidebar and step strip. */
+  showScenes: boolean;
+
   /** Whether preview playback is active. */
   isPlaying: boolean;
   /** Current playback time in milliseconds. */
@@ -25,6 +34,9 @@ interface EditorState {
   showGrid: boolean;
   /** Whether the right-side properties panel is open. */
   showProperties: boolean;
+
+  /** Section ID → collapsed (true = collapsed). Omitted or false = expanded. */
+  collapsedSections: Record<string, boolean>;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,10 +44,19 @@ interface EditorState {
 // ---------------------------------------------------------------------------
 
 interface EditorActions {
-  /** Select a slide by index. Clears element selection. */
+  /** Select a slide by index. Clears element and scene selection. */
   selectSlide: (index: number) => void;
   /** Select an element by ID (or null to deselect). */
   selectElement: (elementId: string | null) => void;
+
+  // -- Scene-level actions (ADR-001) --
+  /** Select a scene within the current slide. Resets step to 0. */
+  selectScene: (sceneIndex: number) => void;
+  /** Set the animation step within the current scene. */
+  setStepIndex: (stepIndex: number) => void;
+  /** Toggle the scenes panel visibility. */
+  toggleScenes: () => void;
+
   /** Toggle preview playback. */
   setPlaying: (playing: boolean) => void;
   /** Toggle play/pause. */
@@ -54,6 +75,8 @@ interface EditorActions {
   toggleGrid: () => void;
   /** Toggle the properties panel. */
   toggleProperties: () => void;
+  /** Toggle section collapse in the slide sidebar. */
+  toggleSectionCollapse: (sectionId: string) => void;
   /** Reset the entire editor state. */
   reset: () => void;
 }
@@ -65,11 +88,15 @@ interface EditorActions {
 const initialState: EditorState = {
   currentSlideIndex: 0,
   selectedElementId: null,
+  currentSceneIndex: 0,
+  currentStepIndex: 0,
+  showScenes: true,
   isPlaying: false,
   currentTime: 0,
   zoom: 1,
   showGrid: false,
   showProperties: true,
+  collapsedSections: {},
 };
 
 // ---------------------------------------------------------------------------
@@ -84,10 +111,21 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
   ...initialState,
 
   selectSlide: (index) =>
-    set({ currentSlideIndex: index, selectedElementId: null }),
+    set({ currentSlideIndex: index, selectedElementId: null, currentSceneIndex: 0, currentStepIndex: 0 }),
 
   selectElement: (elementId) =>
     set({ selectedElementId: elementId }),
+
+  // -- Scene-level actions (ADR-001) --
+
+  selectScene: (sceneIndex) =>
+    set({ currentSceneIndex: sceneIndex, currentStepIndex: 0, selectedElementId: null }),
+
+  setStepIndex: (stepIndex) =>
+    set({ currentStepIndex: stepIndex }),
+
+  toggleScenes: () =>
+    set((state) => ({ showScenes: !state.showScenes })),
 
   setPlaying: (playing) =>
     set({ isPlaying: playing }),
@@ -119,6 +157,14 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
 
   toggleProperties: () =>
     set((state) => ({ showProperties: !state.showProperties })),
+
+  toggleSectionCollapse: (sectionId) =>
+    set((state) => ({
+      collapsedSections: {
+        ...state.collapsedSections,
+        [sectionId]: !state.collapsedSections[sectionId],
+      },
+    })),
 
   reset: () =>
     set(initialState),

@@ -205,7 +205,10 @@ erDiagram
     USER ||--o{ PROJECT : owns
     USER ||--o{ SUBSCRIPTION : has
     PROJECT ||--o{ SLIDE : contains
+    PROJECT ||--o{ SLIDE_SECTION : "organised by"
     SLIDE ||--o{ SLIDE_ITEM : "contains (tree)"
+    SLIDE ||--o{ SCENE : "has scenes (ADR-001)"
+    SCENE ||--|| WIDGET_STATE_LAYER : "has behavior"
     SLIDE ||--o{ ELEMENT : "contains (deprecated flat)"
     SLIDE_ITEM ||--o{ SLIDE_ITEM : "children (recursive)"
     PROJECT ||--o| VOICE_CONFIG : has
@@ -268,6 +271,33 @@ erDiagram
         jsonb position
         jsonb style
         jsonb animation
+    }
+
+    SCENE {
+        string id PK
+        string title
+        string icon "optional"
+        int order "0-based within slide"
+        jsonb widget_state_layer "WidgetStateLayer"
+        enum trigger_mode "optional override"
+        int duration_ms "optional"
+    }
+
+    WIDGET_STATE_LAYER {
+        jsonb initial_states "WidgetVisualState[]"
+        jsonb enter_behavior "AnimationBehavior"
+        jsonb exit_behavior "AnimationBehavior (optional)"
+        jsonb interaction_behaviors "InteractionBehavior[]"
+        string[] animated_widget_ids "reveal order"
+    }
+
+    SLIDE_SECTION {
+        string id PK
+        string title
+        string icon "optional"
+        boolean collapsed "UI state"
+        string[] slide_ids "ordered"
+        jsonb children "sub-sections"
     }
     
     VOICE_CONFIG {
@@ -567,10 +597,12 @@ visualstory/
 │   │
 │   ├── stores/                    # Zustand stores
 │   │   ├── project-store.ts       # Project/slide CRUD
-│   │   └── player-store.ts        # Playback state
+│   │   ├── player-store.ts        # Playback state (scenes + steps)
+│   │   └── editor-store.ts        # Editor UI state (scenes + steps)
 │   │
 │   └── types/                     # TypeScript types
 │       ├── slide.ts               # SlideItem tree + legacy SlideElement
+│       ├── scene.ts               # Scene + WidgetStateLayer (ADR-001)
 │       ├── animation.ts           # Templates, transitions, groups
 │       └── ...
 │
@@ -583,6 +615,8 @@ visualstory/
 
 ## 10. Related Documentation
 
+- [Architecture Decisions](./architecture-decisions.md)
+- [ADR-001: Scenes + Widget State Layers](./adr-001-scenes-widget-state-layers.md)
 - [Frontend Architecture](./frontend-architecture.md)
 - [Backend Services](./backend-services.md)
 - [Video Rendering Pipeline](./video-rendering-pipeline.md)

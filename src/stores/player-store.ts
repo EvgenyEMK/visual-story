@@ -3,8 +3,13 @@
  * Handles both auto-mode (voice-over / timed) and click-mode (live presentation)
  * with per-slide trigger mode resolution and animation step tracking.
  *
+ * Updated for Scenes + Widget State Layers architecture (ADR-001):
+ * Navigation is now two-level: currentSceneIndex within a slide,
+ * and currentStepIndex within a scene.
+ *
  * @source docs/modules/export-publish/web-player.md
  * @source docs/modules/animation-engine/README.md — Trigger Modes
+ * @source docs/technical-architecture/adr-001-scenes-widget-state-layers.md
  */
 
 import { create } from 'zustand';
@@ -23,15 +28,31 @@ interface PlayerState {
   slideTriggerModes: Record<number, TriggerMode>;
   /** Current slide index (0-based). */
   currentSlideIndex: number;
+
+  // -- Scene-level navigation (ADR-001) --
+
+  /** Current scene index within the active slide (0-based). */
+  currentSceneIndex: number;
+  /** Total number of scenes on the current slide. */
+  totalScenes: number;
+  /** Current animation step within the active scene (0-based). */
+  currentStepIndex: number;
+  /** Total animation steps in the current scene. */
+  totalSteps: number;
+
+  // -- Legacy (kept for backward compatibility during migration) --
+
   /**
    * Current animation step within the active slide (0-based).
-   * In click mode, each click advances this counter.
-   * When `currentAnimStep >= totalAnimSteps`, the slide is "complete" and
-   * the next click triggers the slide transition.
+   * @deprecated Use currentSceneIndex + currentStepIndex instead.
    */
   currentAnimStep: number;
-  /** Total animation steps on the current slide (element animations + grouped items). */
+  /**
+   * Total animation steps on the current slide.
+   * @deprecated Use totalScenes + totalSteps instead.
+   */
   totalAnimSteps: number;
+
   /** Current playback time in milliseconds. */
   currentTime: number;
   /** Total presentation duration in milliseconds. */
@@ -80,6 +101,18 @@ interface PlayerActions {
   /** Set the total animation steps for the current slide. */
   setTotalAnimSteps: (count: number) => void;
 
+  // -- Scene navigation (ADR-001) --
+  /** Navigate to a specific scene within the current slide. */
+  goToScene: (sceneIndex: number) => void;
+  /** Advance to the next scene. If at last scene, advance to next slide. */
+  advanceScene: () => void;
+  /** Go back to previous scene. If at first scene, go to previous slide. */
+  retreatScene: () => void;
+  /** Set scene and step totals for the current slide. */
+  setSceneCounts: (totalScenes: number, totalStepsInCurrentScene: number) => void;
+  /** Update step count for the current scene (when switching scenes). */
+  setCurrentSceneSteps: (totalSteps: number) => void;
+
   // -- Trigger mode --
   /** Set the project-level default trigger mode. */
   setProjectTriggerMode: (mode: TriggerMode) => void;
@@ -114,6 +147,12 @@ const initialState: PlayerState = {
   projectTriggerMode: 'auto',
   slideTriggerModes: {},
   currentSlideIndex: 0,
+  // Scene-level (ADR-001)
+  currentSceneIndex: 0,
+  totalScenes: 1,
+  currentStepIndex: 0,
+  totalSteps: 0,
+  // Legacy
   currentAnimStep: 0,
   totalAnimSteps: 0,
   currentTime: 0,
@@ -144,6 +183,10 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
       currentSlideIndex: Math.min(s.totalSlides - 1, s.currentSlideIndex + 1),
       currentAnimStep: 0,
       totalAnimSteps: 0,
+      currentSceneIndex: 0,
+      currentStepIndex: 0,
+      totalScenes: 1,
+      totalSteps: 0,
     })),
 
   prevSlide: () =>
@@ -151,6 +194,10 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
       currentSlideIndex: Math.max(0, s.currentSlideIndex - 1),
       currentAnimStep: 0,
       totalAnimSteps: 0,
+      currentSceneIndex: 0,
+      currentStepIndex: 0,
+      totalScenes: 1,
+      totalSteps: 0,
     })),
 
   goToSlide: (index) =>
@@ -158,6 +205,10 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
       currentSlideIndex: Math.max(0, Math.min(s.totalSlides - 1, index)),
       currentAnimStep: 0,
       totalAnimSteps: 0,
+      currentSceneIndex: 0,
+      currentStepIndex: 0,
+      totalScenes: 1,
+      totalSteps: 0,
     })),
 
   // -- Animation step navigation --
@@ -206,6 +257,61 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
   setTotalAnimSteps: (count) =>
     set({ totalAnimSteps: count }),
 
+  // -- Scene navigation (ADR-001) --
+
+  goToScene: (sceneIndex) =>
+    set((s) => ({
+      currentSceneIndex: Math.max(0, Math.min(s.totalScenes - 1, sceneIndex)),
+      currentStepIndex: 0,
+    })),
+
+  advanceScene: () => {
+    const s = get();
+    if (s.currentSceneIndex < s.totalScenes - 1) {
+      set({
+        currentSceneIndex: s.currentSceneIndex + 1,
+        currentStepIndex: 0,
+      });
+    } else if (s.currentSlideIndex < s.totalSlides - 1) {
+      // Last scene of slide — advance to next slide
+      set({
+        currentSlideIndex: s.currentSlideIndex + 1,
+        currentSceneIndex: 0,
+        currentStepIndex: 0,
+        currentAnimStep: 0,
+        totalAnimSteps: 0,
+        totalScenes: 1,
+        totalSteps: 0,
+      });
+    }
+  },
+
+  retreatScene: () => {
+    const s = get();
+    if (s.currentSceneIndex > 0) {
+      set({
+        currentSceneIndex: s.currentSceneIndex - 1,
+        currentStepIndex: 0,
+      });
+    } else if (s.currentSlideIndex > 0) {
+      set({
+        currentSlideIndex: s.currentSlideIndex - 1,
+        currentSceneIndex: 0,
+        currentStepIndex: 0,
+        currentAnimStep: 0,
+        totalAnimSteps: 0,
+        totalScenes: 1,
+        totalSteps: 0,
+      });
+    }
+  },
+
+  setSceneCounts: (totalScenes, totalStepsInCurrentScene) =>
+    set({ totalScenes, totalSteps: totalStepsInCurrentScene }),
+
+  setCurrentSceneSteps: (totalSteps) =>
+    set({ totalSteps }),
+
   // -- Trigger mode --
 
   setProjectTriggerMode: (mode) =>
@@ -251,6 +357,10 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
       currentSlideIndex: 0,
       currentAnimStep: 0,
       totalAnimSteps: 0,
+      currentSceneIndex: 0,
+      currentStepIndex: 0,
+      totalScenes: 1,
+      totalSteps: 0,
       currentTime: 0,
       isPlaying: false,
     }),

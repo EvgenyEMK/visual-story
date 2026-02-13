@@ -1257,9 +1257,9 @@ function ItemsGridDemo({ themeMode, triggerMode }: DemoProps) {
 // Section Export
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function GroupedSection({ themeMode, triggerMode }: { themeMode: ThemeMode; triggerMode: TriggerMode }) {
+export function GroupedSection({ themeMode, triggerMode, gridClassName }: { themeMode: ThemeMode; triggerMode: TriggerMode; gridClassName?: string }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className={gridClassName ?? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'}>
       <ListAccumulatorDemo themeMode={themeMode} triggerMode={triggerMode} />
       <CarouselFocusDemo themeMode={themeMode} triggerMode={triggerMode} />
       <BentoGridDemo themeMode={themeMode} triggerMode={triggerMode} />

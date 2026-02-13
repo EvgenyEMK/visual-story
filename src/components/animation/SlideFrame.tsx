@@ -7,6 +7,11 @@
  *   z:50  — Animation Layer — motion.dev overlay for cross-boundary flights
  *   z:100 — HUD Layer       — controls, debug labels, click hints
  *
+ * When a `header` prop is provided, the Layout Layer splits into two
+ * regions — a shrink-to-fit header at the top and a flex-1 content area
+ * below. Both regions have `overflow: hidden` so animations in the
+ * content area do not bleed into the header.
+ *
  * The frame maintains a static pixel size (16:9 aspect ratio) and only
  * recalculates after browser resize settles (debounced). This ensures
  * that animations are never disrupted by mid-resize reflows.
@@ -45,6 +50,12 @@ export function useSlideFrameContext(): SlideFrameSize {
 // ---------------------------------------------------------------------------
 
 export interface SlideFrameProps {
+  /**
+   * Optional header content rendered above the main content area.
+   * When provided the Layout Layer splits into header + content regions.
+   * Typically a <SlideHeaderRenderer />.
+   */
+  header?: ReactNode;
   /** The layout layer content (typically an <ItemRenderer /> tree). */
   children: ReactNode;
   /** Optional content rendered in the animation layer (z:50). */
@@ -60,6 +71,7 @@ export interface SlideFrameProps {
 // ---------------------------------------------------------------------------
 
 export function SlideFrame({
+  header,
   children,
   animationLayer,
   hudLayer,
@@ -77,10 +89,20 @@ export function SlideFrame({
       >
         {/* Layout Layer (z:0) — DOM-driven flex/grid content */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 flex flex-col"
           style={{ zIndex: 0 }}
         >
-          {children}
+          {/* Header region — shrink-to-fit, isolated overflow */}
+          {header && (
+            <div className="shrink-0" style={{ overflow: 'hidden', isolation: 'isolate' }}>
+              {header}
+            </div>
+          )}
+
+          {/* Content region — fills remaining space */}
+          <div className="flex-1 min-h-0 relative" style={{ overflow: 'hidden' }}>
+            {children}
+          </div>
         </div>
 
         {/* Animation Layer (z:50) — motion.dev flight clones */}

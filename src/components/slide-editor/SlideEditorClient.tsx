@@ -1,133 +1,151 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { DEMO_SLIDES, DEMO_SCRIPTS } from '@/config/demo-slides';
+import { DEMO_SLIDES, DEMO_SCRIPTS, DEMO_SECTIONS } from '@/config/demo-slides';
 import { SlideThumbnail } from './SlideThumbnail';
 import { SlideMainCanvas } from './SlideMainCanvas';
 import { ScriptPanel } from './ScriptPanel';
-import { SubSlideStrip } from './SubSlideStrip';
+import { AnimationStepStrip } from './AnimationStepStrip';
+import { useEditorStore } from '@/stores/editor-store';
 import type { Slide } from '@/types/slide';
+import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
-import { flattenItemsAsElements } from '@/lib/flatten-items';
+import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
+import { ensureScenes } from '@/lib/migrate-to-scenes';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Get a flat element list from a slide, preferring the new items tree.
+ * Build a widgetId → title lookup from the slide's grouped items or scene data.
  */
-function getElements(slide: Slide) {
-  return slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
-}
+function buildWidgetTitleMap(slide: Slide, scenes: Scene[]): Record<string, string> {
+  const map: Record<string, string> = {};
 
-/** Tokenise the first element's content into words (for zoom-in-word). */
-function getZoomWords(slide: Slide): string[] {
-  const elements = getElements(slide);
-  const mainEl = elements[0];
-  if (!mainEl) return [];
-  return mainEl.content.replace(/\n/g, ' ').split(/\s+/).filter(Boolean);
-}
-
-/**
- * Calculate total animation sub-steps for a slide.
- * Special overrides for zoom-in-word, items-grid, and grid-to-sidebar slides.
- */
-function calcTotalSteps(slide: Slide): number {
-  if (slide.animationTemplate === 'zoom-in-word') {
-    return getZoomWords(slide).length + 1 /* subtitle */ + 1; /* morph */
-  }
-  if (slide.groupedAnimation?.type === 'items-grid') {
-    const N = slide.groupedAnimation.items.length;
-    if (slide.animationTemplate === 'grid-to-sidebar') {
-      return N + 1 /* end-state */ + N; /* one-by-one migration */
-    }
-    return N + 1; // end-state only
-  }
-  const groupSteps = slide.groupedAnimation?.items.length ?? 0;
-  const elements = getElements(slide);
-  const elementSteps = elements.filter(
-    (el) => el.animation.type !== 'none',
-  ).length;
-  return groupSteps > 0 ? groupSteps : Math.max(elementSteps, 1);
-}
-
-/** Generate sub-slide labels for the strip. */
-function generateSubSlideLabels(slide: Slide, script?: SlideScript): string[] {
-  const total = calcTotalSteps(slide);
-  const labels: string[] = [];
-
-  // Zoom-in-word: word labels + subtitle + morph
-  if (slide.animationTemplate === 'zoom-in-word') {
-    const words = getZoomWords(slide);
-    words.forEach((w) => labels.push(`"${w}"`));
-    labels.push('Subtitle');
-    labels.push('Morph → Title');
-    return labels;
-  }
-
+  // From grouped animation items (legacy)
   if (slide.groupedAnimation) {
-    const items = slide.groupedAnimation.items;
-    for (let i = 0; i < items.length; i++) {
-      labels.push(items[i].title);
-    }
-    // Extra steps for items-grid
-    if (slide.groupedAnimation.type === 'items-grid') {
-      labels.push('All Items');
-      if (slide.animationTemplate === 'grid-to-sidebar') {
-        items.forEach((it) => labels.push(`→ ${it.title}`));
-      }
-    }
-  } else {
-    const elements = getElements(slide);
-    const animated = [...elements]
-      .filter((el) => el.animation.type !== 'none')
-      .sort((a, b) => a.animation.delay - b.animation.delay);
-    for (let i = 0; i < total; i++) {
-      const el = animated[i];
-      if (el) {
-        const scriptEl = script?.elements.find((s) => s.elementId === el.id);
-        labels.push(scriptEl?.label ?? (el.content.slice(0, 20) || `Element ${i + 1}`));
-      } else {
-        labels.push(`Step ${i + 1}`);
-      }
+    for (const item of slide.groupedAnimation.items) {
+      map[item.id] = item.title;
     }
   }
-  return labels;
+
+  // From slide items tree (title atoms within cards)
+  // Simple heuristic: look for card children with text atoms
+  for (const item of slide.items) {
+    if (item.type === 'card' || item.type === 'layout') {
+      map[item.id] = item.id; // fallback
+    }
+  }
+
+  return map;
 }
 
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
+/** Pair of slide and its index in the full slides array (for selection). */
+type SlideEntry = { slide: Slide; index: number };
+
 export function SlideEditorClient() {
   const [slides] = useState<Slide[]>(DEMO_SLIDES);
   const [scripts] = useState<SlideScript[]>(DEMO_SCRIPTS);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [showSubSlides, setShowSubSlides] = useState(true);
-  const [currentSubStep, setCurrentSubStep] = useState(0);
+  const [showScenes, setShowScenes] = useState(true);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+
+  const { collapsedSections, toggleSectionCollapse } = useEditorStore();
+
+  // Group slides for sidebar: unsectioned first, then each section's slides in section order
+  const { unsectionedEntries, sectionEntries } = useMemo(() => {
+    const withIndex: SlideEntry[] = slides.map((slide, index) => ({ slide, index }));
+    const unsectioned = withIndex.filter(({ slide }) => !slide.sectionId);
+    const sectionEntriesList: { sectionId: string; title: string; icon?: string; slideIds: string[]; entries: SlideEntry[] }[] = DEMO_SECTIONS.map((section) => {
+      const entries: SlideEntry[] = section.slideIds
+        .map((id) => withIndex.find((e) => e.slide.id === id))
+        .filter((e): e is SlideEntry => e != null);
+      return { sectionId: section.id, title: section.title, icon: section.icon, slideIds: section.slideIds, entries };
+    });
+    return { unsectionedEntries: unsectioned, sectionEntries: sectionEntriesList };
+  }, [slides]);
 
   const currentSlide = slides[currentSlideIndex];
   const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
-  const totalSteps = useMemo(() => calcTotalSteps(currentSlide), [currentSlide]);
-  const subSlideLabels = useMemo(
-    () => generateSubSlideLabels(currentSlide, currentScript),
-    [currentSlide, currentScript]
+
+  // Derive scenes from the slide (migrate from legacy if needed)
+  const scenes = useMemo(() => ensureScenes(currentSlide), [currentSlide]);
+  const currentScene = scenes[currentSceneIndex] ?? scenes[0];
+
+  // Calculate steps for the current scene
+  const totalSteps = useMemo(() => calcSceneSteps(currentScene), [currentScene]);
+
+  // Build widget title map for labels
+  const widgetTitles = useMemo(
+    () => buildWidgetTitleMap(currentSlide, scenes),
+    [currentSlide, scenes],
   );
 
-  // Reset sub-step when switching slides
+  // Generate step labels from the scene
+  const stepLabels = useMemo(() => {
+    // Use script labels when available
+    const scriptTitles = { ...widgetTitles };
+    if (currentScript) {
+      for (const el of currentScript.elements) {
+        scriptTitles[el.elementId] = el.label;
+      }
+    }
+    return generateSceneStepLabels(currentScene, scriptTitles);
+  }, [currentScene, widgetTitles, currentScript]);
+
+  // ---------------------------------------------------------------------------
+  // Navigation handlers
+  // ---------------------------------------------------------------------------
+
+  // Reset scene + step when switching slides
   const handleSlideSelect = useCallback((index: number) => {
     setCurrentSlideIndex(index);
-    setCurrentSubStep(0);
+    setCurrentSceneIndex(0);
+    setCurrentStepIndex(0);
     setSelectedElementId(null);
   }, []);
 
-  const handleSubStepSelect = useCallback((step: number) => {
-    setCurrentSubStep(step);
+  // Reset step when switching scenes
+  const handleSceneSelect = useCallback((sceneIndex: number) => {
+    setCurrentSceneIndex(sceneIndex);
+    setCurrentStepIndex(0);
+    setSelectedElementId(null);
   }, []);
+
+  const handleStepSelect = useCallback((step: number) => {
+    setCurrentStepIndex(step);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Compute legacy-compatible currentSubStep for canvas rendering
+  // This maps (sceneIndex, stepIndex) → a flat step index that the canvas uses
+  // ---------------------------------------------------------------------------
+
+  const currentSubStep = useMemo(() => {
+    if (currentScene.widgetStateLayer.enterBehavior.revealMode === 'sequential') {
+      return currentStepIndex;
+    }
+    // All-at-once: if step > 0, all widgets are revealed
+    return currentStepIndex > 0
+      ? currentScene.widgetStateLayer.animatedWidgetIds.length - 1
+      : 0;
+  }, [currentScene, currentStepIndex]);
+
+  // Total legacy steps (for canvas compatibility)
+  const legacyTotalSteps = useMemo(() => {
+    const { enterBehavior, animatedWidgetIds } = currentScene.widgetStateLayer;
+    if (enterBehavior.revealMode === 'sequential') {
+      return animatedWidgetIds.length || 1;
+    }
+    return 1;
+  }, [currentScene]);
 
   // Find which script element corresponds to the selected element
   const activeScriptElementId = selectedElementId ?? undefined;
@@ -144,42 +162,100 @@ export function SlideEditorClient() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowSubSlides(!showSubSlides)}
+            onClick={() => setShowScenes(!showScenes)}
             className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-              showSubSlides
+              showScenes
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-foreground border-border hover:bg-muted'
             }`}
           >
-            {showSubSlides ? 'Sub-slides ON' : 'Sub-slides OFF'}
+            {showScenes ? 'Scenes ON' : 'Scenes OFF'}
           </button>
           <span className="text-xs text-muted-foreground">
             Slide {currentSlideIndex + 1}/{slides.length}
-            {showSubSlides && ` · Step ${currentSubStep + 1}/${totalSteps}`}
+            {showScenes && scenes.length > 1 && (
+              <> &middot; Scene {currentSceneIndex + 1}/{scenes.length}</>
+            )}
+            {showScenes && <> &middot; Step {currentStepIndex + 1}/{totalSteps}</>}
           </span>
         </div>
       </div>
 
       {/* Main workspace: thumbnails | canvas | (future: properties) */}
       <div className="flex flex-1 min-h-0">
-        {/* Left panel — slide thumbnails */}
+        {/* Left panel — sections and slide thumbnails with scene children */}
         <div className="w-48 lg:w-56 border-r bg-muted/20 overflow-y-auto shrink-0">
           <div className="p-2 space-y-2">
-            {slides.map((slide, index) => (
-              <SlideThumbnail
-                key={slide.id}
-                slide={slide}
-                index={index}
-                isActive={index === currentSlideIndex}
-                hasGroupedAnimation={!!slide.groupedAnimation}
-                transitionType={slide.transition}
-                onClick={() => handleSlideSelect(index)}
-              />
-            ))}
+            {/* Unsectioned slides at the top */}
+            {unsectionedEntries.length > 0 && (
+              <div className="space-y-2">
+                {unsectionedEntries.map(({ slide, index }) => {
+                  const slideScenes = ensureScenes(slide);
+                  return (
+                    <SlideThumbnail
+                      key={slide.id}
+                      slide={slide}
+                      index={index}
+                      isActive={index === currentSlideIndex}
+                      hasGroupedAnimation={!!slide.groupedAnimation}
+                      transitionType={slide.transition}
+                      onClick={() => handleSlideSelect(index)}
+                      scenes={slideScenes}
+                      activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
+                      onSceneSelect={handleSceneSelect}
+                      showScenes={showScenes}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Section headers and their slides */}
+            {sectionEntries.map(({ sectionId, title, icon, entries }) => {
+              const isCollapsed = collapsedSections[sectionId] === true;
+              return (
+                <div key={sectionId} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleSectionCollapse(sectionId)}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left bg-muted/50 hover:bg-muted border border-transparent hover:border-border transition-colors"
+                  >
+                    <span className="text-muted-foreground shrink-0 transition-transform duration-200" style={{ transform: isCollapsed ? 'rotate(-90deg)' : undefined }}>
+                      ▼
+                    </span>
+                    {icon && <span className="text-sm">{icon}</span>}
+                    <span className="text-xs font-medium text-foreground truncate flex-1">{title}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">{entries.length}</span>
+                  </button>
+                  {!isCollapsed && (
+                    <div className="space-y-2 pl-0">
+                      {entries.map(({ slide, index }) => {
+                        const slideScenes = ensureScenes(slide);
+                        return (
+                          <SlideThumbnail
+                            key={slide.id}
+                            slide={slide}
+                            index={index}
+                            isActive={index === currentSlideIndex}
+                            hasGroupedAnimation={!!slide.groupedAnimation}
+                            transitionType={slide.transition}
+                            onClick={() => handleSlideSelect(index)}
+                            scenes={slideScenes}
+                            activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
+                            onSceneSelect={handleSceneSelect}
+                            showScenes={showScenes}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Center — main canvas + sub-slide strip */}
+        {/* Center — main canvas + animation step strip */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Canvas area */}
           <div className="flex-1 min-h-0 flex items-center justify-center p-4 bg-muted/10 overflow-auto">
@@ -187,19 +263,19 @@ export function SlideEditorClient() {
               slide={currentSlide}
               selectedElementId={selectedElementId}
               currentSubStep={currentSubStep}
-              totalSteps={totalSteps}
+              totalSteps={legacyTotalSteps}
               onElementSelect={setSelectedElementId}
             />
           </div>
 
-          {/* Sub-slide strip */}
-          {showSubSlides && (
-            <SubSlideStrip
-              labels={subSlideLabels}
-              currentStep={currentSubStep}
+          {/* Animation step strip */}
+          {showScenes && (
+            <AnimationStepStrip
+              labels={stepLabels}
+              currentStep={currentStepIndex}
               totalSteps={totalSteps}
-              slide={currentSlide}
-              onStepSelect={handleSubStepSelect}
+              scene={currentScene}
+              onStepSelect={handleStepSelect}
             />
           )}
         </div>

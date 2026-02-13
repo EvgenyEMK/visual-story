@@ -2,6 +2,10 @@
 
 import type { Slide } from '@/types/slide';
 import { flattenItemsAsElements } from '@/lib/flatten-items';
+import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
+import { CardExpandLayout } from '@/components/slide-ui';
+import type { CardExpandVariant } from '@/components/slide-ui';
+import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
 
 interface SlideMainCanvasProps {
   slide: Slide;
@@ -46,11 +50,8 @@ export function SlideMainCanvas({
   const hasGroup = !!slide.groupedAnimation;
   const isZoomWord = slide.animationTemplate === 'zoom-in-word';
   const isSidebarDetail = slide.animationTemplate === 'sidebar-detail';
-  const showSlideTitleHeader =
-    slide.animationTemplate === 'slide-title' ||
-    slide.animationTemplate === 'grid-to-sidebar' ||
-    slide.groupedAnimation?.type === 'items-grid' ||
-    isSidebarDetail;
+  const isCardExpand = slide.groupedAnimation?.type === 'card-expand';
+  const hasStructuredHeader = !!slide.header;
   const showItemsGrid = slide.groupedAnimation?.type === 'items-grid';
 
   // Derive flat elements from the item tree (prefer items, fallback to elements)
@@ -82,50 +83,12 @@ export function SlideMainCanvas({
     };
   };
 
-  // --- Render: Slide Title header bar ---
-  const renderSlideTitleHeader = () => {
-    if (!showSlideTitleHeader) return null;
-    const titleEl = elements[0];
-    const subtitleEl = elements[1];
-    if (!titleEl) return null;
-
+  // --- Render: Structured header (from slide.header data model) ---
+  const renderStructuredHeader = () => {
+    if (!hasStructuredHeader) return null;
     return (
-      <div className="absolute top-0 left-0 right-0 px-5 py-2.5 flex items-baseline justify-between border-b border-border/40 z-10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
-        <div className="flex items-baseline gap-3">
-          <span
-            className="transition-all duration-300 cursor-pointer"
-            style={{
-              fontSize: Math.min(titleEl.style.fontSize ?? 28, 22),
-              fontWeight: (titleEl.style.fontWeight as string) ?? 'bold',
-              color: titleEl.style.color ?? undefined,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onElementSelect(titleEl.id);
-            }}
-          >
-            {titleEl.content}
-          </span>
-          {subtitleEl && (
-            <span
-              className="transition-all duration-300 cursor-pointer"
-              style={{
-                fontSize: Math.min(subtitleEl.style.fontSize ?? 14, 12),
-                color: subtitleEl.style.color ?? '#94a3b8',
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onElementSelect(subtitleEl.id);
-              }}
-            >
-              {subtitleEl.content}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-          <span className="text-[10px] text-muted-foreground">Active</span>
-        </div>
+      <div className="z-10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
+        <SlideHeaderRenderer header={slide.header!} slide={slide} />
       </div>
     );
   };
@@ -354,6 +317,29 @@ export function SlideMainCanvas({
     );
   };
 
+  // --- Render: Card-Expand (smart card) via CardExpandLayout ---
+  const renderCardExpandOverlay = () => {
+    if (!isCardExpand) return null;
+    const variant = (slide.groupedAnimation!.cardExpandVariant ?? 'grid-to-overlay') as CardExpandVariant;
+
+    return (
+      <div
+        className="absolute inset-0 z-10"
+        style={{ top: hasStructuredHeader ? 40 : 0, backgroundColor: '#0f172a' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CardExpandLayout
+          items={SMART_CARD_ITEMS}
+          variant={variant}
+          cardSize="sm"
+          columns={variant === 'row-to-split' ? undefined : 2}
+          gap={8}
+          expandedIndex={currentSubStep}
+        />
+      </div>
+    );
+  };
+
   return (
     <div
       className="relative w-full max-w-4xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900"
@@ -366,8 +352,8 @@ export function SlideMainCanvas({
         {hasGroup && ` · ${slide.groupedAnimation!.type}`}
       </div>
 
-      {/* Slide Title header */}
-      {renderSlideTitleHeader()}
+      {/* Structured header from slide.header data model */}
+      {renderStructuredHeader()}
 
       {/* Zoom-In Word Reveal overlay */}
       {renderZoomWordOverlay()}
@@ -378,6 +364,9 @@ export function SlideMainCanvas({
       {/* Sidebar-Detail overlay */}
       {isSidebarDetail && renderSidebarDetailOverlay()}
 
+      {/* Card-Expand (Smart Card) overlay */}
+      {renderCardExpandOverlay()}
+
       {/* Elements */}
       {elements.map((element, idx) => {
         const { visible, isFocused } = getElementVisibility(element.id, idx);
@@ -386,8 +375,12 @@ export function SlideMainCanvas({
         // Zoom-word slides render elements via overlay
         if (isZoomWord) return null;
 
-        // Items-grid / sidebar-detail slides render title/subtitle via header
-        if ((showItemsGrid || isSidebarDetail) && idx <= 1) return null;
+        // Card-expand slides render entirely via CardExpandLayout overlay
+        if (isCardExpand) return null;
+
+        // Slides with structured headers already render title/subtitle via header
+        // Skip legacy title/subtitle elements that were formerly at idx 0-1
+        if (hasStructuredHeader && (showItemsGrid || isSidebarDetail) && idx <= 1) return null;
 
         return (
           <div
@@ -430,8 +423,8 @@ export function SlideMainCanvas({
         );
       })}
 
-      {/* Grouped animation items overlay — standard (non-grid, non-sidebar) grouped */}
-      {hasGroup && !showItemsGrid && !isSidebarDetail && (
+      {/* Grouped animation items overlay — standard (non-grid, non-sidebar, non-card-expand) grouped */}
+      {hasGroup && !showItemsGrid && !isSidebarDetail && !isCardExpand && (
         <div className="absolute bottom-12 left-4 right-4 flex gap-2 justify-center">
           {slide.groupedAnimation!.items.map((item, i) => {
             const isRevealed = i <= currentSubStep;

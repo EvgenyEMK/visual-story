@@ -69,14 +69,9 @@ export function AppNavbarWrapper() {
           active: pathname === '/' || pathname === '/en' || pathname === '/fr'
         },
         {
-          href: '/transitions-demo',
+          href: '/demo',
           label: t('navigation.demo'),
-          active: pathname.includes('/transitions-demo')
-        },
-        {
-          href: '/ui-components',
-          label: t('navigation.demo2'),
-          active: pathname.includes('/ui-components')
+          active: pathname.includes('/demo')
         },
         {
           href: '/slide-editor',

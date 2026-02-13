@@ -423,8 +423,29 @@ export interface Slide {
   /** Override trigger mode for this slide (inherits from project if unset). */
   triggerMode?: TriggerMode;
 
-  /** Grouped animation config — present when this slide uses a grouped layout. */
+  /**
+   * Grouped animation config — present when this slide uses a grouped layout.
+   * @deprecated Use `scenes` for new code. Kept for backward compatibility
+   *   during migration. The `migrateGroupedToScenes()` helper converts this
+   *   to the Scene model.
+   */
   groupedAnimation?: import('@/types/animation').GroupedAnimationConfig;
+
+  /**
+   * Ordered list of scenes (content children) for this slide.
+   * Each scene is a meaningful narrative unit with its own widget state layer.
+   * Auto-generated from slide/widget templates.
+   *
+   * When present, this takes priority over `groupedAnimation`.
+   * @source docs/technical-architecture/adr-001-scenes-widget-state-layers.md
+   */
+  scenes?: import('@/types/scene').Scene[];
+
+  /**
+   * Section ID this slide belongs to (for organizational hierarchy).
+   * Null/undefined = slide is at the presentation root level.
+   */
+  sectionId?: string;
 }
 
 // ---------------------------------------------------------------------------

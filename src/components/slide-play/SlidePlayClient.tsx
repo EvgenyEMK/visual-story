@@ -3,12 +3,19 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { DEMO_SLIDES, DEMO_SCRIPTS } from '@/config/demo-slides';
 import type { Slide } from '@/types/slide';
+import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
+import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
+import { ensureScenes } from '@/lib/migrate-to-scenes';
 import { flattenItems } from '@/lib/flatten-items';
 import { SlideFrame } from '@/components/animation/SlideFrame';
+import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
 import { AnimationLayer } from '@/components/animation/AnimationLayer';
 import { ItemRenderer, type ItemVisibility } from '@/components/animation/ItemRenderer';
 import { SlideAnimationProvider } from '@/hooks/useSlideAnimation';
+import { CardExpandLayout } from '@/components/slide-ui';
+import type { CardExpandVariant } from '@/components/slide-ui';
+import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -22,44 +29,19 @@ function getZoomWords(slide: Slide): string[] {
   return mainAtom.content.replace(/\n/g, ' ').split(/\s+/).filter(Boolean);
 }
 
-/**
- * Calculate total sub-steps for a slide.
- */
-function calcTotalSteps(slide: Slide): number {
-  if (slide.animationTemplate === 'zoom-in-word') {
-    return getZoomWords(slide).length + 1 /* subtitle */ + 1; /* morph */
-  }
-  if (slide.groupedAnimation?.type === 'items-grid') {
-    const N = slide.groupedAnimation.items.length;
-    if (slide.animationTemplate === 'grid-to-sidebar') {
-      return N + 1 /* end-state */ + N; /* one-by-one migration */
-    }
-    return N + 1; // end-state only
-  }
-  const groupSteps = slide.groupedAnimation?.items.length ?? 0;
-  const atoms = flattenItems(slide.items);
-  const elementSteps = atoms.filter(
-    (a) => a.animation && a.animation.type !== 'none',
-  ).length;
-  return groupSteps > 0 ? groupSteps : Math.max(elementSteps, 1);
-}
-
 function isZoomWordSlide(slide: Slide): boolean {
   return slide.animationTemplate === 'zoom-in-word';
-}
-
-function isSlideTitleSlide(slide: Slide): boolean {
-  return slide.animationTemplate === 'slide-title';
 }
 
 function isItemsGridSlide(slide: Slide): boolean {
   return slide.groupedAnimation?.type === 'items-grid';
 }
 
-// ---------------------------------------------------------------------------
-// Items Grid default layouts (columns per row for 2–8 items)
-// ---------------------------------------------------------------------------
+function isCardExpandSlide(slide: Slide): boolean {
+  return slide.groupedAnimation?.type === 'card-expand';
+}
 
+// Items Grid default layouts (columns per row for 2–8 items)
 const GRID_LAYOUTS: Record<number, number[]> = {
   2: [2],
   3: [3],
@@ -74,6 +56,20 @@ function getGridLayout(count: number): number[] {
   return GRID_LAYOUTS[count] ?? [Math.min(count, 4)];
 }
 
+/**
+ * Convert scene-level (sceneIndex, stepIndex) to a flat sub-step
+ * for backward-compatible canvas rendering.
+ */
+function sceneToFlatStep(scene: Scene, stepIndex: number): number {
+  if (scene.widgetStateLayer.enterBehavior.revealMode === 'sequential') {
+    return stepIndex;
+  }
+  // All-at-once: step 0 = hidden, step >= 1 = all visible
+  return stepIndex > 0
+    ? scene.widgetStateLayer.animatedWidgetIds.length - 1
+    : 0;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -82,48 +78,71 @@ export function SlidePlayClient() {
   const [slides] = useState<Slide[]>(DEMO_SLIDES);
   const [scripts] = useState<SlideScript[]>(DEMO_SCRIPTS);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const currentSlide = slides[currentSlideIndex];
   const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
-  const totalSteps = useMemo(() => calcTotalSteps(currentSlide), [currentSlide]);
+
+  // Derive scenes
+  const scenes = useMemo(() => ensureScenes(currentSlide), [currentSlide]);
+  const currentScene = scenes[currentSceneIndex] ?? scenes[0];
+  const totalSteps = useMemo(() => calcSceneSteps(currentScene), [currentScene]);
   const hasGroup = !!currentSlide.groupedAnimation;
+
+  // Flat step for canvas compatibility
+  const currentStep = useMemo(
+    () => sceneToFlatStep(currentScene, currentStepIndex),
+    [currentScene, currentStepIndex],
+  );
 
   // Auto-play timer
   useEffect(() => {
     if (!isPlaying) return;
-    const stepMs = currentSlide.groupedAnimation?.stepDuration ?? 1500;
+    const stepMs = currentScene.widgetStateLayer.enterBehavior.stepDuration ?? 1500;
     const timer = setTimeout(() => {
-      if (currentStep < totalSteps - 1) {
-        setCurrentStep((s) => s + 1);
+      if (currentStepIndex < totalSteps - 1) {
+        setCurrentStepIndex((s) => s + 1);
+      } else if (currentSceneIndex < scenes.length - 1) {
+        setCurrentSceneIndex((s) => s + 1);
+        setCurrentStepIndex(0);
       } else if (currentSlideIndex < slides.length - 1) {
         setCurrentSlideIndex((s) => s + 1);
-        setCurrentStep(0);
+        setCurrentSceneIndex(0);
+        setCurrentStepIndex(0);
       } else {
         setIsPlaying(false);
       }
     }, stepMs);
     return () => clearTimeout(timer);
-  }, [isPlaying, currentStep, currentSlideIndex, totalSteps, slides.length, currentSlide]);
+  }, [isPlaying, currentStepIndex, currentSceneIndex, currentSlideIndex, totalSteps, scenes.length, slides.length, currentScene]);
 
   const handleAdvance = useCallback(() => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep((s) => s + 1);
+    if (currentStepIndex < totalSteps - 1) {
+      setCurrentStepIndex((s) => s + 1);
+    } else if (currentSceneIndex < scenes.length - 1) {
+      setCurrentSceneIndex((s) => s + 1);
+      setCurrentStepIndex(0);
     } else if (currentSlideIndex < slides.length - 1) {
       setCurrentSlideIndex((s) => s + 1);
-      setCurrentStep(0);
+      setCurrentSceneIndex(0);
+      setCurrentStepIndex(0);
     }
-  }, [currentStep, totalSteps, currentSlideIndex, slides.length]);
+  }, [currentStepIndex, totalSteps, currentSceneIndex, scenes.length, currentSlideIndex, slides.length]);
 
   const handleRetreat = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex((s) => s - 1);
+    } else if (currentSceneIndex > 0) {
+      setCurrentSceneIndex((s) => s - 1);
+      setCurrentStepIndex(0);
     } else if (currentSlideIndex > 0) {
       setCurrentSlideIndex((s) => s - 1);
-      setCurrentStep(0);
+      setCurrentSceneIndex(0);
+      setCurrentStepIndex(0);
     }
-  }, [currentStep, currentSlideIndex]);
+  }, [currentStepIndex, currentSceneIndex, currentSlideIndex]);
 
   // Keyboard controls
   useEffect(() => {
@@ -153,7 +172,23 @@ export function SlidePlayClient() {
         return { visible: false, isFocused: false, hidden: true };
       }
 
-      // For grouped animations, check if the item is a grouped item card
+      // Scene-based visibility: check if widget is in the animated list
+      const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
+      const widgetIndex = animatedWidgetIds.indexOf(itemId);
+
+      if (widgetIndex !== -1) {
+        if (enterBehavior.revealMode === 'sequential') {
+          const isRevealed = widgetIndex <= currentStep;
+          const isFocused = widgetIndex === currentStep;
+          return { visible: isRevealed, isFocused, hidden: false };
+        } else {
+          // All-at-once: all visible after step 0
+          const allRevealed = currentStepIndex > 0 || totalSteps <= 1;
+          return { visible: allRevealed, isFocused: false, hidden: false };
+        }
+      }
+
+      // For grouped animations (legacy fallback), check grouped items
       if (hasGroup) {
         const groupItems = currentSlide.groupedAnimation!.items;
         const groupItemIndex = groupItems.findIndex((gi) => gi.id === itemId);
@@ -181,7 +216,7 @@ export function SlidePlayClient() {
       // Default: visible
       return { visible: true, isFocused: false, hidden: false };
     },
-    [currentSlide, currentStep, hasGroup],
+    [currentSlide, currentStep, currentStepIndex, currentScene, hasGroup, totalSteps],
   );
 
   // -----------------------------------------------------------------------
@@ -190,7 +225,7 @@ export function SlidePlayClient() {
 
   const currentScriptText = (() => {
     if (!currentScript) return '';
-    if (currentStep === 0 && !hasGroup) return currentScript.opening.text;
+    if (currentStepIndex === 0 && !hasGroup) return currentScript.opening.text;
     if (hasGroup && currentScript.elements[currentStep]) {
       return currentScript.elements[currentStep].script.text;
     }
@@ -272,47 +307,6 @@ export function SlidePlayClient() {
               {subtitleAtom.content}
             </span>
           )}
-        </div>
-      </div>
-    );
-  };
-
-  // Slide Title header
-  const renderSlideTitleHeader = () => {
-    if (!isSlideTitleSlide(currentSlide) && !isItemsGridSlide(currentSlide)) return null;
-    const atoms = flattenItems(currentSlide.items);
-    const titleAtom = atoms[0];
-    const subtitleAtom = atoms[1];
-    if (!titleAtom) return null;
-
-    return (
-      <div className="absolute top-0 left-0 right-0 px-6 py-3 flex items-baseline justify-between border-b border-black/5 z-10">
-        <div className="flex items-baseline gap-3">
-          <span
-            className="transition-all duration-500"
-            style={{
-              fontSize: titleAtom.style?.fontSize ?? 28,
-              fontWeight: (titleAtom.style?.fontWeight as string) ?? 'bold',
-              color: titleAtom.style?.color ?? '#1e293b',
-            }}
-          >
-            {titleAtom.content}
-          </span>
-          {subtitleAtom && (
-            <span
-              className="transition-all duration-500"
-              style={{
-                fontSize: subtitleAtom.style?.fontSize ?? 14,
-                color: subtitleAtom.style?.color ?? '#64748b',
-              }}
-            >
-              {subtitleAtom.content}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-          <span className="text-xs text-zinc-400">Active</span>
         </div>
       </div>
     );
@@ -496,17 +490,39 @@ export function SlidePlayClient() {
     );
   };
 
+  // Card-Expand (Smart Card) overlay
+  const renderCardExpandOverlay = () => {
+    if (!isCardExpandSlide(currentSlide)) return null;
+    const variant = (currentSlide.groupedAnimation!.cardExpandVariant ?? 'grid-to-overlay') as CardExpandVariant;
+
+    return (
+      <div
+        className="absolute inset-0 z-10"
+        style={{ backgroundColor: '#0f172a' }}
+      >
+        <CardExpandLayout
+          items={SMART_CARD_ITEMS}
+          variant={variant}
+          cardSize="sm"
+          columns={variant === 'row-to-split' ? undefined : 2}
+          gap={8}
+          expandedIndex={currentStep}
+        />
+      </div>
+    );
+  };
+
   // -----------------------------------------------------------------------
   // Derived booleans
   // -----------------------------------------------------------------------
 
   const isZoomWord = isZoomWordSlide(currentSlide);
   const isSidebarDetail = currentSlide.animationTemplate === 'sidebar-detail';
-  const showSlideTitleHeader = isSlideTitleSlide(currentSlide) || isItemsGridSlide(currentSlide) || currentSlide.animationTemplate === 'grid-to-sidebar' || isSidebarDetail;
   const showItemsGrid = isItemsGridSlide(currentSlide);
+  const showCardExpand = isCardExpandSlide(currentSlide);
 
-  // Whether this slide uses a special overlay that handles its own rendering
-  const hasSpecialOverlay = isZoomWord || showItemsGrid || isSidebarDetail;
+  const hasStructuredHeader = !!currentSlide.header;
+  const hasSpecialOverlay = isZoomWord || showItemsGrid || isSidebarDetail || showCardExpand;
 
   // -----------------------------------------------------------------------
   // HUD layer content
@@ -514,12 +530,11 @@ export function SlidePlayClient() {
 
   const hudContent = (
     <div className="pointer-events-auto">
-      {/* Template badge */}
       <div className="absolute bottom-2 left-2 text-[9px] text-black/20 dark:text-white/15 font-mono">
         {currentSlide.animationTemplate}
         {hasGroup && ` · ${currentSlide.groupedAnimation!.type}`}
+        {scenes.length > 1 && ` · Scene ${currentSceneIndex + 1}/${scenes.length}`}
       </div>
-      {/* Transition indicator */}
       <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
         {currentSlide.transition !== 'none' && `→ ${currentSlide.transition}`}
       </div>
@@ -540,16 +555,18 @@ export function SlidePlayClient() {
         >
           <SlideFrame
             className="max-w-5xl mx-8 rounded-lg bg-white dark:bg-zinc-900 shadow-2xl"
+            header={hasStructuredHeader
+              ? <SlideHeaderRenderer header={currentSlide.header!} slide={currentSlide} />
+              : undefined
+            }
             animationLayer={<AnimationLayer />}
             hudLayer={hudContent}
           >
-            {/* Slide Title header for applicable slides */}
-            {showSlideTitleHeader && renderSlideTitleHeader()}
-
             {/* Special overlays rendered directly in the layout layer */}
             {isZoomWord && renderZoomWordOverlay()}
             {showItemsGrid && renderItemsGridOverlay()}
             {isSidebarDetail && renderSidebarDetailOverlay()}
+            {showCardExpand && renderCardExpandOverlay()}
 
             {/* Grouped items bar for non-special grouped slides */}
             {hasGroup && !hasSpecialOverlay && (
@@ -599,7 +616,7 @@ export function SlidePlayClient() {
         <div className="flex items-center justify-between px-6 py-3 bg-zinc-900 border-t border-white/10">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => { setCurrentSlideIndex(0); setCurrentStep(0); }}
+              onClick={() => { setCurrentSlideIndex(0); setCurrentSceneIndex(0); setCurrentStepIndex(0); }}
               className="px-2 py-1 text-xs text-white/60 hover:text-white transition-colors"
             >
               ⏮ Start
@@ -633,7 +650,7 @@ export function SlidePlayClient() {
               {slides.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => { setCurrentSlideIndex(i); setCurrentStep(0); }}
+                  onClick={() => { setCurrentSlideIndex(i); setCurrentSceneIndex(0); setCurrentStepIndex(0); }}
                   className={`w-2 h-2 rounded-full transition-all ${
                     i === currentSlideIndex
                       ? 'bg-white scale-125'
@@ -646,8 +663,9 @@ export function SlidePlayClient() {
             </div>
             <span className="text-xs text-white/40 font-mono">
               {currentSlideIndex + 1}/{slides.length}
+              {scenes.length > 1 && ` · Scene ${currentSceneIndex + 1}/${scenes.length}`}
               {' · '}
-              Step {currentStep + 1}/{totalSteps}
+              Step {currentStepIndex + 1}/{totalSteps}
             </span>
           </div>
 

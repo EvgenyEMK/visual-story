@@ -329,9 +329,9 @@ function CrossFadeDemo({ themeMode }: ThemeProps) {
 // Section Export
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function SlideTransitionSection({ themeMode }: { themeMode: ThemeMode }) {
+export function SlideTransitionSection({ themeMode, gridClassName }: { themeMode: ThemeMode; gridClassName?: string }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className={gridClassName ?? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'}>
       <MorphDemo themeMode={themeMode} />
       <PushDemo themeMode={themeMode} />
       <PanDemo themeMode={themeMode} />

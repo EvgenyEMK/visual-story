@@ -17,17 +17,20 @@ Startup to create SaaS platform that makes it simple for users to
 
 
 # 2. Product Purpose & Vision
-    Automate creation of compelling visual stories with animated content and voice-over available as slide show and as recorded video
-    Transform static slides to engaging dynamic content that can be (a) linked to data sources and (b) can provide extra context on click on visual element
-    The system should feel like “a motion designer embedded in the product”
+
+> **Key change (2026-02):** Vision shifted from "motion designer for video content" to "smart interactive slides for business users." See [key-product-changes.md](./key-product-changes.md) for full rationale.
+
+    Create smart interactive presentations with automated animations and interactive widgets that go beyond static slides
+    Transform static business slides into engaging dynamic content where users can (a) click to drill into details via animated card expansions, (b) use reusable widget templates with linked status indicators, and (c) connect widgets to data sources (Phase 2+)
+    The system should feel like "a presentation designer + interactivity engine embedded in the product"
 
 
 # 3. User needs (problem statement)
 ## 3.1. Manual animation is too complex and time consuming
 
     Users want professional, story-driven animated slides but:
-    - don’t know animation principles,
-    - don’t want to manually configure transitions,
+    - don't know animation principles,
+    - don't want to manually configure transitions,
     - struggle to synchronize visuals with narration
     - want to rely on proven animation templates (within and between slides)
 
@@ -49,9 +52,54 @@ Startup to create SaaS platform that makes it simple for users to
     Users want the slide content to reflect the latest status of project, task or similar.
     For example, the slide represents functional structure of elements and colors should indicate current status per element (to do, in-progress, done, issue, at risk, etc.)
 
+## 3.5. Interactive slides with smart widgets for business presentations
+
+> **Added 2026-02** — reflects ICP shift to business users.
+
+    Business users need interactive slides that go beyond static content:
+    - Click-to-expand cards: click a compact card (icon+title or stat+trend) to reveal an animated expanded view with rich detail content (task lists, nested cards, formatted text)
+    - Reusable widget templates: define status legends, progress indicators, and task lists once, reuse across slides with consistent formatting
+    - Inter-linked widgets: a status legend widget defines available icons/colors; task list widgets reference it so status icons stay consistent
+    - Auto-present and manual modes: some expanded views are shown during auto-presentation, others are available only on click (e.g., for Q&A during live presentations or offline review)
+    - Speaker notes per widget: each expandable card has its own speech text (for TTS) and separate contextual notes
+
 # 4. Target market and Ideal Customer Profile (ICP)
 
-## 4.1. Primary Target: Individual Content Creators
+> **Key change (2026-02):** Primary ICP shifted from individual content creators to business users (SMB/corporate). See [key-product-changes.md](./key-product-changes.md) for full rationale.
+
+## 4.1. Primary Target: Business Users (SMB and Mid-Market)
+
+**Who they are:**
+- Project managers, team leads, business analysts, and department heads at SMBs and mid-market companies (50-500 employees)
+- Professionals who create recurring presentations: weekly status updates, quarterly roadmaps, project proposals, onboarding decks, sales enablement materials
+- Teams that need interactive slides — not just static decks — to communicate complex project information effectively
+
+**Demographics:**
+- Age: 28-50
+- Location: Global (English-speaking markets primary, EU secondary)
+- Technical proficiency: Comfortable with SaaS tools (Notion, Jira, Slack), not professional designers
+
+**Pain Points:**
+- Spend 3-8+ hours per week creating and updating status presentations manually
+- PowerPoint/Google Slides animations are tedious to configure and look outdated
+- No existing tool supports interactive drill-down (click a KPI to see task details) within slides
+- Status indicators, color legends, and formatting must be manually kept consistent across slides
+- Cannot link slide content to project management data without manual copy-paste
+
+**Budget & Willingness to Pay:**
+- $29-49/month per user for tools that save significant weekly time
+- Team budgets available ($99-199/month for 5-10 seats)
+- Evaluate ROI based on hours saved per week, not entertainment value
+
+**Primary Channels:**
+- LinkedIn (professional audience, thought leadership)
+- Direct search (Google: "interactive presentation tool", "animated business slides")
+- Product Hunt / SaaS directories
+- Word of mouth within professional communities (Slack groups, industry forums)
+
+## 4.2. Secondary Target: Individual Content Creators
+
+> **Previously primary (pre-2026-02).** Deprioritized but still a valuable segment.
 
 **Who they are:**
 - Solo content creators and small teams (1-3 people) building audiences on YouTube, online courses, social media
@@ -79,17 +127,18 @@ Startup to create SaaS platform that makes it simple for users to
 - LinkedIn (thought leadership content)
 - Twitter/X (short-form educational content)
 
-## 4.2. Secondary Personas (Phase 2+)
+## 4.3. Tertiary Personas (Phase 2+)
 
-- **Marketing teams at startups/SMBs**: Need quick turnaround on product demos, pitch decks
-- **Enterprise teams**: Need data-connected visuals for status updates, roadmaps (requires Jira/Asana integration)
+- **Enterprise teams**: Need data-connected visuals for status updates, roadmaps (requires Jira/Asana integration, SSO, admin controls)
+- **Marketing teams at startups**: Need quick turnaround on product demos, pitch decks with brand consistency
 
-## 4.3. Business Model
+## 4.4. Business Model
 
 **Freemium model:**
-- **Free tier**: Limited exports (e.g., 2 videos/month), watermark, basic templates
-- **Pro tier** ($29-49/month): Unlimited exports, no watermark, premium templates, priority rendering
-- **Team tier** ($99+/month): Collaboration features, brand kit, advanced integrations
+- **Free tier**: 3 presentations, limited widget library, watermark on exports, basic templates
+- **Pro tier** ($29-49/month): Unlimited presentations, all widgets, no watermark, premium templates, priority rendering
+- **Team tier** ($99-199/month, 5-10 seats): Collaboration features, shared widget templates, brand kit, team analytics
+- **Enterprise tier** (custom pricing): SSO, data integrations (Jira, Asana), admin controls, SLA, dedicated support
 
 # 5. Competitive analysis
 
@@ -109,6 +158,10 @@ See detailed MVP specification in [MVP-Minimum-Viable-Product.md](./MVP-Minimum-
     4. Once the overall slide structure and animation is Ok for user, images can be generated if needed (per slide element or-and background)
     5. Publish content, or export to video
 
-# 8. Technology architecture
+# 8. UX Requirements: Scenes & Animation
+
+See detailed UX requirements for the Scenes + Widget State Layers architecture in [ux-requirements-scenes.md](./ux-requirements-scenes.md)
+
+# 9. Technology architecture
 
 See detailed technical architecture in [../technical-architecture/overview.md](../technical-architecture/overview.md)
