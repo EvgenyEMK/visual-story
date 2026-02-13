@@ -81,6 +81,17 @@ function ContentLayout({ layout }: { layout: SlideLayoutMeta }) {
     );
   }
 
+  // --- Center band ---
+  if (id === 'center-band') {
+    return (
+      <div className="flex-1 min-h-0 flex items-center px-1.5">
+        <div className="w-full h-2/5">
+          <Region label="Center Band" />
+        </div>
+      </div>
+    );
+  }
+
   // --- Center stage ---
   if (id === 'center-stage') {
     return (

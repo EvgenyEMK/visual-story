@@ -257,7 +257,22 @@ export const LAYOUT_TEMPLATES: SlideLayoutMeta[] = [
     aiHints: 'Use when presenting 5 items where the top 3 are compact overview items and the bottom 2 are larger detailed items. Good for three quick stats + two deep-dive cards.',
   },
 
-  // --- Center stage ---
+  // --- Center band & center stage ---
+  {
+    id: 'center-band',
+    name: 'Center Band',
+    description: 'A full-width horizontal content bar centred vertically on the slide. Ideal for section title slides, process flow summaries, or any content that should span the full width as a single prominent strip.',
+    columns: 1,
+    isGrid: false,
+    hasSidebar: false,
+    tags: ['center', 'band', 'section-title', 'process-flow', 'full-width'],
+    regions: [
+      { id: 'band', label: 'Center Band', area: { row: 0, col: 0 } },
+    ],
+    bestFor: ['section-title', 'process-flow', 'workflow-stages', 'chapter-divider', 'horizontal-strip'],
+    itemCount: 1,
+    aiHints: 'Use for a full-width horizontal strip centred vertically on the slide. Best for section/chapter title slides without a header, process flow summaries showing workflow stages in a horizontal line, or any single-row content that should stretch edge to edge while remaining vertically centred.',
+  },
   {
     id: 'center-stage',
     name: 'Center Stage',

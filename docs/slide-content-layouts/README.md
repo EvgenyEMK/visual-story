@@ -21,11 +21,12 @@ Every slide has an optional `layoutTemplate` property that selects one of the pr
 |--------|-------------|----------|
 | [Content](./content.md) | Full-width single content area | General informational slides |
 
-### Center Stage
+### Center Band / Center Stage
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Center Stage](./center-stage.md) | Full-slide centered content (1 item) | Title slides, hero, quote, big metric |
+| [Center Band](./center-band.md) | Full-width bar centred vertically | Section titles, process flow summaries |
+| [Center Stage](./center-stage.md) | Centred content box (1 item) | Title slides, hero, quote, big metric |
 | [Center Stage (2 Items)](./center-stage-2.md) | Two centered cards side by side | Pair comparison, dual metrics |
 | [Center Stage (3 Items)](./center-stage-3.md) | Three centered cards in a row | Pillars, triple metrics, three-step |
 | [Center Stage (4 Items)](./center-stage-4.md) | Four centered cards in a row | Four stats, features, quarterly data |

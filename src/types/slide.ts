@@ -297,6 +297,7 @@ export type SlideLayoutTemplate =
   | 'grid-3x2'            // 3×2 grid (6 items)
   | 'grid-2-3'            // 5 items: 2 top row, 3 bottom row
   | 'grid-3-2'            // 5 items: 3 top row, 2 bottom row
+  | 'center-band'         // Full-width bar centred vertically (section title, process flow)
   | 'center-stage'        // Full-slide centred content (title slides, hero, quote)
   | 'center-stage-2'      // Two centred items side by side
   | 'center-stage-3'      // Three centred items in a row
