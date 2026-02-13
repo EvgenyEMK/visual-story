@@ -213,6 +213,150 @@ export interface SlideElement {
 }
 
 // ---------------------------------------------------------------------------
+// Slide Header
+// ---------------------------------------------------------------------------
+
+/**
+ * Available pre-built header layout variants.
+ *
+ * - 'title-bar'  — Classic title bar with optional subtitle, icon, and trailing section.
+ *                   Consumes slide-level title/subtitle/icon.
+ * - 'tabs'       — Horizontal tab-like sections rendered from `items`.
+ *                   No title — each top-level item is one tab section.
+ * - 'custom'     — Fully custom header rendered from `items` via ItemRenderer.
+ */
+export type SlideHeaderVariant = 'title-bar' | 'tabs' | 'custom';
+
+/**
+ * Configuration for the optional header region at the top of a slide.
+ *
+ * The header is a distinct visual zone separated from the content area.
+ * Title/subtitle/icon data comes from the parent `Slide` — the header
+ * controls *how* they are displayed, not *what* they contain.
+ */
+export interface SlideHeader {
+  /** Unique identifier for this header instance. */
+  id: string;
+
+  /** Which pre-built header layout component to use. */
+  variant: SlideHeaderVariant;
+
+  /**
+   * Right-side trailing section content for 'title-bar' variant.
+   * Rendered via ItemRenderer — can contain StatusDot atoms,
+   * legend cards, action buttons, etc.
+   */
+  trailing?: SlideItem[];
+
+  /**
+   * Custom content for 'tabs' and 'custom' variants.
+   * When variant='custom', this IS the header content.
+   * When variant='tabs', each top-level item = one tab section.
+   */
+  items?: SlideItem[];
+
+  /** Visual style overrides for the header container. */
+  style?: ElementStyle;
+
+  /** Entrance animation for the header as a whole. */
+  animation?: AnimationConfig;
+
+  /** Size preset (controls padding, font sizes). Default: 'md'. */
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+
+  /** Show bottom border separating header from content. Default: true. */
+  bordered?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Slide Layout Templates
+// ---------------------------------------------------------------------------
+
+/**
+ * Catalogue of pre-built slide content layout templates.
+ *
+ * Each template defines the spatial arrangement of the **content area**
+ * within a slide — how the available space is divided into regions
+ * (columns, grids, centered, freeform, etc.).
+ *
+ * The slide header is orthogonal to the content layout: any layout can
+ * be rendered with or without a header bar. Header presence is controlled
+ * by the `Slide.header` property.
+ */
+export type SlideLayoutTemplate =
+  | 'content'             // Full-width single content area
+  | 'two-column'          // Two columns, 50/50 split
+  | 'two-column-25-75'    // Narrow left (25%) + wide right (75%)
+  | 'two-column-75-25'    // Wide left (75%) + narrow right (25%)
+  | 'two-column-33-67'    // One-third left (33%) + two-thirds right (67%)
+  | 'two-column-67-33'    // Two-thirds left (67%) + one-third right (33%)
+  | 'three-column'        // Three equal vertical panes
+  | 'four-column'         // Four equal vertical panes
+  | 'sidebar-detail'      // Sidebar navigation + detail area
+  | 'grid-2x2'            // 2×2 grid (4 items)
+  | 'grid-3x2'            // 3×2 grid (6 items)
+  | 'grid-2-3'            // 5 items: 2 top row, 3 bottom row
+  | 'grid-3-2'            // 5 items: 3 top row, 2 bottom row
+  | 'center-stage'        // Full-slide centred content (title slides, hero, quote)
+  | 'center-stage-2'      // Two centred items side by side
+  | 'center-stage-3'      // Three centred items in a row
+  | 'center-stage-4'      // Four centred items in a row
+  | 'blank'               // Empty canvas — user places items manually
+  | 'custom';             // Fully custom layout via items tree
+
+// ---------------------------------------------------------------------------
+// Layout Region (for skeleton rendering)
+// ---------------------------------------------------------------------------
+
+/**
+ * Describes a single visual region within a content layout.
+ * Used by skeleton renderers to draw placeholder rectangles.
+ */
+export interface LayoutRegion {
+  /** Region identifier (e.g. 'left', 'top-right', 'cell-0-1'). */
+  id: string;
+  /** Display label shown inside the skeleton region. */
+  label: string;
+  /** Grid placement hints for CSS grid rendering. */
+  area: { row: number; col: number; rowSpan?: number; colSpan?: number };
+}
+
+// ---------------------------------------------------------------------------
+// Layout Meta
+// ---------------------------------------------------------------------------
+
+/**
+ * Searchable metadata for a slide content layout template.
+ * Used by the template picker / catalogue UI and AI assistant.
+ */
+export interface SlideLayoutMeta {
+  /** Template identifier — matches SlideLayoutTemplate values. */
+  id: SlideLayoutTemplate;
+  /** Human-readable display name. */
+  name: string;
+  /** Short description of the layout. */
+  description: string;
+  /** Number of content columns (0 = not column-based, e.g. grid or center). */
+  columns: number;
+  /** Whether this template uses a grid layout for content. */
+  isGrid: boolean;
+  /** Grid dimensions if applicable (e.g. '2x2', '3x2', '2-3', '3-2'). */
+  gridSize?: string;
+  /** Whether this template includes a sidebar region. */
+  hasSidebar: boolean;
+  /** Tags for filtering/searching. */
+  tags: string[];
+  /** Region definitions for skeleton rendering. */
+  regions: LayoutRegion[];
+  /** Content types this layout is best suited for (AI selection hint). */
+  bestFor: string[];
+  /** Recommended number of content items for this layout. */
+  itemCount?: number;
+  /** Prose description for AI assistant to understand when to select this layout. */
+  aiHints: string;
+}
+
+// ---------------------------------------------------------------------------
 // Slide
 // ---------------------------------------------------------------------------
 
@@ -223,25 +367,61 @@ export interface SlideElement {
 export interface Slide {
   id: string;
   order: number;
+
+  // --- Slide identity / metadata ---
+
+  /** The slide's title text. Used by header, title layouts, navigation, accessibility. */
+  title?: string;
+
+  /** Secondary heading / subtitle text. */
+  subtitle?: string;
+
+  /** Icon or emoji for the slide (emoji string, icon name, or image URL). */
+  icon?: string;
+
+  /** Descriptive label for the slide template/content (tooling use, not user-facing). */
   content: string;
-  animationTemplate: string;
+
+  // --- Layout & structure ---
+
   /**
-   * Recursive item tree describing the slide's visual structure.
-   * Replaces the flat `elements` array.
+   * Top-level layout template that defines the slide's visual structure.
+   * Determines how header and content regions are arranged.
+   */
+  layoutTemplate?: SlideLayoutTemplate;
+
+  /**
+   * Optional header rendered above the content area.
+   * When present, the slide frame splits into header + content regions.
+   */
+  header?: SlideHeader;
+
+  // --- Animation ---
+
+  animationTemplate: string;
+
+  /**
+   * Recursive item tree describing the slide's content region.
+   * Does NOT include the header — header has its own data.
    */
   items: SlideItem[];
+
   /**
    * Flat element array.
    * @deprecated Use `items` for new code. During migration, components that
    *   still need a flat list can use `flattenItems(slide.items)`.
    */
   elements: SlideElement[];
+
   /** Slide duration in milliseconds. */
   duration: number;
+
   /** Transition type used when moving to the next slide. */
   transition: string;
+
   /** Override trigger mode for this slide (inherits from project if unset). */
   triggerMode?: TriggerMode;
+
   /** Grouped animation config — present when this slide uses a grouped layout. */
   groupedAnimation?: import('@/types/animation').GroupedAnimationConfig;
 }
