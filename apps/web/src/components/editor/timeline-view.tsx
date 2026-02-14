@@ -1,7 +1,7 @@
 'use client';
 
 import type { Slide, TriggerMode } from '@/types/slide';
-import { Timer, MousePointer, Layers } from 'lucide-react';
+import { Timer, MousePointer, Layers, Film } from 'lucide-react';
 
 /**
  * Timeline view — horizontal slide overview with trigger mode indicators.
@@ -75,8 +75,10 @@ export function TimelineView({
       <div className="flex gap-2 overflow-x-auto pb-2">
         {slides.map((slide, index) => {
           const effectiveMode = resolveMode(slide, projectTriggerMode);
-          const hasGroup = !!slide.groupedAnimation;
-          const groupSteps = slide.groupedAnimation?.items.length ?? 0;
+          const sceneCount = slide.scenes?.length ?? 0;
+          const widgetCount = slide.scenes?.reduce(
+            (acc, s) => acc + s.widgetStateLayer.animatedWidgetIds.length, 0
+          ) ?? 0;
 
           return (
             <button
@@ -99,14 +101,18 @@ export function TimelineView({
                 <TriggerModeIcon mode={effectiveMode} />
               </div>
 
-              {/* Grouped animation badge */}
-              {hasGroup && (
+              {/* Scene / widget count badge */}
+              {(sceneCount > 1 || widgetCount > 0) && (
                 <div
                   className="absolute top-1.5 right-1.5 flex items-center gap-0.5"
-                  title={`Grouped: ${slide.groupedAnimation!.type} (${groupSteps} steps)`}
+                  title={`${sceneCount} scene${sceneCount !== 1 ? 's' : ''}, ${widgetCount} widgets`}
                 >
-                  <Layers className="h-3 w-3 text-purple-500" />
-                  <span className="text-[9px] text-purple-500 font-medium">{groupSteps}</span>
+                  {sceneCount > 1
+                    ? <Film className="h-3 w-3 text-purple-500" />
+                    : <Layers className="h-3 w-3 text-purple-500" />}
+                  <span className="text-[9px] text-purple-500 font-medium">
+                    {sceneCount > 1 ? sceneCount : widgetCount}
+                  </span>
                 </div>
               )}
 

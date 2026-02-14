@@ -49,5 +49,5 @@ A balanced layout featuring four equal-width vertical panes, creating a four-way
 ## Related Templates
 - [Three Columns](three-column.md) - For three items instead of four
 - [Two Columns (50/50)](two-column.md) - For two items side by side
-- [Grid 2x2](grid-2x2.md) - For four items in a 2×2 grid instead of a single row
-- [Center Stage (4 Items)](center-stage-4.md) - For four centred cards with whitespace framing
+- [Grid 2x2](../grids/grid-2x2.md) - For four items in a 2×2 grid instead of a single row
+- [Center Stage (4 Items)](../cards-slide/center-stage-4.md) - For four centred cards with whitespace framing

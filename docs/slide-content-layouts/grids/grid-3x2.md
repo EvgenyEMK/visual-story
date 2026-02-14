@@ -39,4 +39,4 @@ A layout featuring six equal cells arranged in a 3x2 grid (3 columns, 2 rows). T
 ## Related Templates
 - [Grid 2x2](grid-2x2.md) - For four items instead of six
 - [Grid 3+2](grid-3-2.md) - For five items (3 top, 2 bottom)
-- [Three Columns](three-column.md) - For three items in a single row
+- [Three Columns](../columns/three-column.md) - For three items in a single row

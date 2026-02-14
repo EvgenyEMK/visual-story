@@ -256,14 +256,14 @@ function GridToOverlayVariant({
 
   return (
     <div className={cn('w-full h-full p-3', className)}>
-      <AnimatePresence mode="sync">
+      <AnimatePresence mode="wait">
         {isExpanded ? (
           <motion.div
-            key="expanded-state"
+            key={`expanded-${expanded}`}
             className="flex gap-2 w-full h-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
             transition={TRANSITION_EXPAND}
           >
             {/* Expanded detail area (~70%) */}
@@ -349,10 +349,11 @@ function CenterPopupVariant({
         ))}
       </div>
 
-      {/* Popup overlay */}
-      <AnimatePresence>
+      {/* Popup overlay — key on item ID for proper card-to-card transitions */}
+      <AnimatePresence mode="wait">
         {currentItem && (
           <motion.div
+            key={currentItem.id}
             className="absolute inset-0 z-20 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -368,10 +369,10 @@ function CenterPopupVariant({
                 border: `1.5px solid ${currentItem.color ?? '#3b82f6'}40`,
                 boxShadow: `0 8px 32px ${currentItem.color ?? '#3b82f6'}25`,
               }}
-              initial={{ scale: 0.9, y: 10 }}
+              initial={{ scale: 0.85, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 10 }}
-              transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+              exit={{ scale: 0.85, y: 20 }}
+              transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
               onClick={(e) => e.stopPropagation()}
             >
               <TwoColumnExpandedContent item={currentItem} />
@@ -434,11 +435,11 @@ function RowToSplitVariant({
         })}
       </div>
 
-      {/* Expanded split area */}
-      <AnimatePresence>
+      {/* Expanded split area — key on item ID for card-to-card transitions */}
+      <AnimatePresence mode="wait">
         {currentItem && (
           <motion.div
-            key="split-detail"
+            key={`split-${currentItem.id}`}
             className="flex-1 rounded-xl overflow-hidden"
             style={{
               backgroundColor: `${currentItem.color ?? '#3b82f6'}10`,

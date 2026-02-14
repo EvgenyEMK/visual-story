@@ -35,4 +35,4 @@ A centred layout displaying two content cards side by side in the middle of the 
 ## Related Templates
 - [Center Stage](center-stage.md) - For a single centred element
 - [Center Stage (3 Items)](center-stage-3.md) - For three centred cards
-- [Two Columns (50/50)](two-column.md) - For a full-width two-column split
+- [Two Columns (50/50)](../columns/two-column.md) - For a full-width two-column split

@@ -19,56 +19,56 @@ Every slide has an optional `layoutTemplate` property that selects one of the pr
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Content](./content.md) | Full-width single content area | General informational slides |
+| [Content](./other/content.md) | Full-width single content area | General informational slides |
 
 ### Center Band / Center Stage
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Center Band](./center-band.md) | Full-width bar centred vertically | Section titles, process flow summaries |
-| [Center Stage](./center-stage.md) | Centred content box (1 item) | Title slides, hero, quote, big metric |
-| [Center Stage (2 Items)](./center-stage-2.md) | Two centered cards side by side | Pair comparison, dual metrics |
-| [Center Stage (3 Items)](./center-stage-3.md) | Three centered cards in a row | Pillars, triple metrics, three-step |
-| [Center Stage (4 Items)](./center-stage-4.md) | Four centered cards in a row | Four stats, features, quarterly data |
+| [Center Band](./cards-slide/center-band.md) | Full-width bar centred vertically | Section titles, process flow summaries |
+| [Center Stage](./cards-slide/center-stage.md) | Centred content box (1 item) | Title slides, hero, quote, big metric |
+| [Center Stage (2 Items)](./cards-slide/center-stage-2.md) | Two centered cards side by side | Pair comparison, dual metrics |
+| [Center Stage (3 Items)](./cards-slide/center-stage-3.md) | Three centered cards in a row | Pillars, triple metrics, three-step |
+| [Center Stage (4 Items)](./cards-slide/center-stage-4.md) | Four centered cards in a row | Four stats, features, quarterly data |
 
 ### Two Columns
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Two Columns (50/50)](./two-column.md) | Two equal vertical panes | Comparisons, text + visual |
-| [Two Columns (25/75)](./two-column-25-75.md) | Narrow left + wide right | Navigation list + detail |
-| [Two Columns (75/25)](./two-column-75-25.md) | Wide left + narrow right | Main content + side notes |
-| [Two Columns (33/67)](./two-column-33-67.md) | One-third left + two-thirds right | Sidebar context + primary content |
-| [Two Columns (67/33)](./two-column-67-33.md) | Two-thirds left + one-third right | Primary content + supplementary panel |
+| [Two Columns (50/50)](./columns/two-column.md) | Two equal vertical panes | Comparisons, text + visual |
+| [Two Columns (25/75)](./columns/two-column-25-75.md) | Narrow left + wide right | Navigation list + detail |
+| [Two Columns (75/25)](./columns/two-column-75-25.md) | Wide left + narrow right | Main content + side notes |
+| [Two Columns (33/67)](./columns/two-column-33-67.md) | One-third left + two-thirds right | Sidebar context + primary content |
+| [Two Columns (67/33)](./columns/two-column-67-33.md) | Two-thirds left + one-third right | Primary content + supplementary panel |
 
 ### Three / Four Columns
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Three Columns](./three-column.md) | Three equal vertical panes | Pillars, categories, comparisons |
-| [Four Columns](./four-column.md) | Four equal vertical panes | Quarterly data, four-way comparisons |
+| [Three Columns](./columns/three-column.md) | Three equal vertical panes | Pillars, categories, comparisons |
+| [Four Columns](./columns/four-column.md) | Four equal vertical panes | Quarterly data, four-way comparisons |
 
 ### Navigation
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Sidebar + Detail](./sidebar-detail.md) | Sidebar nav + main detail area | Drill-down multi-section |
+| [Sidebar + Detail](./navigation/sidebar-detail.md) | Sidebar nav + main detail area | Drill-down multi-section |
 
 ### Grids
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Grid 2x2](./grid-2x2.md) | Four equal quadrants (2 rows, 2 cols) | 4 items: features, stats, images |
-| [Grid 3x2](./grid-3x2.md) | Six cells (2 rows, 3 cols) | 6-item showcases, team profiles |
-| [Grid 2+3](./grid-2-3.md) | Five items: 2 top row, 3 bottom row | 5-item showcases, uneven grids |
-| [Grid 3+2](./grid-3-2.md) | Five items: 3 top row, 2 bottom row | 5-item showcases, top-heavy grids |
+| [Grid 2x2](./grids/grid-2x2.md) | Four equal quadrants (2 rows, 2 cols) | 4 items: features, stats, images |
+| [Grid 3x2](./grids/grid-3x2.md) | Six cells (2 rows, 3 cols) | 6-item showcases, team profiles |
+| [Grid 2+3](./grids/grid-2-3.md) | Five items: 2 top row, 3 bottom row | 5-item showcases, uneven grids |
+| [Grid 3+2](./grids/grid-3-2.md) | Five items: 3 top row, 2 bottom row | 5-item showcases, top-heavy grids |
 
 ### Freeform
 
 | Layout | Description | Best for |
 |--------|-------------|----------|
-| [Blank Canvas](./blank.md) | Empty slide, absolute positioning | Full creative freedom |
-| [Custom](./custom.md) | Fully custom via nested item tree | Advanced, non-standard layouts |
+| [Blank Canvas](./other/blank.md) | Empty slide, absolute positioning | Full creative freedom |
+| [Custom](./other/custom.md) | Fully custom via nested item tree | Advanced, non-standard layouts |
 
 ## Searching and Filtering
 

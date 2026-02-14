@@ -36,4 +36,4 @@ A centred layout displaying four content cards in a row in the middle of the sli
 ## Related Templates
 - [Center Stage (3 Items)](center-stage-3.md) - For three centred cards
 - [Center Stage (2 Items)](center-stage-2.md) - For two centred cards
-- [Grid 2x2](grid-2x2.md) - For four items in a 2x2 grid filling the whole slide
+- [Grid 2x2](../grids/grid-2x2.md) - For four items in a 2x2 grid filling the whole slide

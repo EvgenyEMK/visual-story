@@ -38,4 +38,4 @@ A layout featuring four equal quadrants arranged in a 2x2 grid (2 columns, 2 row
 ## Related Templates
 - [Grid 3x2](grid-3x2.md) - For six items instead of four
 - [Grid 2+3](grid-2-3.md) - For five items (2 top, 3 bottom)
-- [Three Columns](three-column.md) - For three items in a single row
+- [Three Columns](../columns/three-column.md) - For three items in a single row

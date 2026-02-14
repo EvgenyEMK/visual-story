@@ -44,5 +44,5 @@ A minimalist layout where the content area serves as a single centered region, d
 - [Center Stage (2 Items)](center-stage-2.md) - For two centred cards side by side
 - [Center Stage (3 Items)](center-stage-3.md) - For three centred cards in a row
 - [Center Stage (4 Items)](center-stage-4.md) - For four centred cards in a row
-- [Content](content.md) - When content needs more flexible arrangement
-- [Blank Canvas](blank.md) - For more creative freedom with positioning
+- [Content](../other/content.md) - When content needs more flexible arrangement
+- [Blank Canvas](../other/blank.md) - For more creative freedom with positioning

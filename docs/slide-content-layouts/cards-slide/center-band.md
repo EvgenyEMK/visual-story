@@ -37,5 +37,5 @@ A full-width horizontal content bar centred vertically on the slide. Unlike Cent
 
 ## Related Templates
 - [Center Stage](center-stage.md) - Centred content constrained to a box (not full-width)
-- [Content](content.md) - Full-width single content area (fills entire slide, not just a band)
-- [Three Columns](three-column.md) - When horizontal content should be split into distinct columns
+- [Content](../other/content.md) - Full-width single content area (fills entire slide, not just a band)
+- [Three Columns](../columns/three-column.md) - When horizontal content should be split into distinct columns

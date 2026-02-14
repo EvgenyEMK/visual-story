@@ -412,7 +412,7 @@ export interface Slide {
    * @deprecated Use `items` for new code. During migration, components that
    *   still need a flat list can use `flattenItems(slide.items)`.
    */
-  elements: SlideElement[];
+  elements?: SlideElement[];
 
   /** Slide duration in milliseconds. */
   duration: number;
@@ -424,19 +424,10 @@ export interface Slide {
   triggerMode?: TriggerMode;
 
   /**
-   * Grouped animation config — present when this slide uses a grouped layout.
-   * @deprecated Use `scenes` for new code. Kept for backward compatibility
-   *   during migration. The `migrateGroupedToScenes()` helper converts this
-   *   to the Scene model.
-   */
-  groupedAnimation?: import('@/types/animation').GroupedAnimationConfig;
-
-  /**
    * Ordered list of scenes (content children) for this slide.
    * Each scene is a meaningful narrative unit with its own widget state layer.
    * Auto-generated from slide/widget templates.
    *
-   * When present, this takes priority over `groupedAnimation`.
    * @source docs/technical-architecture/adr-001-scenes-widget-state-layers.md
    */
   scenes?: import('@/types/scene').Scene[];

@@ -59,10 +59,7 @@ function getSlideFrameRanges(
 function SlideRenderer({ slide }: { slide: Slide }) {
   // TODO: Use FadeSimpleTemplate or matched animation template
   // TODO: Render each element with AnimatedElement + sync points
-  // Use flattenItemsAsElements for backward compat with new item tree
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  const elements = flattenItemsAsElements(slide.items);
 
   return (
     <AbsoluteFill

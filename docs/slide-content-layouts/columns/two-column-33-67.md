@@ -41,4 +41,4 @@ An asymmetric two-column layout with a one-third left pane (33%) and a two-third
 - [Two Columns (67/33)](two-column-67-33.md) - Reversed: main content on the left
 - [Two Columns (25/75)](two-column-25-75.md) - For a narrower left column
 - [Two Columns (50/50)](two-column.md) - For equal emphasis on both sides
-- [Sidebar + Detail](sidebar-detail.md) - For interactive navigation patterns
+- [Sidebar + Detail](../navigation/sidebar-detail.md) - For interactive navigation patterns

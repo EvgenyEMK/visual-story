@@ -33,6 +33,6 @@ The most versatile content layout — a single full-width content area that fill
   - Mixed content layouts using nested containers
 
 ## Related Templates
-- [Center Stage](center-stage.md) - For highlighting a single focal element
-- [Two Columns (50/50)](two-column.md) - When content naturally splits into two sections
+- [Center Stage](../cards-slide/center-stage.md) - For highlighting a single focal element
+- [Two Columns (50/50)](../columns/two-column.md) - When content naturally splits into two sections
 - [Blank Canvas](blank.md) - For completely custom arrangements

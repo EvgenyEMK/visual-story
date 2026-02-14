@@ -77,6 +77,15 @@ export interface AnimationBehavior {
   triggerMode?: TriggerMode;
   /** Auto-mode: time between steps in ms (for 'sequential' + 'auto' trigger). */
   stepDuration?: number;
+  /**
+   * When true and `revealMode` is `'sequential'`, an overview step is
+   * prepended where all widgets are visible but none are focused/expanded.
+   *
+   * Step 0 = overview, Steps 1..N = widget 0..N-1 focused.
+   * Combine with `exitBehavior` on the parent layer to add a final
+   * return-to-overview step at the end (total = 1 + N + 1).
+   */
+  includeOverviewStep?: boolean;
 }
 
 /**
@@ -229,6 +238,7 @@ export interface SlideSection {
  *
  * - 'all-at-once' enter = 1 step
  * - 'sequential' enter = N steps (one per animated widget)
+ * - When `includeOverviewStep` is true, +1 overview step at the start
  * - Exit is always 1 step (or 0 if no exit behavior)
  */
 export function calcSceneSteps(scene: Scene): number {
@@ -239,6 +249,11 @@ export function calcSceneSteps(scene: Scene): number {
     enterSteps = animatedWidgetIds.length > 0 ? 1 : 0;
   } else {
     enterSteps = animatedWidgetIds.length;
+  }
+
+  // Overview step prepended when flag is set (sequential mode only)
+  if (enterBehavior.includeOverviewStep && enterBehavior.revealMode === 'sequential') {
+    enterSteps += 1;
   }
 
   const exitSteps = exitBehavior ? 1 : 0;
@@ -264,6 +279,10 @@ export function generateSceneStepLabels(
       labels.push(scene.title || 'Enter');
     }
   } else {
+    // Overview step at the start when flag is set
+    if (enterBehavior.includeOverviewStep) {
+      labels.push('Overview');
+    }
     // Sequential: one label per widget
     for (const widgetId of animatedWidgetIds) {
       labels.push(widgetTitles[widgetId] ?? `Widget ${widgetId}`);

@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Rnd } from 'react-rnd';
 import type { Slide, SlideElement } from '@/types/slide';
+import type { Scene } from '@/types/scene';
 import { flattenItemsAsElements } from '@/lib/flatten-items';
 import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
+import { ItemRenderer } from '@/components/animation/ItemRenderer';
+import type { ItemVisibility } from '@/components/animation/ItemRenderer';
 import { CardExpandLayout } from '@/components/slide-ui';
 import type { CardExpandVariant } from '@/components/slide-ui';
 import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
@@ -12,6 +15,8 @@ import { InlineTextEditor } from '@/components/editor/inline-text-editor';
 
 interface SlideMainCanvasProps {
   slide: Slide;
+  /** Current scene being viewed / edited. */
+  currentScene?: Scene;
   selectedElementId: string | null;
   currentSubStep: number;
   totalSteps: number;
@@ -23,21 +28,13 @@ interface SlideMainCanvasProps {
 }
 
 // ---------------------------------------------------------------------------
-// Items Grid default layouts (columns per row for 2–8 items)
+// Helpers
 // ---------------------------------------------------------------------------
 
-const GRID_LAYOUTS: Record<number, number[]> = {
-  2: [2],
-  3: [3],
-  4: [2, 2],
-  5: [3, 2],
-  6: [3, 3],
-  7: [4, 3],
-  8: [4, 4],
-};
-
-function getGridLayout(count: number): number[] {
-  return GRID_LAYOUTS[count] ?? [Math.min(count, 4)];
+/** Parse card-expand variant from animationTemplate, e.g. 'card-expand:center-popup' */
+function parseCardExpandVariant(animationTemplate: string): CardExpandVariant | null {
+  if (!animationTemplate.startsWith('card-expand:')) return null;
+  return animationTemplate.split(':')[1] as CardExpandVariant;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,8 +111,7 @@ function EditableCanvasElement({
       element.style.textAlign === 'center' ? 'center' : 'flex-start',
   };
 
-  // In preview mode or when element has special overlay rendering,
-  // render as a static positioned div (no drag/resize).
+  // In preview mode, render as a static positioned div (no drag/resize).
   if (isPreview) {
     return (
       <div
@@ -159,7 +155,6 @@ function EditableCanvasElement({
           height: element.style.height ?? 'auto',
         }}
         onDragStop={(_e, d) => {
-          // Convert drag delta back to design-space pixels
           const parentEl = document.querySelector('[data-slide-canvas]');
           if (!parentEl) return;
           const rect = parentEl.getBoundingClientRect();
@@ -232,14 +227,15 @@ function EditableCanvasElement({
 
 /**
  * Main canvas showing the current slide at full size.
- * Elements are rendered with visibility based on the current sub-step.
- * Supports drag-to-reposition, resize, and inline text editing.
+ * Uses ItemRenderer for layout-aware rendering of the items tree,
+ * with scene-based visibility for animation steps.
  *
- * Uses flattenItemsAsElements() to derive a flat element list from the
- * new SlideItem tree, falling back to slide.elements for legacy data.
+ * Card-expand slides use the CardExpandLayout overlay (variant parsed
+ * from slide.animationTemplate, e.g. 'card-expand:center-popup').
  */
 export function SlideMainCanvas({
   slide,
+  currentScene,
   selectedElementId,
   currentSubStep,
   totalSteps,
@@ -247,43 +243,100 @@ export function SlideMainCanvas({
   onElementUpdate,
   isPreview = false,
 }: SlideMainCanvasProps) {
-  const hasGroup = !!slide.groupedAnimation;
   const isZoomWord = slide.animationTemplate === 'zoom-in-word';
-  const isSidebarDetail = slide.animationTemplate === 'sidebar-detail';
-  const isCardExpand = slide.groupedAnimation?.type === 'card-expand';
+  const cardExpandVariant = parseCardExpandVariant(slide.animationTemplate);
+  const isCardExpand = cardExpandVariant !== null;
   const hasStructuredHeader = !!slide.header;
-  const showItemsGrid = slide.groupedAnimation?.type === 'items-grid';
 
-  // Derive flat elements from the item tree (prefer items, fallback to elements)
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  // Scene-derived visibility state
+  const hasOverviewStep = !!(
+    currentScene?.widgetStateLayer.enterBehavior.includeOverviewStep &&
+    currentScene.widgetStateLayer.enterBehavior.revealMode === 'sequential'
+  );
+  const isExitStep = !!(
+    currentScene?.widgetStateLayer.exitBehavior &&
+    currentSubStep === totalSteps - 1
+  );
 
-  // Determine which elements are visible at the current sub-step
-  const getElementVisibility = (elementId: string, _index: number): { visible: boolean; isFocused: boolean } => {
-    if (hasGroup) {
-      const groupItemIndex = slide.groupedAnimation!.items.findIndex(
-        (item) => item.elementIds.includes(elementId),
-      );
-      if (groupItemIndex === -1) return { visible: true, isFocused: false };
+  const flatElements = useMemo(
+    () => flattenItemsAsElements(slide.items),
+    [slide.items],
+  );
+
+  // Use ItemRenderer for slides that have an items tree (non-card-expand, non-zoom-word)
+  const useItemRenderer = slide.items.length > 0 && !isCardExpand && !isZoomWord;
+
+  // ----- Visibility for ItemRenderer (scene-based) -----
+  const getItemVisibility = useCallback(
+    (itemId: string): ItemVisibility => {
+      if (!currentScene) {
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
+      const { animatedWidgetIds, enterBehavior, initialStates } =
+        currentScene.widgetStateLayer;
+      const widgetIndex = animatedWidgetIds.indexOf(itemId);
+
+      // Exit step: everything visible, nothing focused (return to overview)
+      if (isExitStep) {
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
+      if (widgetIndex !== -1) {
+        // Overview step (step 0 when includeOverviewStep): all visible, none focused
+        if (hasOverviewStep && currentSubStep === 0) {
+          return { visible: true, isFocused: false, hidden: false };
+        }
+
+        const effectiveStep = hasOverviewStep ? currentSubStep - 1 : currentSubStep;
+
+        if (enterBehavior.revealMode === 'sequential') {
+          return {
+            visible: widgetIndex <= effectiveStep,
+            isFocused: widgetIndex === effectiveStep,
+            hidden: false,
+          };
+        }
+        // All-at-once: everything visible
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
+      // Non-animated widget: use initial state
+      const initial = initialStates.find((s) => s.widgetId === itemId);
+      if (initial) {
+        return {
+          visible: initial.visible,
+          isFocused: initial.isFocused,
+          hidden: !initial.visible && initial.displayMode === 'hidden',
+        };
+      }
+
+      return { visible: true, isFocused: false, hidden: false };
+    },
+    [currentScene, currentSubStep, totalSteps, hasOverviewStep, isExitStep],
+  );
+
+  // ----- Legacy element visibility (for positioned elements) -----
+  const getElementVisibility = useCallback(
+    (elementId: string, _index: number): { visible: boolean; isFocused: boolean } => {
+      if (currentScene) {
+        const vis = getItemVisibility(elementId);
+        return { visible: vis.visible, isFocused: vis.isFocused };
+      }
+      // Fallback: delay-based visibility
+      const sortedByDelay = [...flatElements]
+        .filter((el) => el.animation.type !== 'none')
+        .sort((a, b) => a.animation.delay - b.animation.delay);
+      const stepIndex = sortedByDelay.findIndex((el) => el.id === elementId);
+      if (stepIndex === -1) return { visible: true, isFocused: false };
       return {
-        visible: groupItemIndex <= currentSubStep,
-        isFocused: groupItemIndex === currentSubStep,
+        visible: stepIndex <= currentSubStep,
+        isFocused: stepIndex === currentSubStep,
       };
-    }
+    },
+    [currentScene, getItemVisibility, currentSubStep, flatElements],
+  );
 
-    const sortedByDelay = [...elements]
-      .filter((el) => el.animation.type !== 'none')
-      .sort((a, b) => a.animation.delay - b.animation.delay);
-    const stepIndex = sortedByDelay.findIndex((el) => el.id === elementId);
-    if (stepIndex === -1) return { visible: true, isFocused: false };
-    return {
-      visible: stepIndex <= currentSubStep,
-      isFocused: stepIndex === currentSubStep,
-    };
-  };
-
-  // Callback for element updates — no-op if no handler provided
   const handleElementUpdate = useCallback(
     (elementId: string, updates: Partial<SlideElement>) => {
       onElementUpdate?.(elementId, updates);
@@ -291,7 +344,7 @@ export function SlideMainCanvas({
     [onElementUpdate],
   );
 
-  // --- Render: Structured header (from slide.header data model) ---
+  // --- Render: Structured header ---
   const renderStructuredHeader = () => {
     if (!hasStructuredHeader) return null;
     return (
@@ -304,8 +357,8 @@ export function SlideMainCanvas({
   // --- Render: Zoom-In Word Reveal (step-based) ---
   const renderZoomWordOverlay = () => {
     if (!isZoomWord) return null;
-    const mainEl = elements[0];
-    const subtitleEl = elements[1];
+    const mainEl = flatElements[0];
+    const subtitleEl = flatElements[1];
     if (!mainEl) return null;
     const words = mainEl.content.replace(/\n/g, ' ').split(/\s+/).filter(Boolean);
     const wordCount = words.length;
@@ -361,174 +414,20 @@ export function SlideMainCanvas({
     );
   };
 
-  // --- Shared sidebar dimensions (editor scale) ---
-  const SB_ICON = 24;
-  const SB_FONT = 9;
-  const SB_GAP = 4;
-  const SB_TOP = 40;
-  const SB_LEFT = 8;
-  const SB_W = 130;
-
-  // --- Render: Items Grid (with end-state and item-by-item migration) ---
-  const renderItemsGridOverlay = () => {
-    if (!showItemsGrid) return null;
-    const items = slide.groupedAnimation!.items;
-    const itemCount = items.length;
-    const isEndState = currentSubStep >= itemCount;
-    const isGridToSidebar = slide.animationTemplate === 'grid-to-sidebar';
-    const migratedCount = isGridToSidebar && currentSubStep > itemCount
-      ? Math.min(currentSubStep - itemCount, itemCount)
-      : 0;
-
-    const gridLayout = getGridLayout(itemCount);
-    type ItemPos = { gridX: number; gridY: number };
-    const positions: ItemPos[] = [];
-    let rowY = 0;
-    gridLayout.forEach((cols) => {
-      for (let c = 0; c < cols; c++) {
-        positions.push({ gridX: c - (cols - 1) / 2, gridY: rowY });
-      }
-      rowY++;
-    });
-
-    const gridSpacingX = 90;
-    const gridSpacingY = 80;
-
-    return (
-      <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
-        {items.map((item, i) => {
-          const pos = positions[i];
-          const isRevealed = i <= currentSubStep || isEndState;
-          const isActive = !isEndState && i === currentSubStep;
-          const inSidebar = i < migratedCount;
-
-          const gridX = `calc(50% + ${pos.gridX * gridSpacingX}px - 32px)`;
-          const gridY = `calc(52% + ${(pos.gridY - (gridLayout.length - 1) / 2) * gridSpacingY}px - 36px)`;
-          const sidebarX = `${SB_LEFT}px`;
-          const sidebarY = `${SB_TOP + i * (SB_ICON + SB_GAP + 6)}px`;
-
-          return (
-            <div
-              key={item.id}
-              className="absolute transition-all duration-500"
-              style={{
-                left: inSidebar ? sidebarX : gridX,
-                top: inSidebar ? sidebarY : gridY,
-                opacity: isRevealed ? 1 : 0.15,
-                transform: isActive ? 'scale(1.06)' : 'scale(1)',
-                display: 'flex',
-                flexDirection: inSidebar ? 'row' : 'column',
-                alignItems: 'center',
-                gap: inSidebar ? 6 : 4,
-                width: inSidebar ? SB_W : 64,
-              }}
-            >
-              <div
-                className="flex items-center justify-center shadow shrink-0 transition-all duration-300"
-                style={{
-                  width: inSidebar ? SB_ICON : 52,
-                  height: inSidebar ? SB_ICON : 52,
-                  borderRadius: inSidebar ? 6 : 10,
-                  backgroundColor: item.color ? `${item.color}18` : '#f1f5f9',
-                  fontSize: inSidebar ? 12 : 20,
-                }}
-              >
-                {item.icon}
-              </div>
-              <span
-                className="font-semibold text-foreground leading-tight transition-all duration-300"
-                style={{
-                  fontSize: inSidebar ? SB_FONT : 9,
-                  textAlign: inSidebar ? 'left' : 'center',
-                  maxWidth: inSidebar ? 90 : 60,
-                }}
-              >
-                {item.title}
-              </span>
-              {isActive && !inSidebar && item.description && (
-                <div className="mt-0.5 px-2 py-1 rounded bg-primary text-primary-foreground text-[8px] max-w-24 text-center shadow-lg">
-                  {item.description}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // --- Render: Sidebar-Detail (slide 7) ---
-  const renderSidebarDetailOverlay = () => {
-    if (!isSidebarDetail || !slide.groupedAnimation) return null;
-    const items = slide.groupedAnimation.items;
-
-    return (
-      <div className="absolute inset-0 z-10 flex" style={{ paddingTop: SB_TOP }}>
-        <div
-          className="shrink-0 flex flex-col border-r border-border/30 overflow-hidden"
-          style={{ width: SB_W, paddingLeft: SB_LEFT, paddingTop: 2, gap: SB_GAP }}
-        >
-          {items.map((item, i) => {
-            const isRevealed = i <= currentSubStep;
-            const isActive = i === currentSubStep;
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-1.5 rounded px-1 py-1 transition-all duration-200"
-                style={{
-                  opacity: isRevealed ? 1 : 0.25,
-                  backgroundColor: isActive ? (item.color ? `${item.color}12` : '#f1f5f9') : 'transparent',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center shrink-0 rounded"
-                  style={{
-                    width: SB_ICON,
-                    height: SB_ICON,
-                    backgroundColor: item.color ? `${item.color}18` : '#f1f5f9',
-                    fontSize: 12,
-                  }}
-                >
-                  {item.icon}
-                </div>
-                <span className="font-semibold text-foreground leading-tight" style={{ fontSize: SB_FONT, maxWidth: 80 }}>
-                  {item.title}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex-1 px-4 py-3">
-          {items.map((item, i) => {
-            if (i !== currentSubStep) return null;
-            return (
-              <div key={item.id}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                    style={{ backgroundColor: item.color ? `${item.color}12` : '#f1f5f9' }}
-                  >
-                    {item.icon}
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground">{item.title}</h3>
-                </div>
-                {item.description && (
-                  <p className="text-[10px] text-muted-foreground leading-relaxed max-w-sm">
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   // --- Render: Card-Expand (smart card) via CardExpandLayout ---
   const renderCardExpandOverlay = () => {
     if (!isCardExpand) return null;
-    const variant = (slide.groupedAnimation!.cardExpandVariant ?? 'grid-to-overlay') as CardExpandVariant;
+    const variant = cardExpandVariant!;
+
+    // Compute expandedIndex: overview step → -1, widget steps → 0..N-1, exit step → -1
+    let expandedIndex: number;
+    if (isExitStep) {
+      expandedIndex = -1;
+    } else if (hasOverviewStep) {
+      expandedIndex = currentSubStep - 1; // step 0 → -1 (overview)
+    } else {
+      expandedIndex = currentSubStep;
+    }
 
     return (
       <div
@@ -542,7 +441,7 @@ export function SlideMainCanvas({
           cardSize="sm"
           columns={variant === 'row-to-split' ? undefined : 2}
           gap={8}
-          expandedIndex={currentSubStep}
+          expandedIndex={expandedIndex}
         />
       </div>
     );
@@ -558,7 +457,6 @@ export function SlideMainCanvas({
       {/* Slide content label */}
       <div className="absolute top-2 left-2 text-[9px] text-muted-foreground/50 font-mono z-20">
         {slide.id} &middot; {slide.animationTemplate}
-        {hasGroup && ` · ${slide.groupedAnimation!.type}`}
       </div>
 
       {/* Structured header from slide.header data model */}
@@ -567,68 +465,39 @@ export function SlideMainCanvas({
       {/* Zoom-In Word Reveal overlay */}
       {renderZoomWordOverlay()}
 
-      {/* Items Grid overlay */}
-      {renderItemsGridOverlay()}
-
-      {/* Sidebar-Detail overlay */}
-      {isSidebarDetail && renderSidebarDetailOverlay()}
-
       {/* Card-Expand (Smart Card) overlay */}
       {renderCardExpandOverlay()}
 
-      {/* Elements — with drag/resize/inline-edit when not in special overlay mode */}
-      {elements.map((element, idx) => {
-        const { visible, isFocused } = getElementVisibility(element.id, idx);
-        const isSelected = selectedElementId === element.id;
-
-        // Zoom-word slides render elements via overlay
-        if (isZoomWord) return null;
-
-        // Card-expand slides render entirely via CardExpandLayout overlay
-        if (isCardExpand) return null;
-
-        // Slides with structured headers already render title/subtitle via header
-        // Skip legacy title/subtitle elements that were formerly at idx 0-1
-        if (hasStructuredHeader && (showItemsGrid || isSidebarDetail) && idx <= 1) return null;
-
-        return (
-          <EditableCanvasElement
-            key={element.id}
-            element={element}
-            isSelected={isSelected}
-            visible={visible}
-            isFocused={isFocused}
-            isPreview={isPreview}
-            onSelect={() => onElementSelect(element.id)}
-            onUpdate={(updates) => handleElementUpdate(element.id, updates)}
+      {/* Items tree rendering (layout-aware) — for non-card-expand, non-zoom slides */}
+      {useItemRenderer && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ItemRenderer
+            items={slide.items}
+            getVisibility={getItemVisibility}
+            onItemClick={(itemId) => onElementSelect(itemId)}
           />
-        );
-      })}
-
-      {/* Grouped animation items overlay — standard (non-grid, non-sidebar, non-card-expand) grouped */}
-      {hasGroup && !showItemsGrid && !isSidebarDetail && !isCardExpand && (
-        <div className="absolute bottom-12 left-4 right-4 flex gap-2 justify-center">
-          {slide.groupedAnimation!.items.map((item, i) => {
-            const isRevealed = i <= currentSubStep;
-            const isActive = i === currentSubStep;
-            return (
-              <div
-                key={item.id}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                    : isRevealed
-                    ? 'bg-muted text-foreground'
-                    : 'bg-muted/40 text-muted-foreground/50'
-                }`}
-              >
-                {item.icon && <span>{item.icon}</span>}
-                <span>{item.title}</span>
-              </div>
-            );
-          })}
         </div>
       )}
+
+      {/* Legacy positioned elements — for slides without items tree */}
+      {!useItemRenderer && !isCardExpand && !isZoomWord &&
+        flatElements.map((element, idx) => {
+          const { visible, isFocused } = getElementVisibility(element.id, idx);
+          const isSelected = selectedElementId === element.id;
+
+          return (
+            <EditableCanvasElement
+              key={element.id}
+              element={element}
+              isSelected={isSelected}
+              visible={visible}
+              isFocused={isFocused}
+              isPreview={isPreview}
+              onSelect={() => onElementSelect(element.id)}
+              onUpdate={(updates) => handleElementUpdate(element.id, updates)}
+            />
+          );
+        })}
 
       {/* Transition badge */}
       {slide.transition !== 'none' && (

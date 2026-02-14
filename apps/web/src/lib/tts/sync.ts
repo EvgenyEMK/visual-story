@@ -23,9 +23,7 @@ export function calculateSync(
   audioTimestamps: WordTimestamp[]
 ): SlideSync {
   const syncPoints: SyncPoint[] = [];
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  const elements = flattenItemsAsElements(slide.items);
   const orderedElements = orderElementsByPriority(elements);
 
   const elementPhrases = orderedElements.map((el) => ({

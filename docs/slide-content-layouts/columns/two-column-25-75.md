@@ -40,5 +40,5 @@ An asymmetric two-column layout with a narrow left pane occupying 25% of the wid
 ## Related Templates
 - [Two Columns (75/25)](two-column-75-25.md) - When main content is on the left
 - [Two Columns (33/67)](two-column-33-67.md) - For a slightly wider left column
-- [Sidebar + Detail](sidebar-detail.md) - For interactive drill-down navigation patterns
+- [Sidebar + Detail](../navigation/sidebar-detail.md) - For interactive drill-down navigation patterns
 - [Two Columns (50/50)](two-column.md) - When both sides need equal space

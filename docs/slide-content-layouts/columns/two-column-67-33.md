@@ -41,4 +41,4 @@ An asymmetric two-column layout with a two-thirds left pane (67%) and a one-thir
 - [Two Columns (33/67)](two-column-33-67.md) - Reversed: main content on the right
 - [Two Columns (75/25)](two-column-75-25.md) - For a narrower right column
 - [Two Columns (50/50)](two-column.md) - For equal emphasis on both sides
-- [Content](content.md) - When you don't need a side panel
+- [Content](../other/content.md) - When you don't need a side panel

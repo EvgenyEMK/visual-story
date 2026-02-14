@@ -1,15 +1,17 @@
 # Slide Visual Items
 
-VisualStory uses a three-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
+VisualStory uses a four-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
 
 ## Component Hierarchy
 
 ```
-Layouts        — Full slide compositions (GridOfCards, SidebarDetail, ...)
+Interactive Layouts  — Stateful, navigational full-slide experiences (SidebarDetail, BentoLayout, ...)
   ↑ composed of
-Molecules      — Multi-part components (FeatureCard, TitleBar, StatCard, ...)
+Layout Molecules     — Spatial arrangements of molecules (GridOfCards, StatDashboard, ...)
   ↑ composed of
-Atoms          — Single visual elements (SlideTitle, SlideText, IconBadge, ...)
+Molecules            — Multi-part components (FeatureCard, TitleBar, StatCard, ...)
+  ↑ composed of
+Atoms                — Single visual elements (SlideTitle, SlideText, IconBadge, ...)
 ```
 
 ## Atoms — Basic Building Blocks
@@ -44,21 +46,28 @@ Molecules combine multiple atoms into meaningful visual units.
 | [StatusLegend](./molecules/status-legend.md) | Color-coded legend entries |
 | [QuoteBlock](./molecules/quote-block.md) | Styled quotation with attribution |
 
-## Layouts — Slide Compositions
+## Layout Molecules — Reusable Spatial Arrangements
 
-Layouts arrange molecules and atoms into complete slide content areas.
+Layout molecules arrange molecules and atoms into structured visual compositions. They can be used as full slide content **or** nested inside a card, region, or other container.
 
 | Component | Purpose |
 |-----------|---------|
-| [GridOfCards](./layouts/grid-of-cards.md) | Auto-grid of feature cards |
-| [SidebarDetail](./layouts/sidebar-detail.md) | Sidebar navigation + detail view |
-| [CenterStageShelf](./layouts/center-stage-shelf.md) | Center spotlight + bottom shelf |
-| [BentoLayout](./layouts/bento-layout.md) | Expanded area + sidebar grid |
-| [HorizontalTimeline](./layouts/horizontal-timeline.md) | Connected flow nodes |
-| [HubSpoke](./layouts/hub-spoke.md) | Central hub with radial nodes |
-| [TitleSlide](./layouts/title-slide.md) | Title bar + centered body content |
-| [StackOfCards](./layouts/stack-of-cards.md) | 3D perspective card stack |
-| [StatDashboard](./layouts/stat-dashboard.md) | Grid of KPI stat cards |
+| [GridOfCards](./layout-molecules/grid-of-cards.md) | Auto-grid of feature cards |
+| [StatDashboard](./layout-molecules/stat-dashboard.md) | Grid of KPI stat cards |
+| [StackOfCards](./layout-molecules/stack-of-cards.md) | 3D perspective card stack |
+| [TitleSlide](./layout-molecules/title-slide.md) | Title bar + centered body content |
+
+## Interactive Layouts — Navigational Slide Compositions
+
+Interactive layouts are stateful, navigational full-slide experiences. User interaction (clicks) changes the displayed content with animated transitions.
+
+| Component | Pattern | Purpose |
+|-----------|---------|---------|
+| [SidebarDetail](./interactive-layouts/sidebar-detail.md) | Master–detail | Sidebar thumbnails → hero detail view |
+| [BentoLayout](./interactive-layouts/bento-layout.md) | Master–detail | Sidebar grid → expanded main area |
+| [CenterStageShelf](./interactive-layouts/center-stage-shelf.md) | Spotlight + nav | Bottom shelf thumbnails → center spotlight |
+| [HorizontalTimeline](./interactive-layouts/horizontal-timeline.md) | Sequential | Click nodes to advance through a process |
+| [HubSpoke](./interactive-layouts/hub-spoke.md) | Radial + popup | Click spoke nodes → detail popup |
 
 ## Relationship to Slide Layout Templates
 

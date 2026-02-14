@@ -2,16 +2,14 @@
 
 import type { Slide } from '@/types/slide';
 import type { Scene } from '@/types/scene';
-import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 interface SlideThumbnailProps {
   slide: Slide;
   index: number;
   isActive: boolean;
-  hasGroupedAnimation: boolean;
   transitionType: string;
   onClick: () => void;
-  /** Scenes derived from this slide (via ensureScenes). */
+  /** Scenes for this slide. */
   scenes?: Scene[];
   /** Index of the currently active scene (-1 or undefined = no scene selected). */
   activeSceneIndex?: number;
@@ -25,7 +23,6 @@ export function SlideThumbnail({
   slide,
   index,
   isActive,
-  hasGroupedAnimation,
   transitionType,
   onClick,
   scenes,
@@ -33,12 +30,21 @@ export function SlideThumbnail({
   onSceneSelect,
   showScenes = true,
 }: SlideThumbnailProps) {
-  // Pick a label for the grouped animation type
-  const groupLabel = slide.groupedAnimation?.type
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-
   const hasScenes = scenes && scenes.length > 1;
+  const isCardExpand = slide.animationTemplate.startsWith('card-expand:');
+
+  // Derive a short label for the animation template
+  const templateLabel = (() => {
+    if (slide.animationTemplate === 'zoom-in-word') return 'Zoom Word';
+    if (slide.animationTemplate === 'slide-title') return 'Slide Title';
+    if (slide.animationTemplate === 'sidebar-detail') return 'Sidebar Detail';
+    if (isCardExpand) {
+      const variant = slide.animationTemplate.split(':')[1] ?? '';
+      return variant.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    if (slide.animationTemplate === 'none') return null;
+    return null;
+  })();
 
   return (
     <div>
@@ -55,28 +61,22 @@ export function SlideThumbnail({
           className="relative w-full bg-white dark:bg-zinc-900"
           style={{ aspectRatio: '16/9' }}
         >
-          {/* Render miniature elements */}
-          {(slide.items.length > 0
-            ? flattenItemsAsElements(slide.items)
-            : slide.elements
-          ).slice(0, 4).map((el) => (
-            <div
-              key={el.id}
-              className="absolute text-[4px] leading-tight overflow-hidden"
-              style={{
-                left: `${(el.position.x / 960) * 100}%`,
-                top: `${(el.position.y / 540) * 100}%`,
-                maxWidth: '60%',
-                color: el.style.color ?? undefined,
-                fontWeight: el.style.fontWeight,
-                fontSize: el.style.fontSize
-                  ? `${Math.max(3, el.style.fontSize * 0.12)}px`
-                  : undefined,
-              }}
-            >
-              {el.content.slice(0, 30)}
-            </div>
-          ))}
+          {/* Title and subtitle preview */}
+          <div className="absolute inset-0 p-1.5 flex flex-col gap-0.5 overflow-hidden">
+            {slide.title && (
+              <span className="text-[5px] font-bold text-foreground/70 truncate">
+                {slide.title}
+              </span>
+            )}
+            {slide.subtitle && (
+              <span className="text-[4px] text-muted-foreground/60 truncate">
+                {slide.subtitle}
+              </span>
+            )}
+            {slide.icon && (
+              <span className="text-[10px] mt-auto self-center">{slide.icon}</span>
+            )}
+          </div>
 
           {/* Scenes count badge */}
           {hasScenes && (
@@ -85,10 +85,10 @@ export function SlideThumbnail({
             </div>
           )}
 
-          {/* Legacy grouped animation badge (no scenes yet) */}
-          {!hasScenes && hasGroupedAnimation && (
+          {/* Single scene widget count badge */}
+          {scenes && scenes.length === 1 && scenes[0].widgetStateLayer.animatedWidgetIds.length > 0 && (
             <div className="absolute top-0.5 right-0.5 px-1 py-0.5 rounded text-[5px] font-bold bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
-              {slide.groupedAnimation!.items.length} items
+              {scenes[0].widgetStateLayer.animatedWidgetIds.length} widgets
             </div>
           )}
 
@@ -104,29 +104,9 @@ export function SlideThumbnail({
             {slide.title ?? slide.content.split('—')[0].trim()}
           </div>
           <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-            {slide.animationTemplate === 'zoom-in-word' && (
-              <span className="text-[8px] px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 font-medium">
-                Zoom Word
-              </span>
-            )}
-            {slide.animationTemplate === 'slide-title' && (
-              <span className="text-[8px] px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-medium">
-                Slide Title
-              </span>
-            )}
-            {slide.animationTemplate === 'grid-to-sidebar' && (
-              <span className="text-[8px] px-1 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400 font-medium">
-                Grid→Sidebar
-              </span>
-            )}
-            {slide.animationTemplate === 'sidebar-detail' && (
-              <span className="text-[8px] px-1 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-medium">
-                Sidebar Detail
-              </span>
-            )}
-            {hasGroupedAnimation && (
+            {templateLabel && (
               <span className="text-[8px] px-1 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 font-medium">
-                {groupLabel}
+                {templateLabel}
               </span>
             )}
             {transitionType !== 'none' && (

@@ -43,9 +43,7 @@ Suggest 3-5 icons. Use only standard Lucide icon names.
 export async function suggestIcons(slide: Slide): Promise<IconSuggestion[]> {
   const suggestions: IconSuggestion[] = [];
 
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  const elements = flattenItemsAsElements(slide.items);
   for (const element of elements) {
     if (element.type === 'text') {
       const keywords = extractKeywords(element.content);

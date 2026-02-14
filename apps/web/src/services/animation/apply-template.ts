@@ -9,8 +9,8 @@ import { flattenItemsAsElements } from '@/lib/flatten-items';
  * Matches template selectors to slide elements and applies animation rules.
  * Preserves element content and position — only modifies animation properties.
  *
- * Works with both the new `items` tree (via flattenItemsAsElements) and
- * the legacy `elements` array. Updates the `elements` array on the returned slide.
+ * Uses the slide's `items` tree (via flattenItemsAsElements). Updates the
+ * `elements` array on the returned slide.
  *
  * @param slide - The slide to apply the template to
  * @param template - The animation template to apply
@@ -20,10 +20,7 @@ export function applyTemplate(
   slide: Slide,
   template: AnimationTemplate
 ): Slide {
-  // Derive flat elements from the item tree when available
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  const elements = flattenItemsAsElements(slide.items);
 
   const updatedElements = elements.map((element, index) => {
     // Find the first matching animation rule for this element

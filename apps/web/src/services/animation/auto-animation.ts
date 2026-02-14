@@ -139,10 +139,7 @@ export function calculateDuration(
     return Math.max(voiceOverDuration, 3);
   }
 
-  // Derive elements from the item tree when available
-  const elements = slide.items.length > 0
-    ? flattenItemsAsElements(slide.items)
-    : slide.elements;
+  const elements = flattenItemsAsElements(slide.items);
   const wordCount = elements.reduce(
     (acc, el) => acc + el.content.split(/\s+/).length,
     0,

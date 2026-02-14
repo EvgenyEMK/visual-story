@@ -8,6 +8,7 @@
 import { create } from 'zustand';
 import type { Project } from '@/types/project';
 import type { Slide, SlideElement } from '@/types/slide';
+import { flattenItemsAsElements } from '@/lib/flatten-items';
 
 // ---------------------------------------------------------------------------
 // State
@@ -144,12 +145,12 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set, get) 
     if (!slide) return null;
 
     const newId = crypto.randomUUID();
+    const sourceElements = flattenItemsAsElements(slide.items);
     const duplicate: Slide = {
       ...slide,
       id: newId,
       order: slide.order + 1,
-      // Duplicate both legacy elements and new items arrays
-      elements: slide.elements.map((el) => ({
+      elements: sourceElements.map((el) => ({
         ...el,
         id: crypto.randomUUID(),
       })),
@@ -171,36 +172,42 @@ export const useProjectStore = create<ProjectState & ProjectActions>((set, get) 
 
   updateElement: (slideId, elementId, updates) =>
     set((state) => ({
-      slides: state.slides.map((s) =>
-        s.id === slideId
-          ? {
-              ...s,
-              elements: s.elements.map((el) =>
-                el.id === elementId ? { ...el, ...updates } : el,
-              ),
-            }
-          : s,
-      ),
+      slides: state.slides.map((s) => {
+        if (s.id !== slideId) return s;
+        const elts =
+          flattenItemsAsElements(s.items);
+        return {
+          ...s,
+          elements: elts.map((el) =>
+            el.id === elementId ? { ...el, ...updates } : el,
+          ),
+        };
+      }),
       isDirty: true,
     })),
 
   addElement: (slideId, element) =>
     set((state) => ({
-      slides: state.slides.map((s) =>
-        s.id === slideId
-          ? { ...s, elements: [...s.elements, element] }
-          : s,
-      ),
+      slides: state.slides.map((s) => {
+        if (s.id !== slideId) return s;
+        const elts =
+          flattenItemsAsElements(s.items);
+        return { ...s, elements: [...elts, element] };
+      }),
       isDirty: true,
     })),
 
   removeElement: (slideId, elementId) =>
     set((state) => ({
-      slides: state.slides.map((s) =>
-        s.id === slideId
-          ? { ...s, elements: s.elements.filter((el) => el.id !== elementId) }
-          : s,
-      ),
+      slides: state.slides.map((s) => {
+        if (s.id !== slideId) return s;
+        const elts =
+          flattenItemsAsElements(s.items);
+        return {
+          ...s,
+          elements: elts.filter((el) => el.id !== elementId),
+        };
+      }),
       isDirty: true,
     })),
 

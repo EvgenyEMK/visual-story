@@ -43,5 +43,5 @@ A balanced layout featuring three equal-width vertical panes, creating a three-w
 ## Related Templates
 - [Four Columns](four-column.md) - For four items instead of three
 - [Two Columns (50/50)](two-column.md) - For comparing two items instead of three
-- [Grid 3x2](grid-3x2.md) - For six items in a grid format
-- [Content](content.md) - When you need more flexible content arrangement
+- [Grid 3x2](../grids/grid-3x2.md) - For six items in a grid format
+- [Content](../other/content.md) - When you need more flexible content arrangement

@@ -111,10 +111,7 @@ export function FadeSimpleTemplate({ slide }: FadeSimpleTemplateProps) {
         position: 'relative',
       }}
     >
-      {(slide.items.length > 0
-        ? flattenItemsAsElements(slide.items)
-        : slide.elements
-      ).map((element, index) => (
+      {flattenItemsAsElements(slide.items).map((element, index) => (
         <FadeElement
           key={element.id}
           element={element}

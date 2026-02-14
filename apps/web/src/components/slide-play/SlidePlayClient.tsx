@@ -6,7 +6,6 @@ import type { Slide } from '@/types/slide';
 import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
 import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
-import { ensureScenes } from '@/lib/migrate-to-scenes';
 import { flattenItems } from '@/lib/flatten-items';
 import { SlideFrame } from '@/components/animation/SlideFrame';
 import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
@@ -33,41 +32,10 @@ function isZoomWordSlide(slide: Slide): boolean {
   return slide.animationTemplate === 'zoom-in-word';
 }
 
-function isItemsGridSlide(slide: Slide): boolean {
-  return slide.groupedAnimation?.type === 'items-grid';
-}
-
-function isCardExpandSlide(slide: Slide): boolean {
-  return slide.groupedAnimation?.type === 'card-expand';
-}
-
-// Items Grid default layouts (columns per row for 2–8 items)
-const GRID_LAYOUTS: Record<number, number[]> = {
-  2: [2],
-  3: [3],
-  4: [2, 2],
-  5: [3, 2],
-  6: [3, 3],
-  7: [4, 3],
-  8: [4, 4],
-};
-
-function getGridLayout(count: number): number[] {
-  return GRID_LAYOUTS[count] ?? [Math.min(count, 4)];
-}
-
-/**
- * Convert scene-level (sceneIndex, stepIndex) to a flat sub-step
- * for backward-compatible canvas rendering.
- */
-function sceneToFlatStep(scene: Scene, stepIndex: number): number {
-  if (scene.widgetStateLayer.enterBehavior.revealMode === 'sequential') {
-    return stepIndex;
-  }
-  // All-at-once: step 0 = hidden, step >= 1 = all visible
-  return stepIndex > 0
-    ? scene.widgetStateLayer.animatedWidgetIds.length - 1
-    : 0;
+/** Parse card-expand variant from animationTemplate, e.g. 'card-expand:center-popup' */
+function parseCardExpandVariant(animationTemplate: string): CardExpandVariant | null {
+  if (!animationTemplate.startsWith('card-expand:')) return null;
+  return animationTemplate.split(':')[1] as CardExpandVariant;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,22 +53,30 @@ export function SlidePlayClient() {
   const currentSlide = slides[currentSlideIndex];
   const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
 
-  // Derive scenes
-  const scenes = useMemo(() => ensureScenes(currentSlide), [currentSlide]);
+  // Derive scenes from slide (all demo slides define scenes natively)
+  const scenes = useMemo(() => currentSlide.scenes ?? [], [currentSlide]);
   const currentScene = scenes[currentSceneIndex] ?? scenes[0];
-  const totalSteps = useMemo(() => calcSceneSteps(currentScene), [currentScene]);
-  const hasGroup = !!currentSlide.groupedAnimation;
+  const totalSteps = useMemo(() => (currentScene ? calcSceneSteps(currentScene) : 1), [currentScene]);
 
-  // Flat step for canvas compatibility
-  const currentStep = useMemo(
-    () => sceneToFlatStep(currentScene, currentStepIndex),
-    [currentScene, currentStepIndex],
+  // Scene-derived state
+  const hasOverviewStep = !!(
+    currentScene?.widgetStateLayer.enterBehavior.includeOverviewStep &&
+    currentScene.widgetStateLayer.enterBehavior.revealMode === 'sequential'
   );
+  const isExitStep = !!(
+    currentScene?.widgetStateLayer.exitBehavior &&
+    currentStepIndex === totalSteps - 1
+  );
+  const cardExpandVariant = parseCardExpandVariant(currentSlide.animationTemplate);
+  const isCardExpand = cardExpandVariant !== null;
+  const isZoomWord = isZoomWordSlide(currentSlide);
+  const hasStructuredHeader = !!currentSlide.header;
+  const hasSpecialOverlay = isZoomWord || isCardExpand;
 
   // Auto-play timer
   useEffect(() => {
     if (!isPlaying) return;
-    const stepMs = currentScene.widgetStateLayer.enterBehavior.stepDuration ?? 1500;
+    const stepMs = currentScene?.widgetStateLayer.enterBehavior.stepDuration ?? 1500;
     const timer = setTimeout(() => {
       if (currentStepIndex < totalSteps - 1) {
         setCurrentStepIndex((s) => s + 1);
@@ -168,85 +144,99 @@ export function SlidePlayClient() {
   const getItemVisibility = useCallback(
     (itemId: string): ItemVisibility => {
       // Special slides handle their own rendering — hide items from the tree
-      if (isZoomWordSlide(currentSlide)) {
+      if (isZoomWord) {
         return { visible: false, isFocused: false, hidden: true };
       }
 
-      // Scene-based visibility: check if widget is in the animated list
-      const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
+      if (!currentScene) {
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
+      const { animatedWidgetIds, enterBehavior, initialStates } =
+        currentScene.widgetStateLayer;
       const widgetIndex = animatedWidgetIds.indexOf(itemId);
 
+      // Exit step: everything visible, nothing focused (overview)
+      if (isExitStep) {
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
       if (widgetIndex !== -1) {
+        // Overview step (step 0 when includeOverviewStep): all visible, none focused
+        if (hasOverviewStep && currentStepIndex === 0) {
+          return { visible: true, isFocused: false, hidden: false };
+        }
+
+        const effectiveStep = hasOverviewStep
+          ? currentStepIndex - 1
+          : currentStepIndex;
+
         if (enterBehavior.revealMode === 'sequential') {
-          const isRevealed = widgetIndex <= currentStep;
-          const isFocused = widgetIndex === currentStep;
-          return { visible: isRevealed, isFocused, hidden: false };
-        } else {
-          // All-at-once: all visible after step 0
-          const allRevealed = currentStepIndex > 0 || totalSteps <= 1;
-          return { visible: allRevealed, isFocused: false, hidden: false };
+          return {
+            visible: widgetIndex <= effectiveStep,
+            isFocused: widgetIndex === effectiveStep,
+            hidden: false,
+          };
         }
+        // All-at-once: all visible after step 0
+        const allRevealed = currentStepIndex > 0 || totalSteps <= 1;
+        return { visible: allRevealed, isFocused: false, hidden: false };
       }
 
-      // For grouped animations (legacy fallback), check grouped items
-      if (hasGroup) {
-        const groupItems = currentSlide.groupedAnimation!.items;
-        const groupItemIndex = groupItems.findIndex((gi) => gi.id === itemId);
-        if (groupItemIndex !== -1) {
-          const isRevealed = groupItemIndex <= currentStep;
-          const isFocused = groupItemIndex === currentStep;
-          return { visible: isRevealed, isFocused, hidden: false };
-        }
-      }
-
-      // For standalone elements: reveal by animation delay order
-      const atoms = flattenItems(currentSlide.items);
-      const animated = atoms
-        .filter((a) => a.animation && a.animation.type !== 'none')
-        .sort((a, b) => (a.animation?.delay ?? 0) - (b.animation?.delay ?? 0));
-      const stepIndex = animated.findIndex((a) => a.id === itemId);
-      if (stepIndex !== -1) {
+      // Non-animated widget: use initial state
+      const initial = initialStates.find((s) => s.widgetId === itemId);
+      if (initial) {
         return {
-          visible: stepIndex <= currentStep,
-          isFocused: stepIndex === currentStep,
-          hidden: false,
+          visible: initial.visible,
+          isFocused: initial.isFocused,
+          hidden: !initial.visible && initial.displayMode === 'hidden',
         };
       }
 
       // Default: visible
       return { visible: true, isFocused: false, hidden: false };
     },
-    [currentSlide, currentStep, currentStepIndex, currentScene, hasGroup, totalSteps],
+    [currentScene, currentStepIndex, totalSteps, isZoomWord, hasOverviewStep, isExitStep],
   );
 
   // -----------------------------------------------------------------------
   // Script text for display
   // -----------------------------------------------------------------------
 
-  const currentScriptText = (() => {
-    if (!currentScript) return '';
-    if (currentStepIndex === 0 && !hasGroup) return currentScript.opening.text;
-    if (hasGroup && currentScript.elements[currentStep]) {
-      return currentScript.elements[currentStep].script.text;
+  const currentScriptText = useMemo(() => {
+    if (!currentScript || !currentScene) return '';
+
+    const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
+
+    // Overview or exit step: show opening text
+    if ((hasOverviewStep && currentStepIndex === 0) || isExitStep) {
+      return currentScript.opening.text;
     }
-    const atoms = flattenItems(currentSlide.items);
-    const sortedAtoms = atoms
-      .filter((a) => a.animation && a.animation.type !== 'none')
-      .sort((a, b) => (a.animation?.delay ?? 0) - (b.animation?.delay ?? 0));
-    const atom = sortedAtoms[currentStep];
-    if (atom) {
-      const scriptEntry = currentScript.elements.find((s) => s.elementId === atom.id);
-      return scriptEntry?.script.text ?? '';
+
+    // Widget step: find the corresponding script entry
+    const effectiveWidgetIndex = hasOverviewStep
+      ? currentStepIndex - 1
+      : currentStepIndex;
+    const widgetId = animatedWidgetIds[effectiveWidgetIndex];
+    if (widgetId) {
+      const entry = currentScript.elements.find((e) => e.elementId === widgetId);
+      if (entry) return entry.script.text;
+    }
+
+    // Fallback: opening text or first step
+    if (enterBehavior.revealMode === 'all-at-once') {
+      return currentScript.opening.text;
     }
     return '';
-  })();
+  }, [currentScript, currentScene, currentStepIndex, hasOverviewStep, isExitStep]);
 
   // =====================================================================
-  // Render helpers for special slide types (kept as overlays)
+  // Render helpers
   // =====================================================================
 
+  // --- Zoom-In Word Reveal ---
   const renderZoomWordOverlay = () => {
-    if (!isZoomWordSlide(currentSlide)) return null;
+    if (!isZoomWord) return null;
     const atoms = flattenItems(currentSlide.items);
     const mainAtom = atoms[0];
     const subtitleAtom = atoms[1];
@@ -256,8 +246,8 @@ export function SlidePlayClient() {
     const wordCount = words.length;
     const subtitleStep = wordCount;
     const morphStep = wordCount + 1;
-    const isMorphing = currentStep >= morphStep;
-    const subtitleVisible = currentStep >= subtitleStep;
+    const isMorphing = currentStepIndex >= morphStep;
+    const subtitleVisible = currentStepIndex >= subtitleStep;
 
     return (
       <div
@@ -272,8 +262,8 @@ export function SlidePlayClient() {
         <div className="flex flex-col items-center gap-4">
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-12 max-w-[80%]">
             {words.map((word, i) => {
-              const isWordVisible = currentStep >= i;
-              const isWordActive = currentStep === i;
+              const isWordVisible = currentStepIndex >= i;
+              const isWordActive = currentStepIndex === i;
               return (
                 <span
                   key={i}
@@ -312,188 +302,20 @@ export function SlidePlayClient() {
     );
   };
 
-  // Sidebar dimensions
-  const SIDEBAR_W = 180;
-  const SIDEBAR_ICON = 32;
-  const SIDEBAR_FONT = 12;
-  const SIDEBAR_GAP = 6;
-  const SIDEBAR_TOP = 56;
-  const SIDEBAR_LEFT = 12;
-
-  // Items Grid overlay
-  const renderItemsGridOverlay = () => {
-    if (!isItemsGridSlide(currentSlide)) return null;
-    const items = currentSlide.groupedAnimation!.items;
-    const itemCount = items.length;
-    const isEndState = currentStep >= itemCount;
-    const isGridToSidebar = currentSlide.animationTemplate === 'grid-to-sidebar';
-    const migratedCount = isGridToSidebar && currentStep > itemCount
-      ? Math.min(currentStep - itemCount, itemCount)
-      : 0;
-
-    const gridLayout = getGridLayout(itemCount);
-    type ItemPos = { gridX: number; gridY: number; globalIdx: number };
-    const positions: ItemPos[] = [];
-    let rowY = 0;
-    let flatIdx = 0;
-    gridLayout.forEach((cols) => {
-      for (let c = 0; c < cols; c++) {
-        const gridX = c - (cols - 1) / 2;
-        positions.push({ gridX, gridY: rowY, globalIdx: flatIdx });
-        flatIdx++;
-      }
-      rowY++;
-    });
-
-    return (
-      <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
-        {items.map((item, i) => {
-          const pos = positions[i];
-          const isRevealed = i <= currentStep || isEndState;
-          const isActive = !isEndState && i === currentStep;
-          const hasMigrated = i < migratedCount;
-
-          const gridCenterX = 50;
-          const gridCenterY = 52;
-          const gridSpacingX = 120;
-          const gridSpacingY = 110;
-          const gridX = `calc(${gridCenterX}% + ${(pos.gridX) * gridSpacingX}px - 40px)`;
-          const gridY = `calc(${gridCenterY}% + ${(pos.gridY - (gridLayout.length - 1) / 2) * gridSpacingY}px - 50px)`;
-
-          const sidebarX = `${SIDEBAR_LEFT}px`;
-          const sidebarY = `${SIDEBAR_TOP + i * (SIDEBAR_ICON + SIDEBAR_GAP + 8)}px`;
-
-          const inSidebar = hasMigrated;
-          const left = inSidebar ? sidebarX : gridX;
-          const top = inSidebar ? sidebarY : gridY;
-
-          return (
-            <div
-              key={item.id}
-              className="absolute transition-all duration-700 ease-in-out"
-              style={{
-                left,
-                top,
-                opacity: isRevealed ? 1 : 0.12,
-                transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                filter: isRevealed ? 'blur(0px)' : 'blur(3px)',
-                display: 'flex',
-                flexDirection: inSidebar ? 'row' : 'column',
-                alignItems: 'center',
-                gap: inSidebar ? 8 : 6,
-                width: inSidebar ? SIDEBAR_W : 96,
-              }}
-            >
-              <div
-                className="flex items-center justify-center shadow-lg transition-all duration-500 shrink-0"
-                style={{
-                  width: inSidebar ? SIDEBAR_ICON : 80,
-                  height: inSidebar ? SIDEBAR_ICON : 80,
-                  borderRadius: inSidebar ? 8 : 16,
-                  backgroundColor: item.color ? `${item.color}20` : '#f1f5f9',
-                  fontSize: inSidebar ? 16 : 30,
-                }}
-              >
-                {item.icon}
-              </div>
-              <span
-                className="font-semibold text-zinc-800 leading-tight transition-all duration-500"
-                style={{
-                  fontSize: inSidebar ? SIDEBAR_FONT : 14,
-                  textAlign: inSidebar ? 'left' : 'center',
-                  maxWidth: inSidebar ? 130 : 96,
-                }}
-              >
-                {item.title}
-              </span>
-              {isActive && !inSidebar && item.description && (
-                <div className="mt-1 px-3 py-1.5 rounded-lg bg-zinc-800 text-white text-[11px] max-w-40 text-center shadow-xl">
-                  {item.description}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Sidebar-Detail overlay
-  const renderSidebarDetailOverlay = () => {
-    if (currentSlide.animationTemplate !== 'sidebar-detail') return null;
-    if (!currentSlide.groupedAnimation) return null;
-    const items = currentSlide.groupedAnimation.items;
-
-    return (
-      <div className="absolute inset-0 z-10 flex" style={{ paddingTop: SIDEBAR_TOP }}>
-        <div
-          className="shrink-0 flex flex-col border-r border-black/5 overflow-hidden"
-          style={{ width: SIDEBAR_W, paddingLeft: SIDEBAR_LEFT, paddingTop: 4, gap: SIDEBAR_GAP }}
-        >
-          {items.map((item, i) => {
-            const isRevealed = i <= currentStep;
-            const isActive = i === currentStep;
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-300 cursor-pointer"
-                style={{
-                  opacity: isRevealed ? 1 : 0.3,
-                  backgroundColor: isActive ? (item.color ? `${item.color}15` : '#f1f5f9') : 'transparent',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center shrink-0 rounded-lg transition-all duration-200"
-                  style={{
-                    width: SIDEBAR_ICON,
-                    height: SIDEBAR_ICON,
-                    backgroundColor: item.color ? `${item.color}20` : '#f1f5f9',
-                    fontSize: 16,
-                  }}
-                >
-                  {item.icon}
-                </div>
-                <span
-                  className="font-semibold text-zinc-700 leading-tight"
-                  style={{ fontSize: SIDEBAR_FONT, maxWidth: 120 }}
-                >
-                  {item.title}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex-1 px-8 py-6 flex flex-col">
-          {items.map((item, i) => {
-            if (i !== currentStep) return null;
-            return (
-              <div key={item.id} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: item.color ? `${item.color}15` : '#f1f5f9' }}
-                  >
-                    {item.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-zinc-800">{item.title}</h3>
-                </div>
-                {item.description && (
-                  <p className="text-sm text-zinc-600 leading-relaxed max-w-lg">
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  // Card-Expand (Smart Card) overlay
+  // --- Card-Expand (Smart Card) overlay ---
   const renderCardExpandOverlay = () => {
-    if (!isCardExpandSlide(currentSlide)) return null;
-    const variant = (currentSlide.groupedAnimation!.cardExpandVariant ?? 'grid-to-overlay') as CardExpandVariant;
+    if (!isCardExpand) return null;
+    const variant = cardExpandVariant!;
+
+    // Compute expandedIndex: overview step -> -1, widget steps -> 0..N-1, exit step -> -1
+    let expandedIndex: number;
+    if (isExitStep) {
+      expandedIndex = -1;
+    } else if (hasOverviewStep) {
+      expandedIndex = currentStepIndex - 1; // step 0 -> -1 (overview)
+    } else {
+      expandedIndex = currentStepIndex;
+    }
 
     return (
       <div
@@ -506,33 +328,20 @@ export function SlidePlayClient() {
           cardSize="sm"
           columns={variant === 'row-to-split' ? undefined : 2}
           gap={8}
-          expandedIndex={currentStep}
+          expandedIndex={expandedIndex}
         />
       </div>
     );
   };
 
   // -----------------------------------------------------------------------
-  // Derived booleans
-  // -----------------------------------------------------------------------
-
-  const isZoomWord = isZoomWordSlide(currentSlide);
-  const isSidebarDetail = currentSlide.animationTemplate === 'sidebar-detail';
-  const showItemsGrid = isItemsGridSlide(currentSlide);
-  const showCardExpand = isCardExpandSlide(currentSlide);
-
-  const hasStructuredHeader = !!currentSlide.header;
-  const hasSpecialOverlay = isZoomWord || showItemsGrid || isSidebarDetail || showCardExpand;
-
-  // -----------------------------------------------------------------------
-  // HUD layer content
+  // HUD layer
   // -----------------------------------------------------------------------
 
   const hudContent = (
     <div className="pointer-events-auto">
       <div className="absolute bottom-2 left-2 text-[9px] text-black/20 dark:text-white/15 font-mono">
         {currentSlide.animationTemplate}
-        {hasGroup && ` · ${currentSlide.groupedAnimation!.type}`}
         {scenes.length > 1 && ` · Scene ${currentSceneIndex + 1}/${scenes.length}`}
       </div>
       <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
@@ -562,36 +371,9 @@ export function SlidePlayClient() {
             animationLayer={<AnimationLayer />}
             hudLayer={hudContent}
           >
-            {/* Special overlays rendered directly in the layout layer */}
+            {/* Special overlays */}
             {isZoomWord && renderZoomWordOverlay()}
-            {showItemsGrid && renderItemsGridOverlay()}
-            {isSidebarDetail && renderSidebarDetailOverlay()}
-            {showCardExpand && renderCardExpandOverlay()}
-
-            {/* Grouped items bar for non-special grouped slides */}
-            {hasGroup && !hasSpecialOverlay && (
-              <div className="absolute bottom-4 left-4 right-4 flex gap-2 justify-center z-10">
-                {currentSlide.groupedAnimation!.items.map((item, i) => {
-                  const isRevealed = i <= currentStep;
-                  const isActive = i === currentStep;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-500 ${
-                        isActive
-                          ? 'bg-white text-zinc-900 shadow-lg scale-110'
-                          : isRevealed
-                          ? 'bg-white/20 text-white/80'
-                          : 'bg-white/5 text-white/20'
-                      }`}
-                    >
-                      {item.icon && <span>{item.icon}</span>}
-                      <span>{item.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            {isCardExpand && renderCardExpandOverlay()}
 
             {/* Item tree rendered via ItemRenderer (for non-special slides) */}
             {!hasSpecialOverlay && (

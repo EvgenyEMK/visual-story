@@ -7,36 +7,38 @@ import { SlideMainCanvas } from './SlideMainCanvas';
 import { ScriptPanel } from './ScriptPanel';
 import { AnimationStepStrip } from './AnimationStepStrip';
 import { useEditorStore } from '@/stores/editor-store';
-import type { Slide } from '@/types/slide';
+import type { Slide, SlideItem } from '@/types/slide';
 import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
 import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
-import { ensureScenes } from '@/lib/migrate-to-scenes';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Build a widgetId → title lookup from the slide's grouped items or scene data.
+ * Build a widgetId -> title lookup from the slide's items tree.
+ * Walks the tree and extracts the first text atom inside each card/layout.
  */
-function buildWidgetTitleMap(slide: Slide, scenes: Scene[]): Record<string, string> {
+function buildWidgetTitleMap(slide: Slide): Record<string, string> {
   const map: Record<string, string> = {};
 
-  // From grouped animation items (legacy)
-  if (slide.groupedAnimation) {
-    for (const item of slide.groupedAnimation.items) {
-      map[item.id] = item.title;
+  function walk(items: SlideItem[]) {
+    for (const item of items) {
+      if (item.type === 'card') {
+        const textAtom = item.children.find(
+          (c) => c.type === 'atom' && c.atomType === 'text',
+        );
+        map[item.id] = textAtom && textAtom.type === 'atom'
+          ? textAtom.content
+          : item.id;
+        walk(item.children);
+      } else if (item.type === 'layout') {
+        walk(item.children);
+      }
     }
   }
-
-  // From slide items tree (title atoms within cards)
-  // Simple heuristic: look for card children with text atoms
-  for (const item of slide.items) {
-    if (item.type === 'card' || item.type === 'layout') {
-      map[item.id] = item.id; // fallback
-    }
-  }
+  walk(slide.items);
 
   return map;
 }
@@ -59,7 +61,7 @@ export function SlideEditorClient() {
 
   const { collapsedSections, toggleSectionCollapse } = useEditorStore();
 
-  // Group slides for sidebar: unsectioned first, then each section's slides in section order
+  // Group slides for sidebar: unsectioned first, then each section's slides
   const { unsectionedEntries, sectionEntries } = useMemo(() => {
     const withIndex: SlideEntry[] = slides.map((slide, index) => ({ slide, index }));
     const unsectioned = withIndex.filter(({ slide }) => !slide.sectionId);
@@ -75,36 +77,32 @@ export function SlideEditorClient() {
   const currentSlide = slides[currentSlideIndex];
   const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
 
-  // Derive scenes from the slide (migrate from legacy if needed)
-  const scenes = useMemo(() => ensureScenes(currentSlide), [currentSlide]);
+  // Derive scenes directly from slide (all slides now define scenes natively)
+  const scenes = useMemo(() => currentSlide.scenes ?? [], [currentSlide]);
   const currentScene = scenes[currentSceneIndex] ?? scenes[0];
 
   // Calculate steps for the current scene
-  const totalSteps = useMemo(() => calcSceneSteps(currentScene), [currentScene]);
+  const totalSteps = useMemo(() => (currentScene ? calcSceneSteps(currentScene) : 1), [currentScene]);
 
-  // Build widget title map for labels
-  const widgetTitles = useMemo(
-    () => buildWidgetTitleMap(currentSlide, scenes),
-    [currentSlide, scenes],
-  );
+  // Build widget title map for step labels
+  const widgetTitles = useMemo(() => buildWidgetTitleMap(currentSlide), [currentSlide]);
 
   // Generate step labels from the scene
   const stepLabels = useMemo(() => {
-    // Use script labels when available
-    const scriptTitles = { ...widgetTitles };
+    if (!currentScene) return ['Scene'];
+    const titles = { ...widgetTitles };
     if (currentScript) {
       for (const el of currentScript.elements) {
-        scriptTitles[el.elementId] = el.label;
+        titles[el.elementId] = el.label;
       }
     }
-    return generateSceneStepLabels(currentScene, scriptTitles);
+    return generateSceneStepLabels(currentScene, titles);
   }, [currentScene, widgetTitles, currentScript]);
 
   // ---------------------------------------------------------------------------
   // Navigation handlers
   // ---------------------------------------------------------------------------
 
-  // Reset scene + step when switching slides
   const handleSlideSelect = useCallback((index: number) => {
     setCurrentSlideIndex(index);
     setCurrentSceneIndex(0);
@@ -112,7 +110,6 @@ export function SlideEditorClient() {
     setSelectedElementId(null);
   }, []);
 
-  // Reset step when switching scenes
   const handleSceneSelect = useCallback((sceneIndex: number) => {
     setCurrentSceneIndex(sceneIndex);
     setCurrentStepIndex(0);
@@ -124,11 +121,11 @@ export function SlideEditorClient() {
   }, []);
 
   // ---------------------------------------------------------------------------
-  // Compute legacy-compatible currentSubStep for canvas rendering
-  // This maps (sceneIndex, stepIndex) → a flat step index that the canvas uses
+  // Compute currentSubStep for canvas rendering
   // ---------------------------------------------------------------------------
 
   const currentSubStep = useMemo(() => {
+    if (!currentScene) return 0;
     if (currentScene.widgetStateLayer.enterBehavior.revealMode === 'sequential') {
       return currentStepIndex;
     }
@@ -138,17 +135,12 @@ export function SlideEditorClient() {
       : 0;
   }, [currentScene, currentStepIndex]);
 
-  // Total legacy steps (for canvas compatibility)
-  const legacyTotalSteps = useMemo(() => {
-    const { enterBehavior, animatedWidgetIds } = currentScene.widgetStateLayer;
-    if (enterBehavior.revealMode === 'sequential') {
-      return animatedWidgetIds.length || 1;
-    }
-    return 1;
-  }, [currentScene]);
-
-  // Find which script element corresponds to the selected element
   const activeScriptElementId = selectedElementId ?? undefined;
+
+  // Helper to get scenes for a slide in thumbnails
+  const getSlideScenes = useCallback((slide: Slide): Scene[] => {
+    return slide.scenes ?? [];
+  }, []);
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-background overflow-hidden">
@@ -181,7 +173,7 @@ export function SlideEditorClient() {
         </div>
       </div>
 
-      {/* Main workspace: thumbnails | canvas | (future: properties) */}
+      {/* Main workspace: thumbnails | canvas */}
       <div className="flex flex-1 min-h-0">
         {/* Left panel — sections and slide thumbnails with scene children */}
         <div className="w-48 lg:w-56 border-r bg-muted/20 overflow-y-auto shrink-0">
@@ -189,24 +181,20 @@ export function SlideEditorClient() {
             {/* Unsectioned slides at the top */}
             {unsectionedEntries.length > 0 && (
               <div className="space-y-2">
-                {unsectionedEntries.map(({ slide, index }) => {
-                  const slideScenes = ensureScenes(slide);
-                  return (
-                    <SlideThumbnail
-                      key={slide.id}
-                      slide={slide}
-                      index={index}
-                      isActive={index === currentSlideIndex}
-                      hasGroupedAnimation={!!slide.groupedAnimation}
-                      transitionType={slide.transition}
-                      onClick={() => handleSlideSelect(index)}
-                      scenes={slideScenes}
-                      activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
-                      onSceneSelect={handleSceneSelect}
-                      showScenes={showScenes}
-                    />
-                  );
-                })}
+                {unsectionedEntries.map(({ slide, index }) => (
+                  <SlideThumbnail
+                    key={slide.id}
+                    slide={slide}
+                    index={index}
+                    isActive={index === currentSlideIndex}
+                    transitionType={slide.transition}
+                    onClick={() => handleSlideSelect(index)}
+                    scenes={getSlideScenes(slide)}
+                    activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
+                    onSceneSelect={handleSceneSelect}
+                    showScenes={showScenes}
+                  />
+                ))}
               </div>
             )}
 
@@ -229,24 +217,20 @@ export function SlideEditorClient() {
                   </button>
                   {!isCollapsed && (
                     <div className="space-y-2 pl-0">
-                      {entries.map(({ slide, index }) => {
-                        const slideScenes = ensureScenes(slide);
-                        return (
-                          <SlideThumbnail
-                            key={slide.id}
-                            slide={slide}
-                            index={index}
-                            isActive={index === currentSlideIndex}
-                            hasGroupedAnimation={!!slide.groupedAnimation}
-                            transitionType={slide.transition}
-                            onClick={() => handleSlideSelect(index)}
-                            scenes={slideScenes}
-                            activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
-                            onSceneSelect={handleSceneSelect}
-                            showScenes={showScenes}
-                          />
-                        );
-                      })}
+                      {entries.map(({ slide, index }) => (
+                        <SlideThumbnail
+                          key={slide.id}
+                          slide={slide}
+                          index={index}
+                          isActive={index === currentSlideIndex}
+                          transitionType={slide.transition}
+                          onClick={() => handleSlideSelect(index)}
+                          scenes={getSlideScenes(slide)}
+                          activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
+                          onSceneSelect={handleSceneSelect}
+                          showScenes={showScenes}
+                        />
+                      ))}
                     </div>
                   )}
                 </div>
@@ -261,15 +245,16 @@ export function SlideEditorClient() {
           <div className="flex-1 min-h-0 flex items-center justify-center p-4 bg-muted/10 overflow-auto">
             <SlideMainCanvas
               slide={currentSlide}
+              currentScene={currentScene}
               selectedElementId={selectedElementId}
               currentSubStep={currentSubStep}
-              totalSteps={legacyTotalSteps}
+              totalSteps={totalSteps}
               onElementSelect={setSelectedElementId}
             />
           </div>
 
           {/* Animation step strip */}
-          {showScenes && (
+          {showScenes && currentScene && (
             <AnimationStepStrip
               labels={stepLabels}
               currentStep={currentStepIndex}

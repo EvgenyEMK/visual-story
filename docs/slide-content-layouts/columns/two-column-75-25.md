@@ -41,4 +41,4 @@ An asymmetric two-column layout with a wide left pane taking 75% of the width an
 - [Two Columns (25/75)](two-column-25-75.md) - When navigation/legend is on the left
 - [Two Columns (67/33)](two-column-67-33.md) - For a slightly wider right column
 - [Two Columns (50/50)](two-column.md) - When both sides need equal emphasis
-- [Content](content.md) - When you don't need a sidebar
+- [Content](../other/content.md) - When you don't need a sidebar

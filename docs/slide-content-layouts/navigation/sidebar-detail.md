@@ -40,7 +40,7 @@ A navigation-focused layout with a fixed-width sidebar on the left containing na
   - Interactive components or embedded media
 
 ## Related Templates
-- [Two Columns (25/75)](two-column-25-75.md) - Similar structure but static content
-- [Two Columns (33/67)](two-column-33-67.md) - For a wider left column without navigation
-- [Content](content.md) - When navigation isn't needed
-- [Custom](custom.md) - For more complex navigation patterns
+- [Two Columns (25/75)](../columns/two-column-25-75.md) - Similar structure but static content
+- [Two Columns (33/67)](../columns/two-column-33-67.md) - For a wider left column without navigation
+- [Content](../other/content.md) - When navigation isn't needed
+- [Custom](../other/custom.md) - For more complex navigation patterns

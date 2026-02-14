@@ -36,4 +36,4 @@ A centred layout displaying three content cards in a row in the middle of the sl
 ## Related Templates
 - [Center Stage (2 Items)](center-stage-2.md) - For two centred cards
 - [Center Stage (4 Items)](center-stage-4.md) - For four centred cards
-- [Three Columns](three-column.md) - For a full-width three-column split
+- [Three Columns](../columns/three-column.md) - For a full-width three-column split

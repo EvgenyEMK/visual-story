@@ -42,5 +42,5 @@ An empty slide with no predefined regions or layout constraints. Items are place
 
 ## Related Templates
 - [Custom](custom.md) - For structured custom layouts using containers
-- [Center Stage](center-stage.md) - For simple centered content
+- [Center Stage](../cards-slide/center-stage.md) - For simple centered content
 - [Content](content.md) - When you need a basic structure

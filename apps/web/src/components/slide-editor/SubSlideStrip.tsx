@@ -1,29 +1,30 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import type { Slide } from '@/types/slide';
+import type { Scene } from '@/types/scene';
 
 interface SubSlideStripProps {
   labels: string[];
   currentStep: number;
   totalSteps: number;
-  slide: Slide;
+  scene?: Scene;
   onStepSelect: (step: number) => void;
 }
 
 /**
  * Horizontal strip of auto-generated sub-slides shown below the main canvas.
- * Each sub-slide represents an animation state within the current slide.
+ * Each sub-slide represents an animation state within the current scene.
+ *
+ * @deprecated Replaced by AnimationStepStrip. Kept for backward compatibility.
  */
 export function SubSlideStrip({
   labels,
   currentStep,
   totalSteps,
-  slide,
+  scene,
   onStepSelect,
 }: SubSlideStripProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const hasGroup = !!slide.groupedAnimation;
 
   // Auto-scroll to keep the active step visible
   useEffect(() => {
@@ -33,6 +34,8 @@ export function SubSlideStrip({
       activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }, [currentStep]);
+
+  const animatedWidgetIds = scene?.widgetStateLayer.animatedWidgetIds ?? [];
 
   return (
     <div className="border-t bg-muted/20">
@@ -53,11 +56,6 @@ export function SubSlideStrip({
           const isPast = i < currentStep;
           const label = labels[i] ?? `Step ${i + 1}`;
 
-          // For grouped slides, show the group item info
-          const groupItem = hasGroup
-            ? slide.groupedAnimation!.items[i]
-            : undefined;
-
           return (
             <button
               key={i}
@@ -72,47 +70,24 @@ export function SubSlideStrip({
               }`}
               style={{ width: 140 }}
             >
-              {/* Mini preview */}
               <div
                 className="relative w-full bg-white dark:bg-zinc-900"
                 style={{ aspectRatio: '16/9' }}
               >
-                {/* Show a simplified representation of what's visible at this step */}
                 <div className="absolute inset-0 flex items-center justify-center p-1">
-                  {groupItem ? (
-                    <div className="flex flex-col items-center gap-0.5">
-                      {groupItem.icon && (
-                        <span className="text-sm">{groupItem.icon}</span>
-                      )}
-                      <span
-                        className="text-[7px] font-bold text-center leading-tight"
-                        style={{ color: groupItem.color ?? undefined }}
-                      >
-                        {groupItem.title}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-[7px] text-muted-foreground text-center leading-tight">
-                      {label}
-                    </span>
-                  )}
+                  <span className="text-[7px] text-muted-foreground text-center leading-tight">
+                    {label}
+                  </span>
                 </div>
-
-                {/* Step number */}
                 <div className="absolute top-0.5 left-0.5 text-[6px] font-bold text-muted-foreground/60">
                   {i + 1}
                 </div>
-
-                {/* Items revealed count for grouped */}
-                {hasGroup && (
+                {animatedWidgetIds.length > 0 && (
                   <div className="absolute bottom-0.5 right-0.5 text-[6px] text-muted-foreground/60">
-                    {Math.min(i + 1, slide.groupedAnimation!.items.length)}/
-                    {slide.groupedAnimation!.items.length}
+                    {Math.min(i + 1, animatedWidgetIds.length)}/{animatedWidgetIds.length}
                   </div>
                 )}
               </div>
-
-              {/* Label bar */}
               <div
                 className={`px-1.5 py-1 text-[8px] font-medium truncate border-t ${
                   isActive
