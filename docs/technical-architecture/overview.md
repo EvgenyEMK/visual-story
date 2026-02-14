@@ -16,11 +16,13 @@
 
 | Layer | Technology | Version | Purpose |
 |-------|------------|---------|---------|
-| **Frontend** | Next.js | 14+ | App Router, SSR, API routes |
+| **Monorepo** | Turborepo | 2.x | Build orchestration, caching, task pipelines |
+| **Package Manager** | pnpm | 10.x | Fast, strict, workspace-native package management |
+| **Frontend** | Next.js | 16.x | App Router, SSR, API routes |
 | **Language** | TypeScript | 5.x | Type safety |
-| **Styling** | Tailwind CSS | 3.x | Utility-first CSS |
-| **UI Components** | shadcn/ui | latest | Accessible, customizable components |
-| **State** | Zustand | 4.x | Lightweight global state |
+| **Styling** | Tailwind CSS | 4.x | Utility-first CSS |
+| **UI Components** | Radix UI + CVA | latest | Accessible, customizable components |
+| **State** | Zustand | 5.x | Lightweight global state |
 | **Animation (web)** | motion (motion.dev) | 12.x | DOM animations, layout transitions, cross-boundary flights |
 | **Video Engine** | Remotion | 4.x | React-based video rendering (lazy-loaded) |
 | **Database** | PostgreSQL | 15+ | Via Supabase |
@@ -526,90 +528,115 @@ flowchart LR
 ```bash
 # Prerequisites
 node >= 20.x
-pnpm >= 8.x
+pnpm >= 10.x  (enforced via packageManager field)
 
 # Clone and install
-git clone https://github.com/your-org/visualstory.git
-cd visualstory
+git clone https://github.com/EvgenyEMK/visual-story.git
+cd visual-story
 pnpm install
 
 # Environment setup
-cp .env.example .env.local
+cp .env.example apps/web/.env.local
 # Fill in API keys
 
-# Database setup
-pnpm db:push
-pnpm db:seed
+# Database setup (planned)
+# pnpm db:push
+# pnpm db:seed
 
-# Start development
+# Start development (all apps via Turborepo)
 pnpm dev
+
+# Or start only the web app
+pnpm dev:web
 ```
 
 ### 9.2. Project Structure
 
+The project uses a **Turborepo monorepo** with **pnpm workspaces**:
+
 ```
-visualstory/
-├── src/
-│   ├── app/[locale]/(app)/         # Next.js App Router (i18n)
-│   │   ├── slide-editor/           # Slide editor page
-│   │   ├── slide-play/             # Web player (no Remotion)
-│   │   ├── slide-play-video/       # Video player (Remotion, lazy-loaded)
-│   │   ├── transitions-demo/       # Animation demo showcase
-│   │   └── api/                    # API routes
-│   │
-│   ├── components/                 # React components
-│   │   ├── ui/                    # shadcn/ui components
-│   │   ├── animation/             # Animation architecture (NEW)
-│   │   │   ├── SlideFrame.tsx     # 3-layer slide container
-│   │   │   ├── AnimationLayer.tsx # motion.dev flight overlay
-│   │   │   └── ItemRenderer.tsx   # Recursive SlideItem renderer
-│   │   ├── slide-editor/          # Editor components
-│   │   ├── slide-play/            # Web player components
-│   │   ├── slide-play-video/      # Video player (Remotion wrapper)
-│   │   ├── editor/                # Legacy editor components
-│   │   ├── player/                # Shared player components
-│   │   └── transitions-demo/      # Demo page components
-│   │
-│   ├── hooks/                     # Custom React hooks (NEW)
-│   │   ├── useSlideFrame.ts       # Frame sizing + resize debounce
-│   │   └── useSlideAnimation.tsx  # Flight animation context/provider
-│   │
-│   ├── lib/                       # Utilities
-│   │   ├── flatten-items.ts       # SlideItem tree ↔ flat helpers (NEW)
-│   │   ├── ai/                    # OpenAI helpers
-│   │   ├── tts/                   # TTS sync
-│   │   ├── storage/               # R2 helpers
-│   │   ├── supabase/              # Supabase client
-│   │   └── utils/                 # General utils
-│   │
-│   ├── remotion/                  # Remotion compositions (lazy-loaded)
-│   │   ├── compositions/          # Presentation, slides
-│   │   ├── templates/             # Animation templates
-│   │   └── elements/              # Element renderers
-│   │
-│   ├── services/animation/        # Animation services
-│   │   ├── apply-template.ts      # Template → element mapping
-│   │   └── auto-animation.ts      # AI-based template selection
-│   │
-│   ├── config/                    # App configuration
-│   │   ├── demo-slides.ts         # Demo data (items + elements)
-│   │   └── transition-catalog.ts  # Animation catalog
-│   │
-│   ├── stores/                    # Zustand stores
-│   │   ├── project-store.ts       # Project/slide CRUD
-│   │   ├── player-store.ts        # Playback state (scenes + steps)
-│   │   └── editor-store.ts        # Editor UI state (scenes + steps)
-│   │
-│   └── types/                     # TypeScript types
-│       ├── slide.ts               # SlideItem tree + legacy SlideElement
-│       ├── scene.ts               # Scene + WidgetStateLayer (ADR-001)
-│       ├── animation.ts           # Templates, transitions, groups
-│       └── ...
+visual-story/
+├── apps/
+│   └── web/                           # Next.js frontend app
+│       ├── src/
+│       │   ├── app/                   # Next.js App Router
+│       │   │   ├── [locale]/(app)/    # Authenticated app routes (i18n)
+│       │   │   │   ├── dashboard/
+│       │   │   │   ├── editor/[projectId]/
+│       │   │   │   ├── slide-editor/
+│       │   │   │   ├── slide-play/         # Web player (no Remotion)
+│       │   │   │   ├── slide-play-video/   # Video player (Remotion, lazy)
+│       │   │   │   └── transitions-demo/
+│       │   │   ├── [locale]/(marketing)/   # Public marketing pages
+│       │   │   ├── [locale]/auth/          # Auth pages
+│       │   │   └── api/                    # API routes (stubs)
+│       │   │
+│       │   ├── components/            # React components
+│       │   │   ├── ui/               # Radix UI-based components
+│       │   │   ├── animation/        # Slide animation architecture
+│       │   │   │   ├── SlideFrame.tsx
+│       │   │   │   ├── AnimationLayer.tsx
+│       │   │   │   └── ItemRenderer.tsx
+│       │   │   ├── slide-editor/     # Editor components
+│       │   │   ├── slide-play/       # Web player components
+│       │   │   ├── slide-play-video/ # Video player (Remotion)
+│       │   │   └── slide-ui/         # Reusable slide UI library
+│       │   │       ├── atoms/        # Text, image, icon, etc.
+│       │   │       ├── molecules/    # Cards, lists, charts
+│       │   │       └── layouts/      # Bento, grid, timeline, etc.
+│       │   │
+│       │   ├── hooks/                # Custom React hooks
+│       │   ├── lib/                  # Utilities and integrations
+│       │   │   ├── ai/              # OpenAI helpers
+│       │   │   ├── supabase/        # Supabase client
+│       │   │   ├── stripe/          # Stripe helpers
+│       │   │   ├── storage/         # Cloudflare R2
+│       │   │   └── tts/             # ElevenLabs TTS
+│       │   ├── remotion/            # Video compositions (lazy-loaded)
+│       │   ├── services/            # Business logic services
+│       │   ├── stores/              # Zustand state stores
+│       │   ├── types/               # TypeScript type definitions
+│       │   ├── config/              # App configuration
+│       │   └── i18n/                # Internationalization messages
+│       │
+│       ├── next.config.ts
+│       ├── tsconfig.json              # Extends ../../tsconfig.base.json
+│       └── package.json               # @visual-story/web
 │
-├── docs/                          # Documentation
-├── public/                        # Static assets
-└── package.json
+├── packages/
+│   ├── shared/                        # Shared types, constants, utils
+│   │   └── src/index.ts               # (scaffold — extract from web when needed)
+│   └── db/                            # Supabase client and query helpers
+│       └── src/index.ts               # (scaffold — extract from web when needed)
+│
+├── docs/                              # Project documentation
+├── supabase/                          # Supabase CLI config (migrations, etc.)
+├── turbo.json                         # Turborepo task pipelines
+├── pnpm-workspace.yaml                # Workspace: apps/* + packages/*
+├── tsconfig.base.json                 # Shared TypeScript config
+├── tsconfig.json                      # Root references
+├── package.json                       # Root: turbo scripts + pnpm config
+└── pnpm-lock.yaml
 ```
+
+#### Workspace Packages
+
+| Package | Path | Purpose |
+|---------|------|---------|
+| `@visual-story/web` | `apps/web` | Next.js frontend application |
+| `@visual-story/shared` | `packages/shared` | Shared types and utilities (scaffold) |
+| `@visual-story/db` | `packages/db` | Database client layer (scaffold) |
+
+#### Key Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start all apps in dev mode (via Turborepo) |
+| `pnpm dev:web` | Start only the Next.js app |
+| `pnpm build` | Build all packages (with caching) |
+| `pnpm test` | Run all tests across workspace |
+| `pnpm lint` | Lint all packages |
+| `pnpm --filter @visual-story/web add <pkg>` | Add a dependency to the web app |
 
 ---
 

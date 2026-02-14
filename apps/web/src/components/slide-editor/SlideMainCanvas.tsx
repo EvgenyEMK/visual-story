@@ -1,11 +1,14 @@
 'use client';
 
-import type { Slide } from '@/types/slide';
+import { useState, useCallback } from 'react';
+import { Rnd } from 'react-rnd';
+import type { Slide, SlideElement } from '@/types/slide';
 import { flattenItemsAsElements } from '@/lib/flatten-items';
 import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
 import { CardExpandLayout } from '@/components/slide-ui';
 import type { CardExpandVariant } from '@/components/slide-ui';
 import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
+import { InlineTextEditor } from '@/components/editor/inline-text-editor';
 
 interface SlideMainCanvasProps {
   slide: Slide;
@@ -13,6 +16,10 @@ interface SlideMainCanvasProps {
   currentSubStep: number;
   totalSteps: number;
   onElementSelect: (elementId: string | null) => void;
+  /** Callback when an element is updated (position, size, content). */
+  onElementUpdate?: (elementId: string, updates: Partial<SlideElement>) => void;
+  /** Whether the canvas is in preview/playback mode (disables editing). */
+  isPreview?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -33,9 +40,200 @@ function getGridLayout(count: number): number[] {
   return GRID_LAYOUTS[count] ?? [Math.min(count, 4)];
 }
 
+// ---------------------------------------------------------------------------
+// Editable Element (with react-rnd + inline text editing)
+// ---------------------------------------------------------------------------
+
+function EditableCanvasElement({
+  element,
+  isSelected,
+  visible,
+  isFocused,
+  isPreview,
+  onSelect,
+  onUpdate,
+}: {
+  element: SlideElement;
+  isSelected: boolean;
+  visible: boolean;
+  isFocused: boolean;
+  isPreview: boolean;
+  onSelect: () => void;
+  onUpdate: (updates: Partial<SlideElement>) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const isTextElement = element.type === 'text';
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isTextElement && !isPreview) {
+        setIsEditing(true);
+      }
+    },
+    [isTextElement, isPreview],
+  );
+
+  const handleSave = useCallback(
+    (html: string) => {
+      onUpdate({ content: html });
+    },
+    [onUpdate],
+  );
+
+  const handleExitEdit = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  // Convert design-space position (960x540) to percentage
+  const leftPct = `${(element.position.x / 960) * 100}%`;
+  const topPct = `${(element.position.y / 540) * 100}%`;
+
+  const elementStyle: React.CSSProperties = {
+    color: element.style.color ?? undefined,
+    fontSize: element.style.fontSize ?? undefined,
+    fontWeight: element.style.fontWeight ?? undefined,
+    fontFamily: element.style.fontFamily ?? undefined,
+    fontStyle: element.style.fontStyle ?? undefined,
+    backgroundColor: element.style.backgroundColor ?? undefined,
+    borderRadius: element.style.borderRadius ?? undefined,
+    textAlign: (element.style.textAlign ?? undefined) as React.CSSProperties['textAlign'],
+    opacity: element.style.opacity ?? undefined,
+    borderWidth: element.style.borderWidth ?? undefined,
+    borderColor: element.style.borderColor ?? undefined,
+    borderStyle: element.style.borderWidth ? 'solid' : undefined,
+    boxShadow: element.style.boxShadow ?? undefined,
+    padding: element.style.backgroundColor ? '12px 16px' : (element.style.padding ?? 4),
+    width: element.style.width ?? undefined,
+    height: element.style.height ?? undefined,
+    maxWidth: '80%',
+    whiteSpace: 'pre-line' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent:
+      element.style.textAlign === 'center' ? 'center' : 'flex-start',
+  };
+
+  // In preview mode or when element has special overlay rendering,
+  // render as a static positioned div (no drag/resize).
+  if (isPreview) {
+    return (
+      <div
+        className={`absolute transition-all duration-300 ${
+          visible ? 'opacity-100' : 'opacity-20'
+        } ${isFocused ? 'ring-2 ring-primary/50 ring-offset-1' : ''} ${
+          isSelected
+            ? 'border-2 border-primary shadow-md'
+            : 'border-2 border-transparent hover:border-primary/30'
+        }`}
+        style={{
+          left: leftPct,
+          top: topPct,
+          cursor: 'pointer',
+          ...elementStyle,
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+      >
+        <div
+          dangerouslySetInnerHTML={{ __html: element.content }}
+          className="pointer-events-none"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`absolute transition-all duration-300 ${
+        visible ? 'opacity-100' : 'opacity-20'
+      } ${isFocused ? 'ring-2 ring-primary/50 ring-offset-1' : ''}`}
+      style={{ left: leftPct, top: topPct, zIndex: isSelected ? 10 : 1 }}
+    >
+      <Rnd
+        position={{ x: 0, y: 0 }}
+        size={{
+          width: element.style.width ?? 'auto',
+          height: element.style.height ?? 'auto',
+        }}
+        onDragStop={(_e, d) => {
+          // Convert drag delta back to design-space pixels
+          const parentEl = document.querySelector('[data-slide-canvas]');
+          if (!parentEl) return;
+          const rect = parentEl.getBoundingClientRect();
+          const scaleX = 960 / rect.width;
+          const scaleY = 540 / rect.height;
+          onUpdate({
+            position: {
+              x: Math.round(element.position.x + d.x * scaleX),
+              y: Math.round(element.position.y + d.y * scaleY),
+            },
+          });
+        }}
+        onResizeStop={(_e, _dir, ref, _delta, _position) => {
+          onUpdate({
+            style: {
+              ...element.style,
+              width: ref.offsetWidth,
+              height: ref.offsetHeight,
+            },
+          });
+        }}
+        disableDragging={isEditing}
+        enableResizing={isSelected && !isEditing}
+        minWidth={30}
+        minHeight={20}
+        className={`${
+          isSelected
+            ? 'ring-2 ring-primary ring-offset-1'
+            : 'hover:ring-1 hover:ring-primary/30'
+        } ${isEditing ? '!ring-2 !ring-blue-500' : ''}`}
+      >
+        <div
+          style={elementStyle}
+          className="cursor-pointer select-none"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isEditing) onSelect();
+          }}
+          onDoubleClick={handleDoubleClick}
+        >
+          {isEditing ? (
+            <InlineTextEditor
+              content={element.content}
+              onSave={handleSave}
+              onExit={handleExitEdit}
+              style={{
+                color: element.style.color,
+                fontSize: element.style.fontSize
+                  ? `${element.style.fontSize}px`
+                  : undefined,
+                fontWeight: element.style.fontWeight,
+                fontFamily: element.style.fontFamily,
+              }}
+            />
+          ) : (
+            <div
+              dangerouslySetInnerHTML={{ __html: element.content }}
+              className="pointer-events-none"
+            />
+          )}
+        </div>
+      </Rnd>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
+
 /**
  * Main canvas showing the current slide at full size.
  * Elements are rendered with visibility based on the current sub-step.
+ * Supports drag-to-reposition, resize, and inline text editing.
  *
  * Uses flattenItemsAsElements() to derive a flat element list from the
  * new SlideItem tree, falling back to slide.elements for legacy data.
@@ -46,6 +244,8 @@ export function SlideMainCanvas({
   currentSubStep,
   totalSteps,
   onElementSelect,
+  onElementUpdate,
+  isPreview = false,
 }: SlideMainCanvasProps) {
   const hasGroup = !!slide.groupedAnimation;
   const isZoomWord = slide.animationTemplate === 'zoom-in-word';
@@ -82,6 +282,14 @@ export function SlideMainCanvas({
       isFocused: stepIndex === currentSubStep,
     };
   };
+
+  // Callback for element updates — no-op if no handler provided
+  const handleElementUpdate = useCallback(
+    (elementId: string, updates: Partial<SlideElement>) => {
+      onElementUpdate?.(elementId, updates);
+    },
+    [onElementUpdate],
+  );
 
   // --- Render: Structured header (from slide.header data model) ---
   const renderStructuredHeader = () => {
@@ -342,6 +550,7 @@ export function SlideMainCanvas({
 
   return (
     <div
+      data-slide-canvas
       className="relative w-full max-w-4xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900"
       style={{ aspectRatio: '16/9' }}
       onClick={() => onElementSelect(null)}
@@ -367,7 +576,7 @@ export function SlideMainCanvas({
       {/* Card-Expand (Smart Card) overlay */}
       {renderCardExpandOverlay()}
 
-      {/* Elements */}
+      {/* Elements — with drag/resize/inline-edit when not in special overlay mode */}
       {elements.map((element, idx) => {
         const { visible, isFocused } = getElementVisibility(element.id, idx);
         const isSelected = selectedElementId === element.id;
@@ -383,43 +592,16 @@ export function SlideMainCanvas({
         if (hasStructuredHeader && (showItemsGrid || isSidebarDetail) && idx <= 1) return null;
 
         return (
-          <div
+          <EditableCanvasElement
             key={element.id}
-            className={`absolute transition-all duration-300 ${
-              visible ? 'opacity-100' : 'opacity-20'
-            } ${isFocused ? 'ring-2 ring-primary/50 ring-offset-1' : ''} ${
-              isSelected
-                ? 'border-2 border-primary shadow-md'
-                : 'border-2 border-transparent hover:border-primary/30'
-            }`}
-            style={{
-              left: `${(element.position.x / 960) * 100}%`,
-              top: `${(element.position.y / 540) * 100}%`,
-              maxWidth: '80%',
-              color: element.style.color ?? undefined,
-              fontSize: element.style.fontSize ?? undefined,
-              fontWeight: element.style.fontWeight ?? undefined,
-              fontFamily: element.style.fontFamily ?? undefined,
-              backgroundColor: element.style.backgroundColor ?? undefined,
-              borderRadius: element.style.borderRadius ?? undefined,
-              textAlign: element.style.textAlign ?? undefined,
-              width: element.style.width ?? undefined,
-              height: element.style.height ?? undefined,
-              padding: element.style.backgroundColor ? '12px 16px' : '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent:
-                element.style.textAlign === 'center' ? 'center' : 'flex-start',
-              whiteSpace: 'pre-line',
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onElementSelect(element.id);
-            }}
-          >
-            {element.content}
-          </div>
+            element={element}
+            isSelected={isSelected}
+            visible={visible}
+            isFocused={isFocused}
+            isPreview={isPreview}
+            onSelect={() => onElementSelect(element.id)}
+            onUpdate={(updates) => handleElementUpdate(element.id, updates)}
+          />
         );
       })}
 

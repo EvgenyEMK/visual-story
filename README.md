@@ -1,34 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VisualStory
+
+AI-powered visual presentation builder. Create, animate, and export video presentations from scripts.
+
+## Tech Stack
+
+- **Monorepo**: Turborepo + pnpm workspaces
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, Radix UI, CVA
+- **State**: Zustand
+- **Animation**: motion.dev (web), Remotion (video export)
+- **Backend**: Supabase (PostgreSQL, Auth), Stripe, Cloudflare R2
+- **AI**: OpenAI (GPT-4o), ElevenLabs (TTS)
+
+## Project Structure
+
+```
+visual-story/
+├── apps/
+│   └── web/               # Next.js frontend
+├── packages/
+│   ├── shared/            # Shared types and utilities
+│   └── db/                # Database client layer
+├── docs/                  # Architecture and design docs
+├── turbo.json             # Turborepo config
+└── pnpm-workspace.yaml    # Workspace definition
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js >= 20.x
+- pnpm >= 10.x (`npm install -g pnpm`)
+
+### Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone
+git clone https://github.com/EvgenyEMK/visual-story.git
+cd visual-story
+
+# Install dependencies
+pnpm install
+
+# Configure environment
+cp .env.example apps/web/.env.local
+# Fill in your API keys (see .env.example for required variables)
+
+# Start development
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start all apps in dev mode |
+| `pnpm dev:web` | Start only the Next.js app |
+| `pnpm build` | Build all packages (with Turbo caching) |
+| `pnpm test` | Run tests across all packages |
+| `pnpm lint` | Lint all packages |
 
-## Learn More
+### Adding Dependencies
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Add to the web app
+pnpm --filter @visual-story/web add <package>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Add to a shared package
+pnpm --filter @visual-story/shared add <package>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Add a dev dependency to the root
+pnpm add -Dw <package>
+```
 
-## Deploy on Vercel
+## Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See the [docs/](docs/) directory for detailed documentation:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Technical Architecture Overview](docs/technical-architecture/overview.md)
+- [Architecture Decisions](docs/technical-architecture/architecture-decisions.md)
+- [Product Summary](docs/product-summary/product-summary.md)
+
+## License
+
+Private.
