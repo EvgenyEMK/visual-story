@@ -1,14 +1,19 @@
 /**
  * Zustand store for project data and slide management.
  * Manages the active project, slides array, and dirty state.
+ *
+ * All slide-mutating actions automatically save a snapshot to the
+ * undo/redo history before applying the change.
+ *
  * @source docs/modules/user-management/projects-library.md
  * @source docs/modules/story-editor/slide-canvas.md
  */
 
 import { create } from 'zustand';
 import type { Project } from '@/types/project';
-import type { Slide, SlideElement } from '@/types/slide';
-import { flattenItemsAsElements } from '@/lib/flatten-items';
+import type { Slide, SlideElement, SlideItem } from '@/types/slide';
+import { flattenItemsAsElements, updateItemInTree, deepCloneItemsWithNewIds } from '@/lib/flatten-items';
+import { useUndoRedoStore } from './undo-redo-store';
 
 // ---------------------------------------------------------------------------
 // State
@@ -51,13 +56,23 @@ interface ProjectActions {
   /** Duplicate a slide by ID. Returns the new slide ID. */
   duplicateSlide: (slideId: string) => string | null;
 
-  // Element operations within a slide
+  // Item operations within a slide (items tree)
+  /** Immutably update a single item in the slide's items tree by ID. */
+  updateItem: (slideId: string, itemId: string, updates: Partial<SlideItem>) => void;
+
+  // Element operations within a slide (legacy flat array)
   /** Update an element within a specific slide. */
   updateElement: (slideId: string, elementId: string, updates: Partial<SlideElement>) => void;
   /** Add an element to a slide. */
   addElement: (slideId: string, element: SlideElement) => void;
   /** Remove an element from a slide. */
   removeElement: (slideId: string, elementId: string) => void;
+
+  // Undo / Redo
+  /** Undo the last slide mutation. */
+  undo: () => void;
+  /** Redo the last undone slide mutation. */
+  redo: () => void;
 
   // Dirty tracking
   /** Mark as saved (resets dirty flag). */
@@ -82,140 +97,183 @@ const initialState: ProjectState = {
 // Store
 // ---------------------------------------------------------------------------
 
-export const useProjectStore = create<ProjectState & ProjectActions>((set, get) => ({
-  ...initialState,
-
-  setProject: (project) =>
-    set({
-      project,
-      slides: project.slides,
-      isDirty: false,
-      isLoading: false,
-    }),
-
-  clearProject: () =>
-    set(initialState),
-
-  updateProject: (updates) =>
-    set((state) => ({
-      project: state.project ? { ...state.project, ...updates } : null,
-      isDirty: true,
-    })),
-
-  // -- Slide operations --
-
-  updateSlide: (slideId, updates) =>
-    set((state) => ({
-      slides: state.slides.map((s) =>
-        s.id === slideId ? { ...s, ...updates } : s,
-      ),
-      isDirty: true,
-    })),
-
-  addSlide: (slide, atIndex) =>
-    set((state) => {
-      const newSlides = [...state.slides];
-      const insertAt = atIndex ?? newSlides.length;
-      newSlides.splice(insertAt, 0, slide);
-      // Re-order
-      const ordered = newSlides.map((s, i) => ({ ...s, order: i }));
-      return { slides: ordered, isDirty: true };
-    }),
-
-  removeSlide: (slideId) =>
-    set((state) => {
-      const filtered = state.slides.filter((s) => s.id !== slideId);
-      const ordered = filtered.map((s, i) => ({ ...s, order: i }));
-      return { slides: ordered, isDirty: true };
-    }),
-
-  reorderSlides: (fromIndex, toIndex) =>
-    set((state) => {
-      const newSlides = [...state.slides];
-      const [moved] = newSlides.splice(fromIndex, 1);
-      if (!moved) return state;
-      newSlides.splice(toIndex, 0, moved);
-      const ordered = newSlides.map((s, i) => ({ ...s, order: i }));
-      return { slides: ordered, isDirty: true };
-    }),
-
-  duplicateSlide: (slideId) => {
-    const state = get();
-    const slide = state.slides.find((s) => s.id === slideId);
-    if (!slide) return null;
-
-    const newId = crypto.randomUUID();
-    const sourceElements = flattenItemsAsElements(slide.items);
-    const duplicate: Slide = {
-      ...slide,
-      id: newId,
-      order: slide.order + 1,
-      elements: sourceElements.map((el) => ({
-        ...el,
-        id: crypto.randomUUID(),
-      })),
-      items: slide.items, // TODO: deep-clone with new IDs when item editing is implemented
+export const useProjectStore = create<ProjectState & ProjectActions>(
+  (set, get) => {
+    /**
+     * Wrapper around `set` that saves a snapshot of the current slides
+     * to the undo history before applying the state change.
+     * Use for every action that mutates `slides`.
+     */
+    const setWithUndo: typeof set = (...args) => {
+      useUndoRedoStore.getState().saveSnapshot(get().slides);
+      return set(...args);
     };
 
-    const idx = state.slides.findIndex((s) => s.id === slideId);
-    set((s) => {
-      const newSlides = [...s.slides];
-      newSlides.splice(idx + 1, 0, duplicate);
-      const ordered = newSlides.map((sl, i) => ({ ...sl, order: i }));
-      return { slides: ordered, isDirty: true };
-    });
+    return {
+      ...initialState,
 
-    return newId;
-  },
+      setProject: (project) => {
+        useUndoRedoStore.getState().clear();
+        set({
+          project,
+          slides: project.slides,
+          isDirty: false,
+          isLoading: false,
+        });
+      },
 
-  // -- Element operations --
+      clearProject: () => {
+        useUndoRedoStore.getState().clear();
+        set(initialState);
+      },
 
-  updateElement: (slideId, elementId, updates) =>
-    set((state) => ({
-      slides: state.slides.map((s) => {
-        if (s.id !== slideId) return s;
-        const elts =
-          flattenItemsAsElements(s.items);
-        return {
-          ...s,
-          elements: elts.map((el) =>
-            el.id === elementId ? { ...el, ...updates } : el,
+      updateProject: (updates) =>
+        set((state) => ({
+          project: state.project ? { ...state.project, ...updates } : null,
+          isDirty: true,
+        })),
+
+      // -- Slide operations (all undoable) --
+
+      updateSlide: (slideId, updates) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) =>
+            s.id === slideId ? { ...s, ...updates } : s,
           ),
+          isDirty: true,
+        })),
+
+      addSlide: (slide, atIndex) =>
+        setWithUndo((state) => {
+          const newSlides = [...state.slides];
+          const insertAt = atIndex ?? newSlides.length;
+          newSlides.splice(insertAt, 0, slide);
+          const ordered = newSlides.map((s, i) => ({ ...s, order: i }));
+          return { slides: ordered, isDirty: true };
+        }),
+
+      removeSlide: (slideId) =>
+        setWithUndo((state) => {
+          const filtered = state.slides.filter((s) => s.id !== slideId);
+          const ordered = filtered.map((s, i) => ({ ...s, order: i }));
+          return { slides: ordered, isDirty: true };
+        }),
+
+      reorderSlides: (fromIndex, toIndex) =>
+        setWithUndo((state) => {
+          const newSlides = [...state.slides];
+          const [moved] = newSlides.splice(fromIndex, 1);
+          if (!moved) return state;
+          newSlides.splice(toIndex, 0, moved);
+          const ordered = newSlides.map((s, i) => ({ ...s, order: i }));
+          return { slides: ordered, isDirty: true };
+        }),
+
+      duplicateSlide: (slideId) => {
+        const state = get();
+        const slide = state.slides.find((s) => s.id === slideId);
+        if (!slide) return null;
+
+        const newId = crypto.randomUUID();
+        const sourceElements = flattenItemsAsElements(slide.items);
+        const duplicate: Slide = {
+          ...slide,
+          id: newId,
+          order: slide.order + 1,
+          elements: sourceElements.map((el) => ({
+            ...el,
+            id: crypto.randomUUID(),
+          })),
+          items: deepCloneItemsWithNewIds(slide.items),
         };
-      }),
-      isDirty: true,
-    })),
 
-  addElement: (slideId, element) =>
-    set((state) => ({
-      slides: state.slides.map((s) => {
-        if (s.id !== slideId) return s;
-        const elts =
-          flattenItemsAsElements(s.items);
-        return { ...s, elements: [...elts, element] };
-      }),
-      isDirty: true,
-    })),
+        const idx = state.slides.findIndex((s) => s.id === slideId);
+        setWithUndo((s) => {
+          const newSlides = [...s.slides];
+          newSlides.splice(idx + 1, 0, duplicate);
+          const ordered = newSlides.map((sl, i) => ({ ...sl, order: i }));
+          return { slides: ordered, isDirty: true };
+        });
 
-  removeElement: (slideId, elementId) =>
-    set((state) => ({
-      slides: state.slides.map((s) => {
-        if (s.id !== slideId) return s;
-        const elts =
-          flattenItemsAsElements(s.items);
-        return {
-          ...s,
-          elements: elts.filter((el) => el.id !== elementId),
-        };
-      }),
-      isDirty: true,
-    })),
+        return newId;
+      },
 
-  // -- Dirty tracking --
+      // -- Item operations (items tree, undoable) --
 
-  markSaved: () =>
-    set({ isDirty: false, lastSavedAt: new Date() }),
+      updateItem: (slideId, itemId, updates) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) => {
+            if (s.id !== slideId) return s;
+            const newItems = updateItemInTree(s.items, itemId, updates);
+            if (newItems === s.items) return s;
+            return { ...s, items: newItems };
+          }),
+          isDirty: true,
+        })),
 
-  setLoading: (loading) =>
-    set({ isLoading: loading }),
-}));
+      // -- Element operations (legacy, undoable) --
+
+      updateElement: (slideId, elementId, updates) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) => {
+            if (s.id !== slideId) return s;
+            const elts = flattenItemsAsElements(s.items);
+            return {
+              ...s,
+              elements: elts.map((el) =>
+                el.id === elementId ? { ...el, ...updates } : el,
+              ),
+            };
+          }),
+          isDirty: true,
+        })),
+
+      addElement: (slideId, element) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) => {
+            if (s.id !== slideId) return s;
+            const elts = flattenItemsAsElements(s.items);
+            return { ...s, elements: [...elts, element] };
+          }),
+          isDirty: true,
+        })),
+
+      removeElement: (slideId, elementId) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) => {
+            if (s.id !== slideId) return s;
+            const elts = flattenItemsAsElements(s.items);
+            return {
+              ...s,
+              elements: elts.filter((el) => el.id !== elementId),
+            };
+          }),
+          isDirty: true,
+        })),
+
+      // -- Undo / Redo --
+
+      undo: () => {
+        const restored = useUndoRedoStore.getState().undo(get().slides);
+        if (restored) {
+          set({ slides: restored, isDirty: true });
+        }
+      },
+
+      redo: () => {
+        const restored = useUndoRedoStore.getState().redo(get().slides);
+        if (restored) {
+          set({ slides: restored, isDirty: true });
+        }
+      },
+
+      // -- Dirty tracking --
+
+      markSaved: () =>
+        set({ isDirty: false, lastSavedAt: new Date() }),
+
+      setLoading: (loading) =>
+        set({ isLoading: loading }),
+    };
+  },
+);

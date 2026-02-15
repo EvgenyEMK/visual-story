@@ -30,6 +30,7 @@ import type {
 import { em } from '@/components/slide-ui/units';
 import { DetailPopup } from '@/components/slide-ui/molecules/DetailPopup';
 import type { PopupOriginRect } from '@/components/slide-ui/molecules/DetailPopup';
+import { InlineTextEditor } from '@/components/editor/inline-text-editor';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -42,6 +43,17 @@ export interface ItemVisibility {
   isFocused: boolean;
   /** Whether the item should be hidden from the layout entirely (e.g. during flight). */
   hidden: boolean;
+}
+
+/** Editing context passed through the recursive renderer. */
+interface EditingContext {
+  selectedItemId?: string;
+  editingItemId?: string;
+  onItemSelect?: (itemId: string | null) => void;
+  onItemUpdate?: (itemId: string, updates: Partial<SlideItem>) => void;
+  onItemEditStart?: (itemId: string) => void;
+  onItemEditEnd?: () => void;
+  isPreview?: boolean;
 }
 
 export interface ItemRendererProps {
@@ -68,6 +80,23 @@ export interface ItemRendererProps {
   onCardExpand?: (cardId: string | null) => void;
   /** Additional class names for the root wrapper. */
   className?: string;
+
+  // --- Editing props (optional, enables edit mode) ---
+
+  /** ID of the currently selected item (shows selection ring). */
+  selectedItemId?: string;
+  /** ID of the item in inline-edit mode (renders InlineTextEditor). */
+  editingItemId?: string;
+  /** Called when a user clicks an item to select it (or null to deselect). */
+  onItemSelect?: (itemId: string | null) => void;
+  /** Called when an item's content or style changes. */
+  onItemUpdate?: (itemId: string, updates: Partial<SlideItem>) => void;
+  /** Called when a user double-clicks a text atom to start editing. */
+  onItemEditStart?: (itemId: string) => void;
+  /** Called when inline text editing ends. */
+  onItemEditEnd?: () => void;
+  /** Whether in preview mode (disables editing). */
+  isPreview?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,11 +230,26 @@ function buildTextStyle(style?: ElementStyle): CSSProperties {
 // Atom renderers
 // ---------------------------------------------------------------------------
 
+/** Detect whether a string contains HTML tags. */
+export function isHtmlContent(content: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
 function renderAtom(atom: AtomItem): ReactNode {
   const textStyle = buildTextStyle(atom.style);
 
   switch (atom.atomType) {
     case 'text':
+      // Content may be plain text or HTML from the Tiptap rich-text editor.
+      if (isHtmlContent(atom.content)) {
+        return (
+          <div
+            style={textStyle}
+            className="[&_p]:m-0 [&_p]:leading-[inherit]"
+            dangerouslySetInnerHTML={{ __html: atom.content }}
+          />
+        );
+      }
       return (
         <span style={{ ...textStyle, whiteSpace: 'pre-line' }}>
           {atom.content}
@@ -287,6 +331,17 @@ function extractCardMeta(card: CardItem): { icon: string; title: string; descrip
 }
 
 // ---------------------------------------------------------------------------
+// Selection ring class helper
+// ---------------------------------------------------------------------------
+
+function selectionClasses(itemId: string, editing: EditingContext): string {
+  if (!editing.selectedItemId) return '';
+  if (editing.selectedItemId !== itemId) return '';
+  if (editing.editingItemId === itemId) return 'ring-2 ring-blue-500 ring-offset-1 rounded';
+  return 'ring-2 ring-primary ring-offset-1 rounded';
+}
+
+// ---------------------------------------------------------------------------
 // Recursive item renderer
 // ---------------------------------------------------------------------------
 
@@ -294,10 +349,12 @@ function RenderItem({
   item,
   getVisibility,
   onItemClick,
+  editing,
 }: {
   item: SlideItem;
   getVisibility?: (id: string) => ItemVisibility;
   onItemClick?: (id: string) => void;
+  editing: EditingContext;
 }) {
   const visibility = getVisibility?.(item.id) ?? DEFAULT_VISIBILITY;
 
@@ -309,6 +366,26 @@ function RenderItem({
   }
 
   const baseStyle = buildBaseStyle(item, visibility);
+  const ringClass = selectionClasses(item.id, editing);
+  const isEditable = !editing.isPreview && !!editing.onItemSelect;
+
+  // Click handler: select this item in edit mode, or fall back to onItemClick
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isEditable) {
+      editing.onItemSelect?.(item.id);
+    } else {
+      onItemClick?.(item.id);
+    }
+  };
+
+  // Double-click handler: start inline editing for text atoms
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isEditable && item.type === 'atom' && item.atomType === 'text') {
+      editing.onItemEditStart?.(item.id);
+    }
+  };
 
   // --- Layout ---
   if (item.type === 'layout') {
@@ -320,16 +397,19 @@ function RenderItem({
       return (
         <motion.div
           data-item-id={item.id}
+          className={ringClass}
           style={{ ...baseStyle, ...layoutStyle, width: '100%', height: '100%' }}
           initial={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
           animate={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={isEditable ? handleClick : undefined}
         >
           <div style={{ width: sidebarWidth, flexShrink: 0, overflow: 'auto' }}>
             <RenderItem
               item={item.children[0]}
               getVisibility={getVisibility}
               onItemClick={onItemClick}
+              editing={editing}
             />
           </div>
           <div style={{ flex: 1, overflow: 'auto' }}>
@@ -339,6 +419,7 @@ function RenderItem({
                 item={child}
                 getVisibility={getVisibility}
                 onItemClick={onItemClick}
+                editing={editing}
               />
             ))}
           </div>
@@ -349,10 +430,12 @@ function RenderItem({
     return (
       <motion.div
         data-item-id={item.id}
+        className={ringClass}
         style={{ ...baseStyle, ...layoutStyle }}
         initial={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
         animate={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.3 }}
+        onClick={isEditable ? handleClick : undefined}
       >
         {item.children.map((child) => (
           <RenderItem
@@ -360,6 +443,7 @@ function RenderItem({
             item={child}
             getVisibility={getVisibility}
             onItemClick={onItemClick}
+            editing={editing}
           />
         ))}
       </motion.div>
@@ -373,6 +457,7 @@ function RenderItem({
       <motion.div
         data-item-id={item.id}
         data-has-detail={hasDetail ? 'true' : undefined}
+        className={ringClass}
         style={{
           ...baseStyle,
           borderRadius: baseStyle.borderRadius ?? em(12),
@@ -381,7 +466,7 @@ function RenderItem({
           display: 'flex',
           flexDirection: 'column',
           gap: em(8),
-          cursor: hasDetail || onItemClick ? 'pointer' : undefined,
+          cursor: isEditable || hasDetail || onItemClick ? 'pointer' : undefined,
         }}
         initial={visibility.visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
         animate={
@@ -393,7 +478,7 @@ function RenderItem({
         }
         whileHover={visibility.visible ? { scale: 1.02 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        onClick={onItemClick ? (e) => { e.stopPropagation(); onItemClick(item.id); } : undefined}
+        onClick={isEditable ? handleClick : (onItemClick ? (e) => { e.stopPropagation(); onItemClick(item.id); } : undefined)}
       >
         {item.children.map((child) => (
           <RenderItem
@@ -401,6 +486,7 @@ function RenderItem({
             item={child}
             getVisibility={getVisibility}
             onItemClick={onItemClick}
+            editing={editing}
           />
         ))}
       </motion.div>
@@ -408,10 +494,17 @@ function RenderItem({
   }
 
   // --- Atom ---
+  const isTextAtom = item.atomType === 'text';
+  const isBeingEdited = editing.editingItemId === item.id && isTextAtom;
+
   return (
     <motion.div
       data-item-id={item.id}
-      style={baseStyle}
+      className={ringClass}
+      style={{
+        ...baseStyle,
+        cursor: isEditable ? 'pointer' : undefined,
+      }}
       initial={visibility.visible ? { opacity: 1 } : { opacity: 0, y: 8 }}
       animate={
         visibility.isFocused
@@ -421,9 +514,23 @@ function RenderItem({
           : { opacity: 0, y: 8, scale: 1 }
       }
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      onClick={onItemClick ? () => onItemClick(item.id) : undefined}
+      onClick={isEditable ? handleClick : (onItemClick ? () => onItemClick(item.id) : undefined)}
+      onDoubleClick={handleDoubleClick}
     >
-      {renderAtom(item)}
+      {isBeingEdited ? (
+        <InlineTextEditor
+          content={item.content}
+          onSave={(html) => {
+            editing.onItemUpdate?.(item.id, { content: html } as Partial<SlideItem>);
+          }}
+          onExit={() => {
+            editing.onItemEditEnd?.();
+          }}
+          style={buildTextStyle(item.style)}
+        />
+      ) : (
+        renderAtom(item)
+      )}
     </motion.div>
   );
 }
@@ -454,8 +561,27 @@ export function ItemRenderer({
   expandedCardId,
   onCardExpand,
   className,
+  // Editing props
+  selectedItemId,
+  editingItemId,
+  onItemSelect,
+  onItemUpdate,
+  onItemEditStart,
+  onItemEditEnd,
+  isPreview,
 }: ItemRendererProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // Build editing context once for the recursive tree
+  const editing: EditingContext = {
+    selectedItemId,
+    editingItemId,
+    onItemSelect,
+    onItemUpdate,
+    onItemEditStart,
+    onItemEditEnd,
+    isPreview,
+  };
 
   // Compute origin rect for popup grow-from-card animation
   const getOriginRect = useCallback(
@@ -487,18 +613,24 @@ export function ItemRenderer({
     if (!card.detailItems || card.detailItems.length === 0) return null;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: em(8) }}>
-        {card.detailItems.map((item) => (
-          <RenderItem key={item.id} item={item} />
+        {card.detailItems.map((detailItem) => (
+          <RenderItem key={detailItem.id} item={detailItem} editing={editing} />
         ))}
       </div>
     );
   };
+
+  // Click on empty canvas area deselects
+  const handleRootClick = useCallback(() => {
+    onItemSelect?.(null);
+  }, [onItemSelect]);
 
   return (
     <div
       ref={rootRef}
       className={className}
       style={{ width: '100%', height: '100%', position: 'relative' }}
+      onClick={onItemSelect ? handleRootClick : undefined}
     >
       {items.map((item) => (
         <RenderItem
@@ -506,6 +638,7 @@ export function ItemRenderer({
           item={item}
           getVisibility={getVisibility}
           onItemClick={onItemClick}
+          editing={editing}
         />
       ))}
 

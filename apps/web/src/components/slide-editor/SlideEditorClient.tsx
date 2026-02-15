@@ -1,16 +1,20 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DEMO_SLIDES, DEMO_SCRIPTS, DEMO_SECTIONS } from '@/config/demo-slides';
 import { SlideThumbnail } from './SlideThumbnail';
 import { SlideMainCanvas } from './SlideMainCanvas';
 import { ScriptPanel } from './ScriptPanel';
 import { AnimationStepStrip } from './AnimationStepStrip';
 import { useEditorStore } from '@/stores/editor-store';
+import { useProjectStore } from '@/stores/project-store';
+import { useUndoRedoStore } from '@/stores/undo-redo-store';
+import { ItemPropertiesPanel } from '@/components/editor/item-properties-panel';
 import type { Slide, SlideItem } from '@/types/slide';
 import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
 import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
+import { findItemById } from '@/lib/flatten-items';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,15 +55,46 @@ function buildWidgetTitleMap(slide: Slide): Record<string, string> {
 type SlideEntry = { slide: Slide; index: number };
 
 export function SlideEditorClient() {
-  const [slides] = useState<Slide[]>(DEMO_SLIDES);
+  // Project store — source of truth for slide data
+  const slides = useProjectStore((s) => s.slides);
+  const updateItem = useProjectStore((s) => s.updateItem);
+  const undo = useProjectStore((s) => s.undo);
+  const redo = useProjectStore((s) => s.redo);
+
+  // Undo/redo state — for button disabled states
+  const canUndo = useUndoRedoStore((s) => s.past.length > 0);
+  const canRedo = useUndoRedoStore((s) => s.future.length > 0);
+
+  // Initialize project store with demo data on first mount
+  const setProject = useProjectStore((s) => s.setProject);
+  useEffect(() => {
+    // Only initialize if the store has no slides yet
+    if (useProjectStore.getState().slides.length === 0) {
+      setProject({
+        id: 'demo-project',
+        tenantId: 'demo-tenant',
+        createdByUserId: 'demo-user',
+        name: 'Demo Deck',
+        script: '',
+        intent: 'educational',
+        slides: DEMO_SLIDES,
+        voiceSettings: { voiceId: '', syncPoints: [] },
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+  }, [setProject]);
+
   const [scripts] = useState<SlideScript[]>(DEMO_SCRIPTS);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showScenes, setShowScenes] = useState(true);
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  const { collapsedSections, toggleSectionCollapse } = useEditorStore();
+  const { collapsedSections, toggleSectionCollapse, showProperties, toggleProperties } = useEditorStore();
 
   // Group slides for sidebar: unsectioned first, then each section's slides
   const { unsectionedEntries, sectionEntries } = useMemo(() => {
@@ -74,18 +109,18 @@ export function SlideEditorClient() {
     return { unsectionedEntries: unsectioned, sectionEntries: sectionEntriesList };
   }, [slides]);
 
-  const currentSlide = slides[currentSlideIndex];
-  const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
+  const currentSlide = slides[currentSlideIndex] ?? null;
+  const currentScript = currentSlide ? scripts.find((s) => s.slideId === currentSlide.id) : undefined;
 
   // Derive scenes directly from slide (all slides now define scenes natively)
-  const scenes = useMemo(() => currentSlide.scenes ?? [], [currentSlide]);
+  const scenes = useMemo(() => currentSlide?.scenes ?? [], [currentSlide]);
   const currentScene = scenes[currentSceneIndex] ?? scenes[0];
 
   // Calculate steps for the current scene
   const totalSteps = useMemo(() => (currentScene ? calcSceneSteps(currentScene) : 1), [currentScene]);
 
   // Build widget title map for step labels
-  const widgetTitles = useMemo(() => buildWidgetTitleMap(currentSlide), [currentSlide]);
+  const widgetTitles = useMemo(() => (currentSlide ? buildWidgetTitleMap(currentSlide) : {}), [currentSlide]);
 
   // Generate step labels from the scene
   const stepLabels = useMemo(() => {
@@ -108,17 +143,89 @@ export function SlideEditorClient() {
     setCurrentSceneIndex(0);
     setCurrentStepIndex(0);
     setSelectedElementId(null);
+    setEditingItemId(null);
   }, []);
 
   const handleSceneSelect = useCallback((sceneIndex: number) => {
     setCurrentSceneIndex(sceneIndex);
     setCurrentStepIndex(0);
     setSelectedElementId(null);
+    setEditingItemId(null);
   }, []);
 
   const handleStepSelect = useCallback((step: number) => {
     setCurrentStepIndex(step);
   }, []);
+
+  // ---------------------------------------------------------------------------
+  // Item editing handlers
+  // ---------------------------------------------------------------------------
+
+  const handleItemSelect = useCallback((itemId: string | null) => {
+    setSelectedElementId(itemId);
+    // End editing when selecting a different item or deselecting
+    setEditingItemId((prev) => (itemId !== prev ? null : prev));
+  }, []);
+
+  const handleItemEditStart = useCallback((itemId: string) => {
+    setEditingItemId(itemId);
+    setSelectedElementId(itemId);
+  }, []);
+
+  const handleItemEditEnd = useCallback(() => {
+    setEditingItemId(null);
+  }, []);
+
+  const handleItemUpdate = useCallback(
+    (itemId: string, updates: Partial<SlideItem>) => {
+      if (!currentSlide) return;
+      updateItem(currentSlide.id, itemId, updates);
+    },
+    [currentSlide, updateItem],
+  );
+
+  // Resolve the selected item from the items tree for the properties panel
+  const selectedItem = useMemo(() => {
+    if (!selectedElementId || !currentSlide) return null;
+    return findItemById(currentSlide.items, selectedElementId) ?? null;
+  }, [selectedElementId, currentSlide]);
+
+  // ---------------------------------------------------------------------------
+  // Keyboard shortcuts
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape: if editing, exit edit mode (InlineTextEditor handles its own Escape);
+      // if an item is selected but not editing, deselect it.
+      if (e.key === 'Escape') {
+        if (editingItemId) {
+          setEditingItemId(null);
+        } else if (selectedElementId) {
+          setSelectedElementId(null);
+        }
+      }
+
+      // Undo/redo: skip when inline text editing is active (Tiptap handles
+      // its own undo within the rich-text field).
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (isModifier && !editingItemId) {
+        // Undo: Ctrl+Z / Cmd+Z (without Shift)
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          undo();
+        }
+        // Redo: Ctrl+Y / Cmd+Y  OR  Ctrl+Shift+Z / Cmd+Shift+Z
+        if (e.key === 'y' || (e.key === 'z' && e.shiftKey) || (e.key === 'Z' && e.shiftKey)) {
+          e.preventDefault();
+          redo();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editingItemId, selectedElementId, undo, redo]);
 
   // ---------------------------------------------------------------------------
   // Compute currentSubStep for canvas rendering
@@ -142,6 +249,15 @@ export function SlideEditorClient() {
     return slide.scenes ?? [];
   }, []);
 
+  // Guard: wait for store initialisation
+  if (!currentSlide || slides.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)] text-muted-foreground">
+        Loading slides...
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-background overflow-hidden">
       {/* Top toolbar */}
@@ -153,6 +269,26 @@ export function SlideEditorClient() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Undo / Redo buttons */}
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            className="px-2 py-1.5 text-xs font-medium rounded-md border transition-colors bg-background text-foreground border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.69 3L3 13"/></svg>
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            className="px-2 py-1.5 text-xs font-medium rounded-md border transition-colors bg-background text-foreground border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6.69 3L21 13"/></svg>
+          </button>
+
+          <div className="w-px h-5 bg-border mx-1" />
+
           <button
             onClick={() => setShowScenes(!showScenes)}
             className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
@@ -162,6 +298,16 @@ export function SlideEditorClient() {
             }`}
           >
             {showScenes ? 'Scenes ON' : 'Scenes OFF'}
+          </button>
+          <button
+            onClick={toggleProperties}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+              showProperties
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-foreground border-border hover:bg-muted'
+            }`}
+          >
+            {showProperties ? 'Properties ON' : 'Properties OFF'}
           </button>
           <span className="text-xs text-muted-foreground">
             Slide {currentSlideIndex + 1}/{slides.length}
@@ -248,9 +394,13 @@ export function SlideEditorClient() {
               currentScene={currentScene}
               allScenes={scenes}
               selectedElementId={selectedElementId}
+              editingItemId={editingItemId}
               currentSubStep={currentSubStep}
               totalSteps={totalSteps}
-              onElementSelect={setSelectedElementId}
+              onElementSelect={handleItemSelect}
+              onItemEditStart={handleItemEditStart}
+              onItemEditEnd={handleItemEditEnd}
+              onItemUpdate={handleItemUpdate}
               onSceneSelect={handleSceneSelect}
             />
           </div>
@@ -267,6 +417,16 @@ export function SlideEditorClient() {
             />
           )}
         </div>
+
+        {/* Right panel — item properties */}
+        {showProperties && (
+          <div className="w-64 lg:w-72 border-l bg-muted/20 overflow-y-auto shrink-0">
+            <ItemPropertiesPanel
+              item={selectedItem}
+              onUpdate={handleItemUpdate}
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom panel — script */}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Rnd } from 'react-rnd';
-import type { Slide, SlideElement } from '@/types/slide';
+import type { Slide, SlideElement, SlideItem } from '@/types/slide';
 import type { Scene } from '@/types/scene';
 import { flattenItemsAsElements } from '@/lib/flatten-items';
 import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
@@ -18,11 +18,19 @@ interface SlideMainCanvasProps {
   /** All scenes for the current slide (needed for menu/tab navigation). */
   allScenes?: Scene[];
   selectedElementId: string | null;
+  /** ID of the item currently in inline-edit mode (text editing). */
+  editingItemId?: string | null;
   currentSubStep: number;
   totalSteps: number;
   onElementSelect: (elementId: string | null) => void;
   /** Callback when an element is updated (position, size, content). */
   onElementUpdate?: (elementId: string, updates: Partial<SlideElement>) => void;
+  /** Callback when an item in the items tree is updated (content, style). */
+  onItemUpdate?: (itemId: string, updates: Partial<SlideItem>) => void;
+  /** Callback when a user double-clicks a text item to start inline editing. */
+  onItemEditStart?: (itemId: string) => void;
+  /** Callback when the user finishes inline text editing. */
+  onItemEditEnd?: () => void;
   /** Callback when a scene should be selected (menu/tab click). */
   onSceneSelect?: (sceneIndex: number) => void;
   /** Whether the canvas is in preview/playback mode (disables editing). */
@@ -228,10 +236,14 @@ export function SlideMainCanvas({
   currentScene,
   allScenes,
   selectedElementId,
+  editingItemId,
   currentSubStep,
   totalSteps,
   onElementSelect,
   onElementUpdate,
+  onItemUpdate,
+  onItemEditStart,
+  onItemEditEnd,
   onSceneSelect,
   isPreview = false,
 }: SlideMainCanvasProps) {
@@ -487,6 +499,13 @@ export function SlideMainCanvas({
             onItemClick={handleItemClick}
             expandedCardId={effectiveExpandedCard}
             onCardExpand={setExpandedCardId}
+            selectedItemId={selectedElementId ?? undefined}
+            editingItemId={editingItemId ?? undefined}
+            onItemSelect={onElementSelect}
+            onItemUpdate={onItemUpdate}
+            onItemEditStart={onItemEditStart}
+            onItemEditEnd={onItemEditEnd}
+            isPreview={isPreview}
           />
         </div>
       )}

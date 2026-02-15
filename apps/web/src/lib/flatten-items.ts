@@ -103,3 +103,108 @@ export function collectItemIds(items: SlideItem[]): string[] {
   }
   return ids;
 }
+
+// ---------------------------------------------------------------------------
+// Immutable tree updates
+// ---------------------------------------------------------------------------
+
+/**
+ * Merge updates into a single SlideItem, preserving its discriminator type.
+ * Handles nested `style` merging so callers can pass partial style objects.
+ */
+function mergeItem(item: SlideItem, updates: Partial<SlideItem>): SlideItem {
+  const merged = { ...item, ...updates };
+
+  // Deep-merge style if both exist
+  if (updates.style && item.style) {
+    merged.style = { ...item.style, ...updates.style };
+  }
+
+  // Deep-merge animation if both exist
+  if (updates.animation && item.animation) {
+    merged.animation = { ...item.animation, ...updates.animation };
+  }
+
+  return merged as SlideItem;
+}
+
+/**
+ * Immutably update a single item in a SlideItem tree by ID.
+ * Walks LayoutItem.children, CardItem.children, and CardItem.detailItems.
+ * Returns a new array with the matching item merged with `updates`.
+ * If the item is not found the original array is returned unchanged.
+ */
+export function updateItemInTree(
+  items: SlideItem[],
+  itemId: string,
+  updates: Partial<SlideItem>,
+): SlideItem[] {
+  let changed = false;
+
+  const result = items.map((item) => {
+    // Direct match
+    if (item.id === itemId) {
+      changed = true;
+      return mergeItem(item, updates);
+    }
+
+    // Recurse into children
+    if (item.type === 'layout') {
+      const newChildren = updateItemInTree(item.children, itemId, updates);
+      if (newChildren !== item.children) {
+        changed = true;
+        return { ...item, children: newChildren };
+      }
+    } else if (item.type === 'card') {
+      const newChildren = updateItemInTree(item.children, itemId, updates);
+      let newDetailItems = item.detailItems;
+      if (item.detailItems) {
+        newDetailItems = updateItemInTree(item.detailItems, itemId, updates);
+      }
+      if (newChildren !== item.children || newDetailItems !== item.detailItems) {
+        changed = true;
+        return { ...item, children: newChildren, detailItems: newDetailItems };
+      }
+    }
+
+    return item;
+  });
+
+  return changed ? result : items;
+}
+
+// ---------------------------------------------------------------------------
+// Deep clone with new IDs
+// ---------------------------------------------------------------------------
+
+/**
+ * Deep-clone a SlideItem tree, assigning new UUIDs to every item.
+ * Useful for duplicating slides without sharing item references.
+ */
+export function deepCloneItemsWithNewIds(items: SlideItem[]): SlideItem[] {
+  return items.map((item) => {
+    const newId = crypto.randomUUID();
+
+    if (item.type === 'atom') {
+      return { ...item, id: newId };
+    }
+
+    if (item.type === 'layout') {
+      return {
+        ...item,
+        id: newId,
+        children: deepCloneItemsWithNewIds(item.children),
+      };
+    }
+
+    // CardItem
+    return {
+      ...item,
+      id: newId,
+      children: deepCloneItemsWithNewIds(item.children),
+      detailItems: item.detailItems
+        ? deepCloneItemsWithNewIds(item.detailItems)
+        : undefined,
+    };
+  });
+}

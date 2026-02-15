@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -36,6 +36,9 @@ export function InlineTextEditor({
   onExit,
   style,
 }: InlineTextEditorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -52,6 +55,8 @@ export function InlineTextEditor({
     ],
     content: content || '<p></p>',
     autofocus: 'end',
+    // Prevent SSR hydration mismatch in Next.js — render only on client
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class: 'outline-none min-h-[1em] w-full',
@@ -81,17 +86,45 @@ export function InlineTextEditor({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // Commit on blur
+  // Commit on blur.
+  // We delay the exit slightly to allow toolbar interactions (e.g. color
+  // picker popover, which steals focus briefly) to refocus the editor.
+  // If focus returns to the editor or its container the exit is cancelled.
   const handleBlur = useCallback(() => {
-    if (editor) {
-      onSave(editor.getHTML());
-    }
-  }, [editor, onSave]);
+    if (!editor) return;
+    onSave(editor.getHTML());
+
+    blurTimeoutRef.current = setTimeout(() => {
+      const active = document.activeElement;
+      // If focus is still inside the container (e.g. toolbar/popover) — keep editing.
+      if (containerRef.current?.contains(active)) return;
+      // If focus returned to the tiptap editor itself — keep editing.
+      if (editor.isFocused) return;
+      onExit();
+    }, 150);
+  }, [editor, onSave, onExit]);
+
+  // Cancel pending blur-exit when component unmounts (e.g. editing ended via
+  // parent state change) or when the editor regains focus.
+  useEffect(() => {
+    if (!editor) return;
+    const cancelBlurExit = () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+        blurTimeoutRef.current = null;
+      }
+    };
+    editor.on('focus', cancelBlurExit);
+    return () => {
+      cancelBlurExit();
+      editor.off('focus', cancelBlurExit);
+    };
+  }, [editor]);
 
   if (!editor) return null;
 
   return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
+    <div ref={containerRef} className="relative" onClick={(e) => e.stopPropagation()}>
       {/* Floating formatting toolbar */}
       <div className="absolute bottom-full left-0 mb-1 z-50">
         <TextFormattingToolbar editor={editor} />
