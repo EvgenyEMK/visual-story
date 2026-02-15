@@ -143,7 +143,6 @@ export type GroupedAnimationType =
   | 'list-accumulator'
   | 'carousel-focus'
   | 'bento-grid-expansion'
-  | 'card-expand'
   | 'circular-satellite'
   | 'infinite-path'
   | 'stack-reveal'
@@ -228,12 +227,6 @@ export interface GroupedAnimationConfig {
    * Default: `'auto-and-manual'`.
    */
   presentationMode?: PresentationMode;
-  /**
-   * Visual variant for `card-expand` animations.
-   * Only used when `type === 'card-expand'`.
-   * Maps to `CardExpandLayout` variant prop.
-   */
-  cardExpandVariant?: 'grid-to-overlay' | 'center-popup' | 'row-to-split' | 'sidebar-detail';
 }
 
 /** Default hover effect configuration. */

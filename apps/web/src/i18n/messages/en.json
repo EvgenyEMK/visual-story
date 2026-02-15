@@ -33,7 +33,8 @@
     "voiceAssistant": "Voice Assistant Test",
     "demo": "Demo",
     "slideEditor": "Slide Editor",
-    "slidePlay": "Slide Play"
+    "slidePlay": "Slide Play",
+    "dataDev": "Data (dev)"
   },
   "actions": {
     "open": "Open",

@@ -23,10 +23,10 @@ interface CTAButtonProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, string> = {
-  sm: 'px-3 py-1.5 text-[10px]',
-  md: 'px-5 py-2 text-xs',
-  lg: 'px-6 py-2.5 text-sm',
-  xl: 'px-8 py-3 text-base',
+  sm: 'px-[0.75em] py-[0.375em] text-[0.625em]',
+  md: 'px-[1.25em] py-[0.5em] text-[0.75em]',
+  lg: 'px-[1.5em] py-[0.625em] text-[0.875em]',
+  xl: 'px-[2em] py-[0.75em] text-[1em]',
 };
 
 export function CTAButton({
@@ -49,7 +49,7 @@ export function CTAButton({
   return (
     <motion.button
       className={cn(
-        'relative rounded-lg font-semibold text-white overflow-hidden cursor-pointer',
+        'relative rounded-[0.5em] font-semibold text-white overflow-hidden cursor-pointer',
         sizeClasses[size],
         className,
       )}

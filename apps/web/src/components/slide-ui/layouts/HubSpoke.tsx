@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { IconProp, AccentColor } from '../types';
+import { em } from '../units';
 import { renderIcon } from '../render-icon';
 import { DetailPopup } from '../molecules/DetailPopup';
 
@@ -72,10 +73,10 @@ export function HubSpoke({
       </svg>
 
       {/* Central hub */}
-      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center z-10 shadow-lg shadow-blue-500/30">
+      <div className="w-[3.5em] h-[3.5em] rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center z-10 shadow-lg shadow-blue-500/30">
         {hubIcon
-          ? renderIcon(hubIcon, { size: 20, color: '#ffffff' })
-          : <span className="text-white text-[10px] font-bold">{hubLabel}</span>
+          ? renderIcon(hubIcon, { size: em(20), color: '#ffffff' })
+          : <span className="text-white text-[0.625em] font-bold">{hubLabel}</span>
         }
       </div>
 
@@ -88,10 +89,10 @@ export function HubSpoke({
         return (
           <motion.div
             key={`spoke-${i}`}
-            className="absolute flex flex-col items-center gap-1"
+            className="absolute flex flex-col items-center gap-[0.25em]"
             style={{
-              left: `calc(50% + ${pos.x}px)`,
-              top: `calc(50% + ${pos.y}px)`,
+              left: `calc(50% + ${em(pos.x)})`,
+              top: `calc(50% + ${em(pos.y)})`,
               transform: 'translate(-50%, -50%)',
               cursor: clickable ? 'pointer' : 'default',
               zIndex: isSelected ? 15 : 5,
@@ -102,16 +103,16 @@ export function HubSpoke({
             <div
               className="rounded-full flex items-center justify-center transition-all duration-300"
               style={{
-                width: nodeSize,
-                height: nodeSize,
+                width: em(nodeSize),
+                height: em(nodeSize),
                 backgroundColor: `${c}20`,
                 border: `2px solid ${isSelected ? c : `${c}40`}`,
-                boxShadow: isSelected ? `0 0 12px ${c}40` : 'none',
+                boxShadow: isSelected ? `0 0 ${em(12)} ${c}40` : 'none',
               }}
             >
-              {renderIcon(item.icon, { size: nodeSize * 0.45, color: `${c}cc` })}
+              {renderIcon(item.icon, { size: em(nodeSize * 0.45), color: `${c}cc` })}
             </div>
-            <span className="text-[8px] text-white/50 font-medium whitespace-nowrap">
+            <span className="text-[0.5em] text-white/50 font-medium whitespace-nowrap">
               {item.label}
             </span>
           </motion.div>

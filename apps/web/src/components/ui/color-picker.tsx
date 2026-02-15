@@ -35,7 +35,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
   return (
     <div className={cn('space-y-1', className)}>
       {label && (
-        <span className="text-[10px] text-muted-foreground">{label}</span>
+        <span className="text-[0.625rem] text-muted-foreground">{label}</span>
       )}
       <Popover>
         <PopoverTrigger asChild>

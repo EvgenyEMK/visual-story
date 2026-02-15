@@ -153,6 +153,15 @@ interface VoiceSettings {
 
 ---
 
+## 3½. Slide Rendering — Responsive Sizing
+
+Slide content uses **em-based sizing** that scales proportionally with the
+slide canvas container width. See
+[Responsive Slide Sizing](../technical-architecture/responsive-slide-sizing.md)
+for the full architecture, conversion rules, and the `em()` helper.
+
+---
+
 ## 4. API Endpoints (MVP)
 
 | Endpoint | Method | Purpose |

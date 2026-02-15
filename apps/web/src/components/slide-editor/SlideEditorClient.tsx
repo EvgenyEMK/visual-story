@@ -213,7 +213,7 @@ export function SlideEditorClient() {
                     </span>
                     {icon && <span className="text-sm">{icon}</span>}
                     <span className="text-xs font-medium text-foreground truncate flex-1">{title}</span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{entries.length}</span>
+                    <span className="text-[0.625rem] text-muted-foreground shrink-0">{entries.length}</span>
                   </button>
                   {!isCollapsed && (
                     <div className="space-y-2 pl-0">
@@ -246,10 +246,12 @@ export function SlideEditorClient() {
             <SlideMainCanvas
               slide={currentSlide}
               currentScene={currentScene}
+              allScenes={scenes}
               selectedElementId={selectedElementId}
               currentSubStep={currentSubStep}
               totalSteps={totalSteps}
               onElementSelect={setSelectedElementId}
+              onSceneSelect={handleSceneSelect}
             />
           </div>
 
@@ -261,6 +263,7 @@ export function SlideEditorClient() {
               totalSteps={totalSteps}
               scene={currentScene}
               onStepSelect={handleStepSelect}
+              isMenuNavigation={scenes.some((s) => s.activatedByWidgetIds && s.activatedByWidgetIds.length > 0)}
             />
           )}
         </div>

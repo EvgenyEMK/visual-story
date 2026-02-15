@@ -107,7 +107,7 @@ function IconGrid({
                 <rect width="18" height="18" x="3" y="3" rx="2" />
               </svg>
             </span>
-            <span className="w-full truncate text-[10px] text-muted-foreground">
+            <span className="w-full truncate text-[0.625rem] text-muted-foreground">
               {name}
             </span>
           </button>

@@ -93,15 +93,15 @@ export function TransitionsDemoClient() {
         <TabsList>
           <TabsTrigger value="in-slide">
             In-Slide Animations
-            <span className="ml-1.5 text-[10px] opacity-60">(12)</span>
+            <span className="ml-1.5 text-[0.625rem] opacity-60">(12)</span>
           </TabsTrigger>
           <TabsTrigger value="transitions">
             Slide Transitions
-            <span className="ml-1.5 text-[10px] opacity-60">(5)</span>
+            <span className="ml-1.5 text-[0.625rem] opacity-60">(5)</span>
           </TabsTrigger>
           <TabsTrigger value="grouped">
             Grouped Items
-            <span className="ml-1.5 text-[10px] opacity-60">(11)</span>
+            <span className="ml-1.5 text-[0.625rem] opacity-60">(11)</span>
           </TabsTrigger>
         </TabsList>
 

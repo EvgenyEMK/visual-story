@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { IconProp, AccentColor } from '../types';
 import { renderIcon } from '../render-icon';
 
@@ -27,6 +28,17 @@ export type DetailPopupLayout = 'simple' | 'two-column';
  * - `'full'`    — 90% of slide width.
  */
 export type DetailPopupWidth = 'compact' | 'wide' | 'full';
+
+/**
+ * Origin rectangle for grow-from-card animation.
+ * Coordinates are relative to the popup's container (the slide canvas).
+ */
+export interface PopupOriginRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 interface DetailPopupProps {
   /** Whether the popup is visible. */
@@ -61,6 +73,12 @@ interface DetailPopupProps {
    * @default 'compact'
    */
   width?: DetailPopupWidth;
+  /**
+   * Origin rectangle for grow-from-card animation.
+   * When provided, the popup scales up from this position instead of
+   * the default center-scale animation.
+   */
+  originRect?: PopupOriginRect;
   /** Additional class names for the popup card. */
   className?: string;
 }
@@ -70,10 +88,35 @@ interface DetailPopupProps {
 // ---------------------------------------------------------------------------
 
 const widthStyles: Record<DetailPopupWidth, string> = {
-  compact: 'w-[200px]',
+  compact: 'w-[12.5em]',
   wide: 'w-[70%] max-h-[80%]',
   full: 'w-[90%] max-h-[90%]',
 };
+
+// ---------------------------------------------------------------------------
+// Animation helpers
+// ---------------------------------------------------------------------------
+
+const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/**
+ * Compute CSS `transformOrigin` from an origin rect relative to the
+ * popup's container. Returns a string like "25% 40%".
+ */
+function computeTransformOrigin(
+  originRect: PopupOriginRect | undefined,
+  containerWidth: number,
+  containerHeight: number,
+): string {
+  if (!originRect || containerWidth === 0 || containerHeight === 0) {
+    return '50% 50%';
+  }
+  const cx = originRect.x + originRect.width / 2;
+  const cy = originRect.y + originRect.height / 2;
+  const pctX = (cx / containerWidth) * 100;
+  const pctY = (cy / containerHeight) * 100;
+  return `${pctX}% ${pctY}%`;
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -89,12 +132,20 @@ export function DetailPopup({
   children,
   layout: layoutProp,
   width: widthProp,
+  originRect,
   className,
 }: DetailPopupProps) {
   // Auto-detect layout / width when children are provided
   const hasChildren = children != null;
   const layout = layoutProp ?? (hasChildren ? 'two-column' : 'simple');
   const width = widthProp ?? (hasChildren ? 'wide' : 'compact');
+
+  // Compute transform origin for grow-from-card animation
+  // Use a reasonable default container size (will be overridden by actual measurements
+  // when originRect is provided via the parent)
+  const transformOrigin = originRect
+    ? computeTransformOrigin(originRect, 960, 540)
+    : '50% 50%';
 
   return (
     <AnimatePresence>
@@ -106,26 +157,28 @@ export function DetailPopup({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
+          style={{ transformOrigin }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 backdrop-blur-[2px] bg-black/40" />
+          <div className="absolute inset-0 backdrop-blur-[3px] bg-black/50" />
 
           {/* Card */}
           <motion.div
             className={cn(
-              'relative rounded-xl shadow-2xl backdrop-blur-md z-10 overflow-hidden',
+              'relative rounded-[0.75em] shadow-2xl z-10 overflow-hidden',
               widthStyles[width],
               className,
             )}
             style={{
-              backgroundColor: `${color}12`,
+              backgroundColor: `color-mix(in srgb, ${color} 8%, #0f172a 92%)`,
               border: `1.5px solid ${color}40`,
-              boxShadow: `0 8px 32px ${color}25`,
+              boxShadow: `0 ${em(8)} ${em(32)} rgba(0, 0, 0, 0.5), 0 0 ${em(64)} ${color}15`,
+              transformOrigin,
             }}
-            initial={{ scale: 0.9, y: 10 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 10 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.4, opacity: 0 }}
+            transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
             onClick={(e) => e.stopPropagation()}
           >
             {layout === 'two-column' ? (
@@ -169,17 +222,17 @@ interface ContentProps {
 /** Centred layout (backward-compatible with original). */
 function SimpleContent({ icon, title, description, color, children }: ContentProps) {
   return (
-    <div className="flex flex-col items-center gap-2 p-5 text-center">
-      {renderIcon(icon, { size: 32, color: `${color}cc` })}
-      <div className="text-sm font-bold" style={{ color }}>
+    <div className="flex flex-col items-center gap-[0.5em] p-[1.25em] text-center">
+      {renderIcon(icon, { size: em(32), color: `${color}cc` })}
+      <div className="text-[0.875em] font-bold" style={{ color }}>
         {title}
       </div>
       {description && (
-        <p className="text-[10px] leading-relaxed text-white/50">
+        <p className="text-[0.625em] leading-relaxed text-white/60">
           {description}
         </p>
       )}
-      {children && <div className="w-full mt-2">{children}</div>}
+      {children && <div className="w-full mt-[0.5em]">{children}</div>}
     </div>
   );
 }
@@ -187,27 +240,27 @@ function SimpleContent({ icon, title, description, color, children }: ContentPro
 /** Two-column layout: left identity, right detail content. */
 function TwoColumnContent({ icon, title, description, color, children }: ContentProps) {
   return (
-    <div className="flex h-full min-h-[200px]">
+    <div className="flex h-full min-h-[12.5em]">
       {/* Left — identity column */}
       <div
-        className="flex flex-col items-center justify-center gap-3 shrink-0 p-5"
-        style={{ width: '30%', borderRight: `1px solid ${color}20` }}
+        className="flex flex-col items-center justify-center gap-[0.75em] shrink-0 p-[1.25em]"
+        style={{ width: '30%', borderRight: `1px solid ${color}25` }}
       >
-        {renderIcon(icon, { size: 48, color: `${color}cc` })}
-        <div className="text-sm font-bold text-center" style={{ color }}>
+        {renderIcon(icon, { size: em(48), color: `${color}cc` })}
+        <div className="text-[0.875em] font-bold text-center" style={{ color }}>
           {title}
         </div>
         {description && (
-          <p className="text-[9px] leading-relaxed text-white/40 text-center px-2">
+          <p className="text-[0.5625em] leading-relaxed text-white/50 text-center px-[0.5em]">
             {description}
           </p>
         )}
       </div>
 
       {/* Right — detail content */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex-1 p-[1em] overflow-auto">
         {children ?? (
-          <span className="text-white/30 text-xs italic">No detail content</span>
+          <span className="text-white/30 text-[0.75em] italic">No detail content</span>
         )}
       </div>
     </div>

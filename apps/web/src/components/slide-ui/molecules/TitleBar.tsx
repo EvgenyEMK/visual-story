@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { EntranceProps, ComponentSize } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
@@ -25,10 +26,10 @@ interface TitleBarProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, { title: string; subtitle: string; pad: string; iconSize: number }> = {
-  sm: { title: 'text-xs font-bold', subtitle: 'text-[8px]', pad: 'px-4 pt-3 pb-2', iconSize: 16 },
-  md: { title: 'text-sm font-bold tracking-tight', subtitle: 'text-[10px]', pad: 'px-5 pt-4 pb-2.5', iconSize: 20 },
-  lg: { title: 'text-base font-bold tracking-tight', subtitle: 'text-xs', pad: 'px-6 pt-5 pb-3', iconSize: 24 },
-  xl: { title: 'text-xl font-black tracking-tight', subtitle: 'text-sm', pad: 'px-8 pt-6 pb-4', iconSize: 28 },
+  sm: { title: 'text-[0.75em] font-bold', subtitle: 'text-[0.5em]', pad: 'px-[1em] pt-[0.75em] pb-[0.5em]', iconSize: 16 },
+  md: { title: 'text-[0.875em] font-bold tracking-tight', subtitle: 'text-[0.625em]', pad: 'px-[1.25em] pt-[1em] pb-[0.625em]', iconSize: 20 },
+  lg: { title: 'text-[1em] font-bold tracking-tight', subtitle: 'text-[0.75em]', pad: 'px-[1.5em] pt-[1.25em] pb-[0.75em]', iconSize: 24 },
+  xl: { title: 'text-[1.25em] font-black tracking-tight', subtitle: 'text-[0.875em]', pad: 'px-[2em] pt-[1.5em] pb-[1em]', iconSize: 28 },
 };
 
 export function TitleBar({
@@ -61,14 +62,14 @@ export function TitleBar({
       animate={motion$?.animate}
       transition={motion$?.transition}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-[1em]">
+        <div className="flex items-center gap-[0.625em] min-w-0 flex-1">
           {icon && (
-            <span className="shrink-0 flex items-center justify-center" style={{ fontSize: s.iconSize }}>
+            <span className="shrink-0 flex items-center justify-center" style={{ fontSize: em(s.iconSize) }}>
               {renderIcon(icon, { size: s.iconSize })}
             </span>
           )}
-          <div className="flex flex-col gap-0.5 min-w-0">
+          <div className="flex flex-col gap-[0.125em] min-w-0">
             <h2 className={cn(s.title, 'text-white/90')}>{title}</h2>
             {subtitle && (
               <p className={cn(s.subtitle, 'text-white/40')}>{subtitle}</p>

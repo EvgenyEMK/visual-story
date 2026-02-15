@@ -93,7 +93,7 @@ function NumberInput({
 }) {
   return (
     <div className="space-y-1">
-      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-[0.625rem] text-muted-foreground">{label}</span>
       <input
         type="number"
         className="w-full rounded-md border bg-background px-2 py-1 text-sm"
@@ -124,7 +124,7 @@ function SelectInput({
 }) {
   return (
     <div className="space-y-1">
-      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-[0.625rem] text-muted-foreground">{label}</span>
       <select
         className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
         value={value}
@@ -172,7 +172,7 @@ export function ElementPropertiesPanel({
       {/* --- Header --- */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Element Properties</h3>
-        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase">
+        <span className="rounded bg-muted px-1.5 py-0.5 text-[0.625rem] font-medium text-muted-foreground uppercase">
           {element.type}
         </span>
       </div>
@@ -187,7 +187,7 @@ export function ElementPropertiesPanel({
           onChange={(e) => onUpdate({ content: e.target.value })}
         />
         {isTextType && (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             Tip: Double-click the element on the canvas for rich-text editing.
           </p>
         )}

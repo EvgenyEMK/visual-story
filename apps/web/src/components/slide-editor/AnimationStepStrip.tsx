@@ -14,6 +14,8 @@ interface AnimationStepStripProps {
   scene: Scene;
   /** Callback when a step is selected. */
   onStepSelect: (step: number) => void;
+  /** Whether this slide uses menu/tab navigation (scenes as sub-slides). */
+  isMenuNavigation?: boolean;
 }
 
 /**
@@ -31,9 +33,11 @@ export function AnimationStepStrip({
   totalSteps,
   scene,
   onStepSelect,
+  isMenuNavigation = false,
 }: AnimationStepStripProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isSequential = scene.widgetStateLayer.enterBehavior.revealMode === 'sequential';
+  const stripLabel = isMenuNavigation ? 'Sub-slides' : 'Steps';
 
   // Auto-scroll to keep the active step visible
   useEffect(() => {
@@ -47,13 +51,13 @@ export function AnimationStepStrip({
   return (
     <div className="border-t bg-muted/20">
       <div className="flex items-center gap-2 px-3 py-1.5">
-        <span className="text-[10px] font-semibold text-muted-foreground shrink-0 uppercase tracking-wider">
-          Steps
+        <span className="text-[0.625rem] font-semibold text-muted-foreground shrink-0 uppercase tracking-wider">
+          {stripLabel}
         </span>
-        <span className="text-[10px] text-muted-foreground shrink-0">
+        <span className="text-[0.625rem] text-muted-foreground shrink-0">
           {currentStep + 1} / {totalSteps}
         </span>
-        <span className="text-[10px] text-muted-foreground/60 shrink-0 ml-1">
+        <span className="text-[0.625rem] text-muted-foreground/60 shrink-0 ml-1">
           {scene.title}
           {isSequential ? ' · Sequential' : ' · All at once'}
         </span>
@@ -95,19 +99,19 @@ export function AnimationStepStrip({
                 style={{ aspectRatio: '16/9' }}
               >
                 <div className="absolute inset-0 flex items-center justify-center p-1">
-                  <span className="text-[7px] text-muted-foreground text-center leading-tight">
+                  <span className="text-[0.4375rem] text-muted-foreground text-center leading-tight">
                     {label}
                   </span>
                 </div>
 
                 {/* Step number */}
-                <div className="absolute top-0.5 left-0.5 text-[6px] font-bold text-muted-foreground/60">
+                <div className="absolute top-0.5 left-0.5 text-[0.375rem] font-bold text-muted-foreground/60">
                   {i + 1}
                 </div>
 
                 {/* Reveal count for sequential */}
                 {isSequential && (
-                  <div className="absolute bottom-0.5 right-0.5 text-[6px] text-muted-foreground/60">
+                  <div className="absolute bottom-0.5 right-0.5 text-[0.375rem] text-muted-foreground/60">
                     {Math.min(i + 1, scene.widgetStateLayer.animatedWidgetIds.length)}/
                     {scene.widgetStateLayer.animatedWidgetIds.length}
                   </div>
@@ -116,7 +120,7 @@ export function AnimationStepStrip({
 
               {/* Label bar */}
               <div
-                className={`px-1.5 py-1 text-[8px] font-medium truncate border-t ${
+                className={`px-1.5 py-1 text-[0.5rem] font-medium truncate border-t ${
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted/30 text-muted-foreground'

@@ -17,10 +17,10 @@ interface QuoteBlockProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, { quote: string; attr: string }> = {
-  sm: { quote: 'text-xs', attr: 'text-[9px]' },
-  md: { quote: 'text-sm', attr: 'text-[10px]' },
-  lg: { quote: 'text-base', attr: 'text-xs' },
-  xl: { quote: 'text-lg', attr: 'text-sm' },
+  sm: { quote: 'text-[0.75em]', attr: 'text-[0.5625em]' },
+  md: { quote: 'text-[0.875em]', attr: 'text-[0.625em]' },
+  lg: { quote: 'text-[1em]', attr: 'text-[0.75em]' },
+  xl: { quote: 'text-[1.125em]', attr: 'text-[0.875em]' },
 };
 
 export function QuoteBlock({
@@ -40,13 +40,13 @@ export function QuoteBlock({
 
   return (
     <motion.blockquote
-      className={cn('flex flex-col gap-3 px-6', className)}
+      className={cn('flex flex-col gap-[0.75em] px-[1.5em]', className)}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}
       transition={motion$?.transition}
     >
-      <div className="w-8 h-1 rounded-full bg-blue-500/40" />
+      <div className="w-[2em] h-[0.25em] rounded-full bg-blue-500/40" />
       <p className={cn(s.quote, 'text-white/90 italic leading-relaxed font-serif')}>
         &ldquo;{quote}&rdquo;
       </p>

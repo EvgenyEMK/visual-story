@@ -249,7 +249,7 @@ export function ExportDialog({
                               {opt.label}
                             </span>
                             {locked && (
-                              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              <span className="rounded bg-muted px-1.5 py-0.5 text-[0.625rem] font-medium text-muted-foreground">
                                 Pro only
                               </span>
                             )}

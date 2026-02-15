@@ -84,7 +84,7 @@ export function SlideFrame({
     <SlideFrameContext.Provider value={frameSize}>
       <div
         ref={containerRef}
-        className={`relative w-full overflow-hidden ${className}`}
+        className={`slide-canvas relative w-full overflow-hidden ${className}`}
         style={{ aspectRatio: '16 / 9' }}
       >
         {/* Layout Layer (z:0) — DOM-driven flex/grid content */}

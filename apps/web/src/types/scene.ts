@@ -199,6 +199,17 @@ export interface Scene {
    * If not set, calculated from widget state layer + step durations.
    */
   duration?: number;
+
+  /**
+   * Widget IDs that activate this scene when clicked in presentation mode.
+   *
+   * Used for **menu / tab navigation**: clicking a menu item (identified by
+   * its widget ID) jumps directly to this scene, enabling non-linear
+   * navigation within a slide.
+   *
+   * When absent, the scene is reached only via linear step advancement.
+   */
+  activatedByWidgetIds?: string[];
 }
 
 // ---------------------------------------------------------------------------

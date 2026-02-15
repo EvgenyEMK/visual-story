@@ -172,6 +172,15 @@ export interface CardItem extends SlideItemBase {
   type: 'card';
   /** Child items rendered inside the card. */
   children: SlideItem[];
+  /**
+   * Optional detail content shown in a popup overlay when the card is
+   * expanded (via click or step-driven focus).
+   *
+   * Rendered inside a `DetailPopup` — can contain any SlideItem tree
+   * (text atoms, lists, grids, etc.). When absent the card has no
+   * expandable detail.
+   */
+  detailItems?: SlideItem[];
 }
 
 /**

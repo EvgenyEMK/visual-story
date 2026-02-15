@@ -2,6 +2,19 @@
    slide-ui — CSS animations for presentation components
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ---------------------------------------------------------------------------
+   Slide Canvas — responsive font-size for container-relative em units
+   ---------------------------------------------------------------------------
+   At 960 px container width the font-size equals 16 px (the design-space
+   base), so 1 em = 16 px.  All slide-ui components size themselves in em
+   so they scale proportionally with the container.
+   Min 8 px (tiny previews), max 32 px (4 K full-screen).
+   --------------------------------------------------------------------------- */
+.slide-canvas {
+  container-type: inline-size;
+  font-size: clamp(0.5rem, calc(100cqw / 60), 2rem);
+}
+
 @keyframes slide-ui-shimmer {
   0% {
     background-position: -200% center;

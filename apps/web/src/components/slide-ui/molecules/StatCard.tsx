@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { EntranceProps, AccentColor } from '../types';
+import { em } from '../units';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { MetricDisplay } from '../atoms/MetricDisplay';
 import { ProgressBar } from '../atoms/ProgressBar';
@@ -44,7 +45,7 @@ export function StatCard({
   return (
     <motion.div
       className={cn(
-        'rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-2',
+        'rounded-[0.75em] bg-white/5 border border-white/10 p-[1em] flex flex-col gap-[0.5em]',
         className,
       )}
       style={{ borderColor: `${color}20` }}

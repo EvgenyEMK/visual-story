@@ -162,7 +162,7 @@ export function DemoPageShell({
               <TabsTrigger key={tab.value} value={tab.value}>
                 {tab.label}
                 {tab.count != null && (
-                  <span className="ml-1.5 text-[10px] opacity-60">({tab.count})</span>
+                  <span className="ml-1.5 text-[0.625rem] opacity-60">({tab.count})</span>
                 )}
               </TabsTrigger>
             ))}

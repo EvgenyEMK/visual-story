@@ -83,6 +83,11 @@ export function AppNavbarWrapper() {
           label: t('navigation.slidePlay'),
           active: pathname.includes('/slide-play')
         },
+        {
+          href: '/data-structures',
+          label: t('navigation.dataDev'),
+          active: pathname.includes('/data-structures')
+        },
       ];
 
   return (

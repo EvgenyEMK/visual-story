@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { IconProp, AccentColor } from '../types';
+import { em } from '../units';
 import { ItemThumbnail } from '../molecules/ItemThumbnail';
 import { HeroSpotlight } from '../molecules/HeroSpotlight';
 
@@ -53,8 +54,8 @@ export function CenterStageShelf({
 
       {/* Bottom shelf */}
       <div
-        className="bg-white/[0.03] border-t border-white/5 flex items-center justify-center gap-2 px-4"
-        style={{ height: shelfHeight }}
+        className="bg-white/[0.03] border-t border-white/5 flex items-center justify-center gap-[0.5em] px-[1em]"
+        style={{ height: em(shelfHeight) }}
       >
         {items.map((item, i) => (
           <ItemThumbnail

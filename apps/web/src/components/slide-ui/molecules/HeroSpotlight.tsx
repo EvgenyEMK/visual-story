@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { IconProp, EntranceProps, ComponentSize, AccentColor } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
@@ -22,10 +23,10 @@ interface HeroSpotlightProps extends EntranceProps {
 }
 
 const sizeConfig: Record<ComponentSize, { iconBox: number; icon: number; title: string; desc: string }> = {
-  sm: { iconBox: 40, icon: 20, title: 'text-xs font-bold', desc: 'text-[9px]' },
-  md: { iconBox: 56, icon: 28, title: 'text-sm font-bold', desc: 'text-[10px]' },
-  lg: { iconBox: 72, icon: 36, title: 'text-lg font-bold', desc: 'text-xs' },
-  xl: { iconBox: 96, icon: 48, title: 'text-2xl font-black', desc: 'text-sm' },
+  sm: { iconBox: 40, icon: 20, title: 'text-[0.75em] font-bold', desc: 'text-[0.5625em]' },
+  md: { iconBox: 56, icon: 28, title: 'text-[0.875em] font-bold', desc: 'text-[0.625em]' },
+  lg: { iconBox: 72, icon: 36, title: 'text-[1.125em] font-bold', desc: 'text-[0.75em]' },
+  xl: { iconBox: 96, icon: 48, title: 'text-[1.5em] font-black', desc: 'text-[0.875em]' },
 };
 
 export function HeroSpotlight({
@@ -47,27 +48,27 @@ export function HeroSpotlight({
 
   return (
     <motion.div
-      className={cn('flex flex-col items-center gap-3 text-center', className)}
+      className={cn('flex flex-col items-center gap-[0.75em] text-center', className)}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}
       transition={motion$?.transition}
     >
       <div
-        className="rounded-2xl flex items-center justify-center shadow-lg"
+        className="rounded-[1em] flex items-center justify-center shadow-lg"
         style={{
-          width: s.iconBox,
-          height: s.iconBox,
+          width: em(s.iconBox),
+          height: em(s.iconBox),
           background: `linear-gradient(135deg, ${color}30, ${color}10)`,
           border: `2px solid ${color}50`,
-          boxShadow: `0 8px 24px ${color}20`,
+          boxShadow: `0 ${em(8)} ${em(24)} ${color}20`,
         }}
       >
-        {renderIcon(icon, { size: s.icon, color: `${color}dd` })}
+        {renderIcon(icon, { size: em(s.icon), color: `${color}dd` })}
       </div>
       <div className={cn(s.title, 'text-white/90')}>{title}</div>
       {description && (
-        <p className={cn(s.desc, 'text-white/50 max-w-[240px] leading-relaxed')}>
+        <p className={cn(s.desc, 'text-white/50 max-w-[15em] leading-relaxed')}>
           {description}
         </p>
       )}

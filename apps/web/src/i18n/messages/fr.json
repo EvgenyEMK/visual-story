@@ -17,7 +17,8 @@
     "voiceAssistant": "Test Assistant Vocal",
     "demo": "Démo",
     "slideEditor": "Éditeur de diapositives",
-    "slidePlay": "Lecture de diapositives"
+    "slidePlay": "Lecture de diapositives",
+    "dataDev": "Data (dev)"
   },
   "actions": {
     "open": "Ouvrir",

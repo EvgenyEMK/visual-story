@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { IconProp, EntranceProps, ComponentSize, AccentColor } from '../types';
+import { em } from '../units';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
 
@@ -19,17 +20,31 @@ interface FeatureCardProps extends EntranceProps {
   size?: ComponentSize;
   /** Layout direction. */
   direction?: 'vertical' | 'horizontal';
+  /**
+   * When `true` the card stretches to fill its parent container
+   * (`w-full h-full`).  When `false` (default) the card uses intrinsic
+   * sizing with minimum dimensions derived from the size preset — ideal
+   * for grid cells where cards should be centred rather than stretched.
+   */
+  fillParent?: boolean;
   /** Additional class names. */
   className?: string;
   /** Click handler. */
   onClick?: () => void;
 }
 
-const sizeConfig: Record<ComponentSize, { icon: number; iconBox: number; title: string; desc: string; pad: string; gap: string }> = {
-  sm: { icon: 14, iconBox: 28, title: 'text-[10px] font-semibold', desc: 'text-[8px]', pad: 'p-2', gap: 'gap-1.5' },
-  md: { icon: 20, iconBox: 40, title: 'text-xs font-semibold', desc: 'text-[10px]', pad: 'p-3', gap: 'gap-2' },
-  lg: { icon: 28, iconBox: 52, title: 'text-sm font-bold', desc: 'text-xs', pad: 'p-4', gap: 'gap-3' },
-  xl: { icon: 36, iconBox: 64, title: 'text-base font-bold', desc: 'text-sm', pad: 'p-5', gap: 'gap-4' },
+const sizeConfig: Record<ComponentSize, {
+  icon: number; iconBox: number; title: string; desc: string;
+  pad: string; gap: string;
+  /** Minimum card width (em) for intrinsic sizing. */
+  minW: number;
+  /** Minimum card height (em) for intrinsic vertical sizing. */
+  minH: number;
+}> = {
+  sm: { icon: 14, iconBox: 28, title: 'text-[0.625em] font-semibold', desc: 'text-[0.5em]', pad: 'p-[0.5em]', gap: 'gap-[0.375em]', minW: 120, minH: 100 },
+  md: { icon: 20, iconBox: 40, title: 'text-[0.75em] font-semibold', desc: 'text-[0.625em]', pad: 'p-[0.75em]', gap: 'gap-[0.5em]', minW: 160, minH: 128 },
+  lg: { icon: 28, iconBox: 52, title: 'text-[0.875em] font-bold', desc: 'text-[0.75em]', pad: 'p-[1em]', gap: 'gap-[0.75em]', minW: 200, minH: 164 },
+  xl: { icon: 36, iconBox: 64, title: 'text-[1em] font-bold', desc: 'text-[0.875em]', pad: 'p-[1.25em]', gap: 'gap-[1em]', minW: 248, minH: 200 },
 };
 
 export function FeatureCard({
@@ -39,6 +54,7 @@ export function FeatureCard({
   color = '#3b82f6',
   size = 'md',
   direction = 'vertical',
+  fillParent = false,
   entrance = 'none',
   delay = 0,
   duration,
@@ -55,8 +71,10 @@ export function FeatureCard({
   return (
     <motion.div
       className={cn(
-        'rounded-xl bg-white/5 border border-white/10 flex',
+        'rounded-[0.75em] bg-white/5 border border-white/10 flex',
         isVertical ? 'flex-col items-center text-center' : 'flex-row items-start',
+        fillParent && 'w-full h-full',
+        fillParent && isVertical && 'justify-center',
         s.pad,
         s.gap,
         onClick && 'cursor-pointer',
@@ -64,6 +82,7 @@ export function FeatureCard({
       )}
       style={{
         borderColor: `${color}20`,
+        ...(!fillParent && isVertical ? { minWidth: em(s.minW), minHeight: em(s.minH) } : {}),
       }}
       variants={variants}
       initial={motion$?.initial}
@@ -73,17 +92,17 @@ export function FeatureCard({
       onClick={onClick}
     >
       <div
-        className="flex items-center justify-center shrink-0 rounded-xl"
+        className="flex items-center justify-center shrink-0 rounded-[0.75em]"
         style={{
-          width: s.iconBox,
-          height: s.iconBox,
+          width: em(s.iconBox),
+          height: em(s.iconBox),
           backgroundColor: `${color}15`,
           border: `1px solid ${color}30`,
         }}
       >
-        {renderIcon(icon, { size: s.icon, color: `${color}cc` })}
+        {renderIcon(icon, { size: em(s.icon), color: `${color}cc` })}
       </div>
-      <div className={cn('flex flex-col', isVertical ? 'items-center' : 'items-start', 'gap-0.5 min-w-0')}>
+      <div className={cn('flex flex-col', isVertical ? 'items-center' : 'items-start', 'gap-[0.125em] min-w-0')}>
         <span className={cn(s.title, 'text-white/90')}>{title}</span>
         {description && (
           <span className={cn(s.desc, 'text-white/50 leading-relaxed')}>{description}</span>

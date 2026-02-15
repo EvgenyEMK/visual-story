@@ -110,7 +110,7 @@ export function TimelineView({
                   {sceneCount > 1
                     ? <Film className="h-3 w-3 text-purple-500" />
                     : <Layers className="h-3 w-3 text-purple-500" />}
-                  <span className="text-[9px] text-purple-500 font-medium">
+                  <span className="text-[0.5625rem] text-purple-500 font-medium">
                     {sceneCount > 1 ? sceneCount : widgetCount}
                   </span>
                 </div>
@@ -118,7 +118,7 @@ export function TimelineView({
 
               {/* Trigger mode toggle (click on indicator area) */}
               <button
-                className="absolute bottom-1 right-1 rounded px-1 py-0.5 text-[8px] text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted transition-opacity"
+                className="absolute bottom-1 right-1 rounded px-1 py-0.5 text-[0.5rem] text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-muted transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation();
                   const newMode: TriggerMode | undefined =

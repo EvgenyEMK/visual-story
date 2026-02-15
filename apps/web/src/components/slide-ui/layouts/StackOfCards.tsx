@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { IconProp, AccentColor } from '../types';
+import { em } from '../units';
 import { renderIcon } from '../render-icon';
 
 export interface StackCardItem {
@@ -37,7 +38,7 @@ export function StackOfCards({
   return (
     <div
       className={cn('relative flex items-center justify-center w-full h-full cursor-pointer', className)}
-      style={{ perspective: '800px' }}
+      style={{ perspective: em(800) }}
       onClick={cycle}
     >
       {items.map((item, rawI) => {
@@ -47,10 +48,10 @@ export function StackOfCards({
         return (
           <motion.div
             key={`${item.title}-${rawI}`}
-            className="absolute rounded-xl flex flex-col items-center justify-center gap-2 shadow-xl"
+            className="absolute rounded-[0.75em] flex flex-col items-center justify-center gap-[0.5em] shadow-xl"
             style={{
-              width: cardWidth,
-              height: cardHeight,
+              width: em(cardWidth),
+              height: em(cardHeight),
               backgroundColor: `${c}15`,
               border: `1px solid ${c}30`,
               backfaceVisibility: 'hidden',
@@ -65,10 +66,10 @@ export function StackOfCards({
             }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            {renderIcon(item.icon, { size: 28, color: `${c}cc` })}
-            <span className="text-white/90 text-xs font-bold">{item.title}</span>
+            {renderIcon(item.icon, { size: em(28), color: `${c}cc` })}
+            <span className="text-white/90 text-[0.75em] font-bold">{item.title}</span>
             {item.subtitle && (
-              <span className="text-white/40 text-[8px]">{item.subtitle}</span>
+              <span className="text-white/40 text-[0.5em]">{item.subtitle}</span>
             )}
           </motion.div>
         );

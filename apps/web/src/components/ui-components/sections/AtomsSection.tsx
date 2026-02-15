@@ -117,7 +117,7 @@ export function AtomsSection({ themeMode }: Props) {
           <div className="flex flex-col gap-4 p-6 w-full">
             {/* Lucide row */}
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Lucide React</span>
+              <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Lucide React</span>
               <div className="flex gap-3">
                 <IconBadge icon={Rocket} color="#3b82f6" size="sm" />
                 <IconBadge icon={Shield} color="#3b82f6" size="sm" />
@@ -129,7 +129,7 @@ export function AtomsSection({ themeMode }: Props) {
             </div>
             {/* Phosphor row */}
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Phosphor Icons</span>
+              <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Phosphor Icons</span>
               <div className="flex gap-3">
                 <IconBadge icon={RocketLaunch} color="#8b5cf6" size="sm" />
                 <IconBadge icon={ChartBar} color="#8b5cf6" size="sm" />
@@ -139,7 +139,7 @@ export function AtomsSection({ themeMode }: Props) {
             </div>
             {/* Tabler row */}
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Tabler Icons</span>
+              <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Tabler Icons</span>
               <div className="flex gap-3">
                 <IconBadge icon={IconBolt} color="#14b8a6" size="sm" />
                 <IconBadge icon={IconChartBar} color="#14b8a6" size="sm" />

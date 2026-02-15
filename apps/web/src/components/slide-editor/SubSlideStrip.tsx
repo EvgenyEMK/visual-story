@@ -40,10 +40,10 @@ export function SubSlideStrip({
   return (
     <div className="border-t bg-muted/20">
       <div className="flex items-center gap-2 px-3 py-1.5">
-        <span className="text-[10px] font-semibold text-muted-foreground shrink-0 uppercase tracking-wider">
+        <span className="text-[0.625rem] font-semibold text-muted-foreground shrink-0 uppercase tracking-wider">
           Sub-slides
         </span>
-        <span className="text-[10px] text-muted-foreground shrink-0">
+        <span className="text-[0.625rem] text-muted-foreground shrink-0">
           {currentStep + 1} / {totalSteps}
         </span>
       </div>
@@ -75,21 +75,21 @@ export function SubSlideStrip({
                 style={{ aspectRatio: '16/9' }}
               >
                 <div className="absolute inset-0 flex items-center justify-center p-1">
-                  <span className="text-[7px] text-muted-foreground text-center leading-tight">
+                  <span className="text-[0.4375rem] text-muted-foreground text-center leading-tight">
                     {label}
                   </span>
                 </div>
-                <div className="absolute top-0.5 left-0.5 text-[6px] font-bold text-muted-foreground/60">
+                <div className="absolute top-0.5 left-0.5 text-[0.375rem] font-bold text-muted-foreground/60">
                   {i + 1}
                 </div>
                 {animatedWidgetIds.length > 0 && (
-                  <div className="absolute bottom-0.5 right-0.5 text-[6px] text-muted-foreground/60">
+                  <div className="absolute bottom-0.5 right-0.5 text-[0.375rem] text-muted-foreground/60">
                     {Math.min(i + 1, animatedWidgetIds.length)}/{animatedWidgetIds.length}
                   </div>
                 )}
               </div>
               <div
-                className={`px-1.5 py-1 text-[8px] font-medium truncate border-t ${
+                className={`px-1.5 py-1 text-[0.5rem] font-medium truncate border-t ${
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted/30 text-muted-foreground'

@@ -40,7 +40,7 @@ export function TitleSlide({
         delay={delay}
         duration={duration}
       />
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-[1em]">
         {children}
       </div>
     </div>

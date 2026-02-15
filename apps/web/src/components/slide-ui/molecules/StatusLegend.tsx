@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import type { IconProp, EntranceProps, StaggerProps, ComponentSize, AccentColor } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
+import { em } from '../units';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,10 +51,10 @@ const sizeConfig: Record<ComponentSize, {
   label: string; title: string;
   gap: string; pad: string;
 }> = {
-  sm: { icon: 10, iconBox: 18, label: 'text-[8px]', title: 'text-[9px] font-semibold', gap: 'gap-1', pad: 'p-1.5' },
-  md: { icon: 14, iconBox: 24, label: 'text-[10px]', title: 'text-[11px] font-semibold', gap: 'gap-1.5', pad: 'p-2.5' },
-  lg: { icon: 18, iconBox: 30, label: 'text-xs', title: 'text-xs font-bold', gap: 'gap-2', pad: 'p-3' },
-  xl: { icon: 22, iconBox: 36, label: 'text-sm', title: 'text-sm font-bold', gap: 'gap-2.5', pad: 'p-4' },
+  sm: { icon: 10, iconBox: 18, label: 'text-[0.5em]', title: 'text-[0.5625em] font-semibold', gap: 'gap-[0.25em]', pad: 'p-[0.375em]' },
+  md: { icon: 14, iconBox: 24, label: 'text-[0.625em]', title: 'text-[0.6875em] font-semibold', gap: 'gap-[0.375em]', pad: 'p-[0.625em]' },
+  lg: { icon: 18, iconBox: 30, label: 'text-[0.75em]', title: 'text-[0.75em] font-bold', gap: 'gap-[0.5em]', pad: 'p-[0.75em]' },
+  xl: { icon: 22, iconBox: 36, label: 'text-[0.875em]', title: 'text-[0.875em] font-bold', gap: 'gap-[0.625em]', pad: 'p-[1em]' },
 };
 
 // ---------------------------------------------------------------------------
@@ -86,7 +87,7 @@ export function StatusLegend({
       className={cn(
         'flex flex-col',
         s.gap,
-        showCard && 'rounded-xl bg-white/5 border border-white/10',
+        showCard && 'rounded-[0.75em] bg-white/5 border border-white/10',
         showCard && s.pad,
         className,
       )}
@@ -94,7 +95,7 @@ export function StatusLegend({
       {/* Optional title */}
       {title && (
         <motion.div
-          className={cn(s.title, 'text-white/60 uppercase tracking-wider mb-0.5')}
+          className={cn(s.title, 'text-white/60 uppercase tracking-wider mb-[0.125em]')}
           variants={titleVariants}
           initial={titleMotion?.initial}
           animate={titleMotion?.animate}
@@ -129,15 +130,15 @@ export function StatusLegend({
             >
               {/* Icon */}
               <div
-                className="flex items-center justify-center shrink-0 rounded-md"
+                className="flex items-center justify-center shrink-0 rounded-[0.375em]"
                 style={{
-                  width: s.iconBox,
-                  height: s.iconBox,
+                  width: em(s.iconBox),
+                  height: em(s.iconBox),
                   backgroundColor: `${accentColor}15`,
                   border: `1px solid ${accentColor}25`,
                 }}
               >
-                {renderIcon(entry.icon, { size: s.icon, color: `${accentColor}cc` })}
+                {renderIcon(entry.icon, { size: em(s.icon), color: `${accentColor}cc` })}
               </div>
 
               {/* Label */}

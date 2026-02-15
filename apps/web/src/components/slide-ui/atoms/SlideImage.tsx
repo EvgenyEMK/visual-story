@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { EntranceProps } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
+import { em } from '../units';
 
 interface SlideImageProps extends EntranceProps {
   /** Image source URL. */
@@ -42,7 +43,7 @@ export function SlideImage({
   return (
     <motion.div
       className={cn('overflow-hidden', className)}
-      style={{ borderRadius, width, height }}
+      style={{ borderRadius: em(borderRadius), width: typeof width === 'number' ? em(width) : width, height: typeof height === 'number' ? em(height) : height }}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}
@@ -56,7 +57,7 @@ export function SlideImage({
           width: '100%',
           height: '100%',
           objectFit: fit,
-          borderRadius,
+          borderRadius: em(borderRadius),
         }}
       />
     </motion.div>

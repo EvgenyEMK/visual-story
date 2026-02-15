@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { IconProp, EntranceProps, AccentColor } from '../types';
+import { em } from '../units';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
 
@@ -39,28 +40,28 @@ export function FlowNode({
 
   return (
     <motion.div
-      className={cn('flex flex-col items-center gap-1.5', className)}
+      className={cn('flex flex-col items-center gap-[0.375em]', className)}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}
       transition={motion$?.transition}
     >
       <div
-        className="rounded-xl flex items-center justify-center transition-all duration-300"
+        className="rounded-[0.75em] flex items-center justify-center transition-all duration-300"
         style={{
-          width: nodeSize,
-          height: nodeSize,
+          width: em(nodeSize),
+          height: em(nodeSize),
           backgroundColor: `${color}${active ? '30' : '15'}`,
           border: `2px solid ${color}${active ? '70' : '30'}`,
-          boxShadow: active ? `0 4px 16px ${color}30` : 'none',
+          boxShadow: active ? `0 ${em(4)} ${em(16)} ${color}30` : 'none',
           transform: active ? 'scale(1.1)' : 'scale(1)',
         }}
       >
-        {renderIcon(icon, { size: nodeSize * 0.5, color: `${color}${active ? 'ee' : 'aa'}` })}
+        {renderIcon(icon, { size: em(nodeSize * 0.5), color: `${color}${active ? 'ee' : 'aa'}` })}
       </div>
       <span
         className={cn(
-          'text-[9px] font-medium transition-colors',
+          'text-[0.5625em] font-medium transition-colors',
           active ? 'text-white/90' : 'text-white/50',
         )}
       >

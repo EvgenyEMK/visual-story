@@ -30,7 +30,7 @@ function SmoothFadeDemo({ themeMode }: ThemeProps) {
         <div style={{ animation: 'vs-smooth-fade 0.8s ease-out 0.9s forwards', opacity: 0 }}>
           <div className="flex gap-2 mt-1">
             {['Jan', 'Feb', 'Mar', 'Apr'].map((m) => (
-              <div key={m} className="text-[10px] text-white/30 text-center">
+              <div key={m} className="text-[0.625rem] text-white/30 text-center">
                 <div className="w-8 bg-blue-500/30 rounded-sm mb-1" style={{ height: `${20 + Math.random() * 30}px` }} />
                 {m}
               </div>
@@ -61,7 +61,7 @@ function StaggeredWipeDemo({ themeMode }: ThemeProps) {
       <div key={key} className="flex flex-col gap-3 w-full px-8 py-6">
         {data.map((d, i) => (
           <div key={d.label} className="flex items-center gap-3">
-            <span className="text-white/60 text-[10px] w-16 text-right shrink-0">{d.label}</span>
+            <span className="text-white/60 text-[0.625rem] w-16 text-right shrink-0">{d.label}</span>
             <div className="flex-1 h-5 bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
@@ -375,7 +375,7 @@ function ColorShiftDemo({ themeMode }: ThemeProps) {
             >
               {f.icon}
             </div>
-            <span className="text-white/70 text-[10px] font-medium">{f.label}</span>
+            <span className="text-white/70 text-[0.625rem] font-medium">{f.label}</span>
           </div>
         ))}
       </div>
@@ -446,7 +446,7 @@ function ShimmerDemo({ themeMode }: ThemeProps) {
             }}
           />
         </button>
-        <div className="text-white/30 text-[10px]">No credit card required</div>
+        <div className="text-white/30 text-[0.625rem]">No credit card required</div>
       </div>
     </DemoStage>
   );
@@ -478,7 +478,7 @@ function SlideTitleDemo({ themeMode }: ThemeProps) {
                 Market Analysis 2025
               </div>
               <div
-                className="text-white/40 text-[10px]"
+                className="text-white/40 text-[0.625rem]"
                 style={{
                   animation: 'vs-subtitle-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards',
                   opacity: 0,
@@ -497,10 +497,10 @@ function SlideTitleDemo({ themeMode }: ThemeProps) {
             >
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-white/50 text-[8px]">On Track</span>
+                <span className="text-white/50 text-[0.5rem]">On Track</span>
               </div>
-              <div className="text-white/20 text-[8px]">|</div>
-              <span className="text-white/40 text-[8px]">Q4</span>
+              <div className="text-white/20 text-[0.5rem]">|</div>
+              <span className="text-white/40 text-[0.5rem]">Q4</span>
             </div>
           </div>
         </div>
@@ -517,11 +517,11 @@ function SlideTitleDemo({ themeMode }: ThemeProps) {
               {[65, 82, 45, 90, 73].map((h, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
                   <div className="w-5 rounded-sm bg-blue-500/50" style={{ height: `${h * 0.5}px` }} />
-                  <div className="text-[6px] text-white/30">Q{i + 1}</div>
+                  <div className="text-[0.375rem] text-white/30">Q{i + 1}</div>
                 </div>
               ))}
             </div>
-            <div className="text-white/20 text-[8px] mt-1">Slide content area</div>
+            <div className="text-white/20 text-[0.5rem] mt-1">Slide content area</div>
           </div>
         </div>
       </div>
@@ -598,7 +598,7 @@ function ZoomInWordDemo({ themeMode }: ThemeProps) {
           })}
           {/* Subtitle that appears after all words */}
           <div
-            className="text-white/40 text-[10px] mt-3"
+            className="text-white/40 text-[0.625rem] mt-3"
             style={{
               opacity: visibleWords >= allWords.length ? 1 : 0,
               transition: 'opacity 0.5s ease 0.2s',

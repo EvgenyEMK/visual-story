@@ -10,11 +10,14 @@
  *
  * The optional `visibility` callback lets the parent (e.g. SlidePlayClient)
  * control which items are visible at the current animation step.
+ *
+ * Cards with `detailItems` can show a DetailPopup overlay when expanded.
+ * The popup grows from the card's position for a smooth visual connection.
  */
 
 'use client';
 
-import { type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import type {
   SlideItem,
@@ -24,6 +27,9 @@ import type {
   LayoutConfig,
   ElementStyle,
 } from '@/types/slide';
+import { em } from '@/components/slide-ui/units';
+import { DetailPopup } from '@/components/slide-ui/molecules/DetailPopup';
+import type { PopupOriginRect } from '@/components/slide-ui/molecules/DetailPopup';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -50,6 +56,16 @@ export interface ItemRendererProps {
    * Optional callback invoked when an item is clicked.
    */
   onItemClick?: (itemId: string) => void;
+  /**
+   * ID of the card currently showing its detail popup.
+   * When set, a DetailPopup is rendered for the matching card (if it has detailItems).
+   */
+  expandedCardId?: string | null;
+  /**
+   * Callback to open/close a card's detail popup.
+   * Pass the card ID to open, or null to close.
+   */
+  onCardExpand?: (cardId: string | null) => void;
   /** Additional class names for the root wrapper. */
   className?: string;
 }
@@ -84,16 +100,16 @@ function buildBaseStyle(
   // Element style props
   if (item.style) {
     const s = item.style;
-    if (s.width != null) style.width = s.width;
-    if (s.height != null) style.height = s.height;
+    if (s.width != null) style.width = typeof s.width === 'number' ? em(s.width) : s.width;
+    if (s.height != null) style.height = typeof s.height === 'number' ? em(s.height) : s.height;
     if (s.backgroundColor) style.backgroundColor = s.backgroundColor;
-    if (s.borderRadius != null) style.borderRadius = s.borderRadius;
+    if (s.borderRadius != null) style.borderRadius = typeof s.borderRadius === 'number' ? em(s.borderRadius) : s.borderRadius;
     if (s.borderWidth != null) style.borderWidth = s.borderWidth;
     if (s.borderColor) style.borderColor = s.borderColor;
     if (s.borderWidth != null) style.borderStyle = 'solid';
     if (s.boxShadow) style.boxShadow = s.boxShadow;
     if (s.opacity != null) style.opacity = s.opacity;
-    if (s.padding != null) style.padding = s.padding;
+    if (s.padding != null) style.padding = typeof s.padding === 'number' ? em(s.padding) : s.padding;
   }
 
   // Visibility control
@@ -113,11 +129,11 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
       case 'grid':
         style.display = 'grid';
         style.gridTemplateColumns = 'repeat(auto-fit, minmax(0, 1fr))';
-        style.gap = 16;
+        style.gap = em(16);
         break;
       case 'stack':
         style.flexDirection = 'column';
-        style.gap = 8;
+        style.gap = em(8);
         break;
       case 'sidebar':
         style.flexDirection = 'row';
@@ -127,7 +143,7 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
         break;
       default:
         style.flexDirection = 'row';
-        style.gap = 16;
+        style.gap = em(16);
     }
     return style;
   }
@@ -146,7 +162,7 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
     style.flexDirection = cfg.direction ?? 'row';
   }
 
-  if (cfg.gap != null) style.gap = cfg.gap;
+  if (cfg.gap != null) style.gap = typeof cfg.gap === 'number' ? em(cfg.gap) : cfg.gap;
 
   // Align / justify
   const alignMap: Record<string, string> = {
@@ -173,7 +189,7 @@ function buildTextStyle(style?: ElementStyle): CSSProperties {
   if (!style) return {};
   const css: CSSProperties = {};
   if (style.fontFamily) css.fontFamily = style.fontFamily;
-  if (style.fontSize != null) css.fontSize = style.fontSize;
+  if (style.fontSize != null) css.fontSize = typeof style.fontSize === 'number' ? em(style.fontSize) : style.fontSize;
   if (style.fontWeight) css.fontWeight = style.fontWeight;
   if (style.fontStyle) css.fontStyle = style.fontStyle;
   if (style.color) css.color = style.color;
@@ -185,7 +201,7 @@ function buildTextStyle(style?: ElementStyle): CSSProperties {
 // Atom renderers
 // ---------------------------------------------------------------------------
 
-function renderAtom(atom: AtomItem, visibility: ItemVisibility): ReactNode {
+function renderAtom(atom: AtomItem): ReactNode {
   const textStyle = buildTextStyle(atom.style);
 
   switch (atom.atomType) {
@@ -199,7 +215,7 @@ function renderAtom(atom: AtomItem, visibility: ItemVisibility): ReactNode {
       return (
         <span
           style={{
-            fontSize: atom.style?.fontSize ?? 24,
+            fontSize: em(atom.style?.fontSize ?? 24),
             lineHeight: 1,
             display: 'inline-flex',
             alignItems: 'center',
@@ -213,10 +229,10 @@ function renderAtom(atom: AtomItem, visibility: ItemVisibility): ReactNode {
       return (
         <div
           style={{
-            width: atom.style?.width ?? 40,
-            height: atom.style?.height ?? 40,
+            width: atom.style?.width != null ? (typeof atom.style.width === 'number' ? em(atom.style.width) : atom.style.width) : em(40),
+            height: atom.style?.height != null ? (typeof atom.style.height === 'number' ? em(atom.style.height) : atom.style.height) : em(40),
             backgroundColor: atom.style?.backgroundColor ?? '#94a3b8',
-            borderRadius: atom.style?.borderRadius ?? 0,
+            borderRadius: atom.style?.borderRadius != null ? (typeof atom.style.borderRadius === 'number' ? em(atom.style.borderRadius) : atom.style.borderRadius) : em(0),
           }}
         />
       );
@@ -227,9 +243,9 @@ function renderAtom(atom: AtomItem, visibility: ItemVisibility): ReactNode {
           src={atom.content}
           alt=""
           style={{
-            width: atom.style?.width ?? '100%',
-            height: atom.style?.height ?? 'auto',
-            borderRadius: atom.style?.borderRadius ?? 0,
+            width: atom.style?.width != null ? (typeof atom.style.width === 'number' ? em(atom.style.width) : atom.style.width) : '100%',
+            height: atom.style?.height != null ? (typeof atom.style.height === 'number' ? em(atom.style.height) : atom.style.height) : 'auto',
+            borderRadius: atom.style?.borderRadius != null ? (typeof atom.style.borderRadius === 'number' ? em(atom.style.borderRadius) : atom.style.borderRadius) : em(0),
             objectFit: 'cover',
           }}
         />
@@ -237,6 +253,37 @@ function renderAtom(atom: AtomItem, visibility: ItemVisibility): ReactNode {
     default:
       return <span>{atom.content}</span>;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helper: extract card info for popup from detailItems
+// ---------------------------------------------------------------------------
+
+/** Extract icon and title from a card's children for the popup header. */
+function extractCardMeta(card: CardItem): { icon: string; title: string; description?: string; color?: string } {
+  let icon = '';
+  let title = '';
+  let description: string | undefined;
+  let color: string | undefined;
+
+  for (const child of card.children) {
+    if (child.type === 'atom') {
+      if (child.atomType === 'icon' && !icon) icon = child.content;
+      if (child.atomType === 'text' && !title) title = child.content;
+      if (child.atomType === 'text' && title && !description) description = child.content;
+    }
+  }
+
+  // Try to extract color from card's style or first icon's style
+  color = card.style?.borderColor ?? card.style?.backgroundColor;
+  if (!color) {
+    const iconChild = card.children.find(
+      (c) => c.type === 'atom' && c.atomType === 'icon',
+    );
+    color = iconChild?.style?.color;
+  }
+
+  return { icon: icon || '📋', title: title || card.id, description, color };
 }
 
 // ---------------------------------------------------------------------------
@@ -253,6 +300,14 @@ function RenderItem({
   onItemClick?: (id: string) => void;
 }) {
   const visibility = getVisibility?.(item.id) ?? DEFAULT_VISIBILITY;
+
+  // Hidden items should not take up any layout space (e.g. inactive detail
+  // panels in sidebar/tab navigation). Returning null removes them from
+  // the DOM entirely, preventing scroll/overflow issues.
+  if (visibility.hidden) {
+    return null;
+  }
+
   const baseStyle = buildBaseStyle(item, visibility);
 
   // --- Layout ---
@@ -313,17 +368,20 @@ function RenderItem({
 
   // --- Card ---
   if (item.type === 'card') {
+    const hasDetail = item.detailItems && item.detailItems.length > 0;
     return (
       <motion.div
         data-item-id={item.id}
+        data-has-detail={hasDetail ? 'true' : undefined}
         style={{
           ...baseStyle,
-          borderRadius: baseStyle.borderRadius ?? 12,
+          borderRadius: baseStyle.borderRadius ?? em(12),
           backgroundColor: baseStyle.backgroundColor ?? 'rgba(255,255,255,0.05)',
-          padding: baseStyle.padding ?? 16,
+          padding: baseStyle.padding ?? em(16),
           display: 'flex',
           flexDirection: 'column',
-          gap: 8,
+          gap: em(8),
+          cursor: hasDetail || onItemClick ? 'pointer' : undefined,
         }}
         initial={visibility.visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
         animate={
@@ -335,7 +393,7 @@ function RenderItem({
         }
         whileHover={visibility.visible ? { scale: 1.02 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        onClick={onItemClick ? () => onItemClick(item.id) : undefined}
+        onClick={onItemClick ? (e) => { e.stopPropagation(); onItemClick(item.id); } : undefined}
       >
         {item.children.map((child) => (
           <RenderItem
@@ -365,9 +423,24 @@ function RenderItem({
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       onClick={onItemClick ? () => onItemClick(item.id) : undefined}
     >
-      {renderAtom(item, visibility)}
+      {renderAtom(item)}
     </motion.div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Helper: find a card by ID in the items tree
+// ---------------------------------------------------------------------------
+
+function findCardById(items: SlideItem[], id: string): CardItem | null {
+  for (const item of items) {
+    if (item.type === 'card' && item.id === id) return item;
+    if (item.type === 'layout' || item.type === 'card') {
+      const found = findCardById(item.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -378,10 +451,55 @@ export function ItemRenderer({
   items,
   getVisibility,
   onItemClick,
+  expandedCardId,
+  onCardExpand,
   className,
 }: ItemRendererProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Compute origin rect for popup grow-from-card animation
+  const getOriginRect = useCallback(
+    (cardId: string): PopupOriginRect | undefined => {
+      if (!rootRef.current) return undefined;
+      const cardEl = rootRef.current.querySelector(`[data-item-id="${cardId}"]`);
+      if (!cardEl) return undefined;
+
+      const rootRect = rootRef.current.getBoundingClientRect();
+      const cardRect = cardEl.getBoundingClientRect();
+
+      return {
+        x: cardRect.left - rootRect.left,
+        y: cardRect.top - rootRect.top,
+        width: cardRect.width,
+        height: cardRect.height,
+      };
+    },
+    [],
+  );
+
+  // Find expanded card and its metadata
+  const expandedCard = expandedCardId ? findCardById(items, expandedCardId) : null;
+  const expandedMeta = expandedCard ? extractCardMeta(expandedCard) : null;
+  const originRect = expandedCardId ? getOriginRect(expandedCardId) : undefined;
+
+  // Render detail items as simple content inside the popup
+  const renderDetailItems = (card: CardItem) => {
+    if (!card.detailItems || card.detailItems.length === 0) return null;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: em(8) }}>
+        {card.detailItems.map((item) => (
+          <RenderItem key={item.id} item={item} />
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className={className} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div
+      ref={rootRef}
+      className={className}
+      style={{ width: '100%', height: '100%', position: 'relative' }}
+    >
       {items.map((item) => (
         <RenderItem
           key={item.id}
@@ -390,6 +508,22 @@ export function ItemRenderer({
           onItemClick={onItemClick}
         />
       ))}
+
+      {/* Detail popup overlay for expanded cards */}
+      {expandedCard && expandedMeta && (
+        <DetailPopup
+          open={true}
+          icon={expandedMeta.icon}
+          title={expandedMeta.title}
+          description={expandedMeta.description}
+          color={expandedMeta.color}
+          onClose={() => onCardExpand?.(null)}
+          originRect={originRect}
+          width="wide"
+        >
+          {renderDetailItems(expandedCard)}
+        </DetailPopup>
+      )}
     </div>
   );
 }

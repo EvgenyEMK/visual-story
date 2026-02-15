@@ -12,9 +12,7 @@ import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer'
 import { AnimationLayer } from '@/components/animation/AnimationLayer';
 import { ItemRenderer, type ItemVisibility } from '@/components/animation/ItemRenderer';
 import { SlideAnimationProvider } from '@/hooks/useSlideAnimation';
-import { CardExpandLayout } from '@/components/slide-ui';
-import type { CardExpandVariant } from '@/components/slide-ui';
-import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
+import { em } from '@/components/slide-ui/units';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -32,12 +30,6 @@ function isZoomWordSlide(slide: Slide): boolean {
   return slide.animationTemplate === 'zoom-in-word';
 }
 
-/** Parse card-expand variant from animationTemplate, e.g. 'card-expand:center-popup' */
-function parseCardExpandVariant(animationTemplate: string): CardExpandVariant | null {
-  if (!animationTemplate.startsWith('card-expand:')) return null;
-  return animationTemplate.split(':')[1] as CardExpandVariant;
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -49,6 +41,7 @@ export function SlidePlayClient() {
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   const currentSlide = slides[currentSlideIndex];
   const currentScript = scripts.find((s) => s.slideId === currentSlide.id);
@@ -67,11 +60,52 @@ export function SlidePlayClient() {
     currentScene?.widgetStateLayer.exitBehavior &&
     currentStepIndex === totalSteps - 1
   );
-  const cardExpandVariant = parseCardExpandVariant(currentSlide.animationTemplate);
-  const isCardExpand = cardExpandVariant !== null;
   const isZoomWord = isZoomWordSlide(currentSlide);
   const hasStructuredHeader = !!currentSlide.header;
-  const hasSpecialOverlay = isZoomWord || isCardExpand;
+
+  // Check if any scene has activatedByWidgetIds (menu/tab navigation)
+  const hasMenuNavigation = useMemo(
+    () => scenes.some((s) => s.activatedByWidgetIds && s.activatedByWidgetIds.length > 0),
+    [scenes],
+  );
+
+  // Check if current scene has toggle-expand interaction (popup mode)
+  const hasPopupInteraction = useMemo(
+    () => currentScene?.widgetStateLayer.interactionBehaviors.some(
+      (b) => b.action === 'toggle-expand',
+    ) ?? false,
+    [currentScene],
+  );
+
+  // Is this a click-only popup slide (all-at-once, no auto-mode expand)?
+  const isClickOnlyPopup = useMemo(() => {
+    if (!hasPopupInteraction || !currentScene) return false;
+    const enterBehavior = currentScene.widgetStateLayer.enterBehavior;
+    const expandBehavior = currentScene.widgetStateLayer.interactionBehaviors.find(
+      (b) => b.action === 'toggle-expand',
+    );
+    return enterBehavior.revealMode === 'all-at-once' && expandBehavior?.availableInAutoMode === false;
+  }, [hasPopupInteraction, currentScene]);
+
+  // For step-driven popup: derive expanded card from step
+  const stepDrivenExpandedCardId = useMemo(() => {
+    if (!hasPopupInteraction || isClickOnlyPopup || !currentScene) return null;
+    if (isExitStep) return null;
+    const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
+    if (enterBehavior.revealMode !== 'sequential') return null;
+
+    if (hasOverviewStep && currentStepIndex === 0) return null;
+    const effectiveStep = hasOverviewStep ? currentStepIndex - 1 : currentStepIndex;
+    return animatedWidgetIds[effectiveStep] ?? null;
+  }, [hasPopupInteraction, isClickOnlyPopup, currentScene, currentStepIndex, hasOverviewStep, isExitStep]);
+
+  // The effective expanded card: step-driven or click-driven
+  const effectiveExpandedCard = isClickOnlyPopup ? expandedCardId : stepDrivenExpandedCardId;
+
+  // Reset expanded card when slide/scene changes
+  useEffect(() => {
+    setExpandedCardId(null);
+  }, [currentSlideIndex, currentSceneIndex]);
 
   // Auto-play timer
   useEffect(() => {
@@ -120,6 +154,29 @@ export function SlidePlayClient() {
     }
   }, [currentStepIndex, currentSceneIndex, currentSlideIndex]);
 
+  // Handle item click: menu/tab navigation or popup toggle
+  const handleItemClick = useCallback(
+    (widgetId: string) => {
+      // Check for menu/tab navigation: find a scene activated by this widget
+      if (hasMenuNavigation) {
+        const targetSceneIndex = scenes.findIndex(
+          (s) => s.activatedByWidgetIds?.includes(widgetId),
+        );
+        if (targetSceneIndex !== -1 && targetSceneIndex !== currentSceneIndex) {
+          setCurrentSceneIndex(targetSceneIndex);
+          setCurrentStepIndex(0);
+          return;
+        }
+      }
+
+      // Check for popup interaction: toggle card detail popup
+      if (hasPopupInteraction && isClickOnlyPopup) {
+        setExpandedCardId((prev) => (prev === widgetId ? null : widgetId));
+      }
+    },
+    [hasMenuNavigation, hasPopupInteraction, isClickOnlyPopup, scenes, currentSceneIndex],
+  );
+
   // Keyboard controls
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -131,6 +188,8 @@ export function SlidePlayClient() {
         handleRetreat();
       } else if (e.key === 'p' || e.key === 'P') {
         setIsPlaying((s) => !s);
+      } else if (e.key === 'Escape') {
+        setExpandedCardId(null);
       }
     };
     window.addEventListener('keydown', handler);
@@ -259,8 +318,8 @@ export function SlidePlayClient() {
           opacity: isMorphing ? 0.7 : 1,
         }}
       >
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-12 max-w-[80%]">
+        <div className="flex flex-col items-center gap-[1em]">
+          <div className="flex flex-wrap justify-center gap-x-[1.25em] gap-y-[0.5em] px-[3em] max-w-[80%]">
             {words.map((word, i) => {
               const isWordVisible = currentStepIndex >= i;
               const isWordActive = currentStepIndex === i;
@@ -288,7 +347,7 @@ export function SlidePlayClient() {
             <span
               className="transition-all duration-500"
               style={{
-                fontSize: subtitleAtom.style?.fontSize ?? 14,
+                fontSize: em(subtitleAtom.style?.fontSize ?? 14),
                 color: subtitleAtom.style?.color ?? '#94a3b8',
                 opacity: subtitleVisible && !isMorphing ? 1 : 0,
                 transform: subtitleVisible && !isMorphing ? 'translateY(0)' : 'translateY(8px)',
@@ -302,49 +361,17 @@ export function SlidePlayClient() {
     );
   };
 
-  // --- Card-Expand (Smart Card) overlay ---
-  const renderCardExpandOverlay = () => {
-    if (!isCardExpand) return null;
-    const variant = cardExpandVariant!;
-
-    // Compute expandedIndex: overview step -> -1, widget steps -> 0..N-1, exit step -> -1
-    let expandedIndex: number;
-    if (isExitStep) {
-      expandedIndex = -1;
-    } else if (hasOverviewStep) {
-      expandedIndex = currentStepIndex - 1; // step 0 -> -1 (overview)
-    } else {
-      expandedIndex = currentStepIndex;
-    }
-
-    return (
-      <div
-        className="absolute inset-0 z-10"
-        style={{ backgroundColor: '#0f172a' }}
-      >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant={variant}
-          cardSize="sm"
-          columns={variant === 'row-to-split' ? undefined : 2}
-          gap={8}
-          expandedIndex={expandedIndex}
-        />
-      </div>
-    );
-  };
-
   // -----------------------------------------------------------------------
   // HUD layer
   // -----------------------------------------------------------------------
 
   const hudContent = (
     <div className="pointer-events-auto">
-      <div className="absolute bottom-2 left-2 text-[9px] text-black/20 dark:text-white/15 font-mono">
+      <div className="absolute bottom-2 left-2 text-[0.5625rem] text-black/20 dark:text-white/15 font-mono">
         {currentSlide.animationTemplate}
         {scenes.length > 1 && ` · Scene ${currentSceneIndex + 1}/${scenes.length}`}
       </div>
-      <div className="absolute top-3 right-3 text-[10px] text-white/30 font-mono">
+      <div className="absolute top-3 right-3 text-[0.625rem] text-white/30 font-mono">
         {currentSlide.transition !== 'none' && `→ ${currentSlide.transition}`}
       </div>
     </div>
@@ -371,15 +398,17 @@ export function SlidePlayClient() {
             animationLayer={<AnimationLayer />}
             hudLayer={hudContent}
           >
-            {/* Special overlays */}
+            {/* Zoom-In Word Reveal overlay */}
             {isZoomWord && renderZoomWordOverlay()}
-            {isCardExpand && renderCardExpandOverlay()}
 
-            {/* Item tree rendered via ItemRenderer (for non-special slides) */}
-            {!hasSpecialOverlay && (
+            {/* Item tree rendered via ItemRenderer (for non-zoom slides) */}
+            {!isZoomWord && (
               <ItemRenderer
                 items={currentSlide.items}
                 getVisibility={getItemVisibility}
+                onItemClick={handleItemClick}
+                expandedCardId={effectiveExpandedCard}
+                onCardExpand={setExpandedCardId}
               />
             )}
           </SlideFrame>
@@ -451,7 +480,7 @@ export function SlidePlayClient() {
             </span>
           </div>
 
-          <div className="text-[10px] text-white/30">
+          <div className="text-[0.625rem] text-white/30">
             ← → Space to navigate · P to play/pause
           </div>
         </div>

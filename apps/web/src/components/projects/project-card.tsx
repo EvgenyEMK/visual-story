@@ -98,7 +98,7 @@ export function ProjectCard({
 
       {/* Published indicator */}
       {project.isPublished && (
-        <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-green-500/90 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
+        <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-green-500/90 px-2 py-0.5 text-[0.625rem] font-medium text-white shadow-sm">
           <span className="h-1.5 w-1.5 rounded-full bg-white" />
           Published
         </div>

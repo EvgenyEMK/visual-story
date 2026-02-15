@@ -125,7 +125,7 @@ function MediaSection() {
       <DemoBox title="Icon Libraries" description="Three universal monochrome icon sets: Lucide (1500+), Phosphor (7700+), Tabler (4950+)." themeMode={themeMode}>
         <div className="flex flex-col gap-4 p-6 w-full">
           <div className="flex flex-col gap-1">
-            <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Lucide React</span>
+            <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Lucide React</span>
             <div className="flex gap-3">
               <IconBadge icon={Rocket} color="#3b82f6" size="sm" />
               <IconBadge icon={Shield} color="#3b82f6" size="sm" />
@@ -136,7 +136,7 @@ function MediaSection() {
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Phosphor Icons</span>
+            <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Phosphor Icons</span>
             <div className="flex gap-3">
               <IconBadge icon={RocketLaunch} color="#8b5cf6" size="sm" />
               <IconBadge icon={ChartBar} color="#8b5cf6" size="sm" />
@@ -145,7 +145,7 @@ function MediaSection() {
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Tabler Icons</span>
+            <span className="text-[0.5625rem] text-white/30 uppercase tracking-wider font-semibold">Tabler Icons</span>
             <div className="flex gap-3">
               <IconBadge icon={IconBolt} color="#14b8a6" size="sm" />
               <IconBadge icon={IconChartBar} color="#14b8a6" size="sm" />

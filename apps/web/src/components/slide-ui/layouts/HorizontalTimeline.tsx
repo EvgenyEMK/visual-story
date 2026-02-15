@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { IconProp, AccentColor } from '../types';
+import { em } from '../units';
 import { FlowNode } from '../molecules/FlowNode';
 
 export interface TimelineItem {
@@ -31,7 +32,7 @@ export function HorizontalTimeline({
   const [active, setActive] = useState(defaultActive);
 
   return (
-    <div className={cn('flex items-center w-full overflow-x-auto py-4', className)}>
+    <div className={cn('flex items-center w-full overflow-x-auto py-[1em]', className)}>
       {items.map((item, i) => {
         const c = item.color ?? '#3b82f6';
         const isLast = i === items.length - 1;
@@ -53,9 +54,9 @@ export function HorizontalTimeline({
             </div>
             {!isLast && (
               <div
-                className="h-[2px] mx-2 rounded-full"
+                className="h-[2px] mx-[0.5em] rounded-full"
                 style={{
-                  width: 48,
+                  width: em(48),
                   backgroundColor: i < active ? `${c}60` : 'rgba(255,255,255,0.1)',
                   transition: 'background-color 0.3s ease',
                 }}

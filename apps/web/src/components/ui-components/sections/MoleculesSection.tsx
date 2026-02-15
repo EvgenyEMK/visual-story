@@ -126,8 +126,8 @@ export function MoleculesSection({ themeMode }: Props) {
               right={
                 <div className="flex items-center gap-2">
                   <StatusDot color="#22c55e" label="On Track" />
-                  <span className="text-white/30 text-[8px]">|</span>
-                  <span className="text-white/40 text-[9px]">Q4</span>
+                  <span className="text-white/30 text-[0.5rem]">|</span>
+                  <span className="text-white/40 text-[0.5625rem]">Q4</span>
                 </div>
               }
               size="lg"

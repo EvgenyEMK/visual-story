@@ -236,7 +236,7 @@ export function SlideCanvas({
 
         {/* Click mode indicator */}
         {triggerMode === 'click' && !isPlaying && (
-          <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-[10px] text-white/70 backdrop-blur-sm pointer-events-none">
+          <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-[0.625rem] text-white/70 backdrop-blur-sm pointer-events-none">
             Click to advance
           </div>
         )}

@@ -21,7 +21,7 @@ export const entranceVariants: Record<
     visible: { opacity: 1 },
   },
   'float-in': {
-    hidden: { opacity: 0, y: 24 },
+    hidden: { opacity: 0, y: '1.5em' },
     visible: { opacity: 1, y: 0 },
   },
   'pop-zoom': {
@@ -29,19 +29,19 @@ export const entranceVariants: Record<
     visible: { opacity: 1, scale: 1 },
   },
   'slide-up': {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: '1.25em' },
     visible: { opacity: 1, y: 0 },
   },
   'slide-down': {
-    hidden: { opacity: 0, y: -20 },
+    hidden: { opacity: 0, y: '-1.25em' },
     visible: { opacity: 1, y: 0 },
   },
   'slide-left': {
-    hidden: { opacity: 0, x: 30 },
+    hidden: { opacity: 0, x: '1.875em' },
     visible: { opacity: 1, x: 0 },
   },
   'slide-right': {
-    hidden: { opacity: 0, x: -30 },
+    hidden: { opacity: 0, x: '-1.875em' },
     visible: { opacity: 1, x: 0 },
   },
   'scale-in': {

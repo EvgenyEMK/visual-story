@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import type { IconProp, EntranceProps, StaggerProps, ComponentSize, AccentColor } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { renderIcon } from '../render-icon';
+import { em } from '../units';
 
 // ---------------------------------------------------------------------------
 // Item types
@@ -65,10 +66,10 @@ const sizeConfig: Record<ComponentSize, {
   title: string; desc: string; header: string;
   gap: string; indent: number; pad: string;
 }> = {
-  sm: { icon: 12, iconBox: 22, title: 'text-[9px]', desc: 'text-[7px]', header: 'text-[10px] font-bold', gap: 'gap-1', indent: 20, pad: 'py-1 px-1.5' },
-  md: { icon: 16, iconBox: 28, title: 'text-[11px]', desc: 'text-[9px]', header: 'text-xs font-bold', gap: 'gap-1.5', indent: 28, pad: 'py-1.5 px-2' },
-  lg: { icon: 20, iconBox: 34, title: 'text-xs', desc: 'text-[10px]', header: 'text-sm font-bold', gap: 'gap-2', indent: 36, pad: 'py-2 px-3' },
-  xl: { icon: 24, iconBox: 40, title: 'text-sm', desc: 'text-xs', header: 'text-base font-bold', gap: 'gap-2.5', indent: 44, pad: 'py-2.5 px-4' },
+  sm: { icon: 12, iconBox: 22, title: 'text-[0.5625em]', desc: 'text-[0.4375em]', header: 'text-[0.625em] font-bold', gap: 'gap-[0.25em]', indent: 20, pad: 'py-[0.25em] px-[0.375em]' },
+  md: { icon: 16, iconBox: 28, title: 'text-[0.6875em]', desc: 'text-[0.5625em]', header: 'text-[0.75em] font-bold', gap: 'gap-[0.375em]', indent: 28, pad: 'py-[0.375em] px-[0.5em]' },
+  lg: { icon: 20, iconBox: 34, title: 'text-[0.75em]', desc: 'text-[0.625em]', header: 'text-[0.875em] font-bold', gap: 'gap-[0.5em]', indent: 36, pad: 'py-[0.5em] px-[0.75em]' },
+  xl: { icon: 24, iconBox: 40, title: 'text-[0.875em]', desc: 'text-[0.75em]', header: 'text-[1em] font-bold', gap: 'gap-[0.625em]', indent: 44, pad: 'py-[0.625em] px-[1em]' },
 };
 
 // ---------------------------------------------------------------------------
@@ -123,8 +124,8 @@ export function ItemsList({
           return (
             <motion.div
               key={h.id}
-              className={cn('flex items-center gap-1.5', s.pad)}
-              style={{ paddingLeft: depth * s.indent }}
+              className={cn('flex items-center gap-[0.375em]', s.pad)}
+              style={{ paddingLeft: em(depth * s.indent) }}
               variants={variants}
               initial={motion$?.initial}
               animate={motion$?.animate}
@@ -132,8 +133,8 @@ export function ItemsList({
             >
               {h.color && (
                 <div
-                  className="rounded-sm shrink-0"
-                  style={{ width: 3, height: s.iconBox * 0.7, backgroundColor: h.color }}
+                  className="rounded-[0.125em] shrink-0"
+                  style={{ width: em(3), height: em(s.iconBox * 0.7), backgroundColor: h.color }}
                 />
               )}
               <span className={cn(s.header, 'text-white/90')}>{h.text}</span>
@@ -149,11 +150,11 @@ export function ItemsList({
           <motion.div
             key={item.id}
             className={cn(
-              'flex items-start gap-2 rounded-lg',
+              'flex items-start gap-[0.5em] rounded-[0.5em]',
               s.pad,
               item.checked ? 'opacity-70' : 'opacity-100',
             )}
-            style={{ paddingLeft: depth * s.indent }}
+            style={{ paddingLeft: em(depth * s.indent) }}
             variants={variants}
             initial={motion$?.initial}
             animate={motion$?.animate}
@@ -161,36 +162,36 @@ export function ItemsList({
           >
             {/* Icon / Checkbox area */}
             <div
-              className="flex items-center justify-center shrink-0 rounded-md"
+              className="flex items-center justify-center shrink-0 rounded-[0.375em]"
               style={{
-                width: s.iconBox,
-                height: s.iconBox,
+                width: em(s.iconBox),
+                height: em(s.iconBox),
                 backgroundColor: `${accentColor}15`,
                 border: `1px solid ${accentColor}25`,
               }}
             >
               {item.icon
-                ? renderIcon(item.icon, { size: s.icon, color: `${accentColor}cc` })
+                ? renderIcon(item.icon, { size: em(s.icon), color: `${accentColor}cc` })
                 : (
                   <div
-                    className="rounded-sm"
+                    className="rounded-[0.125em]"
                     style={{
-                      width: s.icon * 0.65,
-                      height: s.icon * 0.65,
+                      width: em(s.icon * 0.65),
+                      height: em(s.icon * 0.65),
                       backgroundColor: item.checked ? accentColor : 'transparent',
                       border: `1.5px solid ${accentColor}60`,
-                      borderRadius: 3,
+                      borderRadius: em(3),
                     }}
                   />
                 )}
             </div>
 
             {/* Text area */}
-            <div className="flex flex-col gap-0.5 min-w-0 pt-0.5">
+            <div className="flex flex-col gap-[0.125em] min-w-0 pt-[0.125em]">
               {showAccentBar && (
                 <div
-                  className="absolute left-0 top-1 bottom-1 rounded-full"
-                  style={{ width: 2, backgroundColor: accentColor }}
+                  className="absolute left-0 top-[0.25em] bottom-[0.25em] rounded-full"
+                  style={{ width: em(2), backgroundColor: accentColor }}
                 />
               )}
               <span

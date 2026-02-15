@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { StaggerProps, AccentColor } from '../types';
 import { StatCard } from '../molecules/StatCard';
 
@@ -41,7 +42,7 @@ export function StatDashboard({
       className={cn('grid w-full', className)}
       style={{
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        gap,
+        gap: em(gap),
       }}
     >
       {stats.map((stat, i) => (

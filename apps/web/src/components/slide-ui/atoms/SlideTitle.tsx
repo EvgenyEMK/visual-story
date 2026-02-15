@@ -19,10 +19,10 @@ interface SlideTitleProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, { heading: string; subtitle: string }> = {
-  sm: { heading: 'text-sm font-bold', subtitle: 'text-[10px]' },
-  md: { heading: 'text-lg font-bold tracking-tight', subtitle: 'text-xs' },
-  lg: { heading: 'text-2xl font-black tracking-tight', subtitle: 'text-sm' },
-  xl: { heading: 'text-4xl font-black tracking-tight', subtitle: 'text-base' },
+  sm: { heading: 'text-[0.875em] font-bold', subtitle: 'text-[0.625em]' },
+  md: { heading: 'text-[1.125em] font-bold tracking-tight', subtitle: 'text-[0.75em]' },
+  lg: { heading: 'text-[1.5em] font-black tracking-tight', subtitle: 'text-[0.875em]' },
+  xl: { heading: 'text-[2.25em] font-black tracking-tight', subtitle: 'text-[1em]' },
 };
 
 export function SlideTitle({
@@ -44,7 +44,7 @@ export function SlideTitle({
 
   return (
     <motion.div
-      className={cn('flex flex-col gap-1', alignClass, className)}
+      className={cn('flex flex-col gap-[0.25em]', alignClass, className)}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}

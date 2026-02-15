@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { EntranceProps, AccentColor } from '../types';
+import { em } from '../units';
 
 interface ProgressBarProps extends EntranceProps {
   /** Current value (0–100). */
@@ -15,7 +16,7 @@ interface ProgressBarProps extends EntranceProps {
   label?: string;
   /** Show percentage text on the right. */
   showValue?: boolean;
-  /** Bar height in pixels. */
+  /** Bar height in design-space pixels (rendered as em). */
   height?: number;
   /** Additional class names. */
   className?: string;
@@ -37,13 +38,13 @@ export function ProgressBar({
   const isAnimated = entrance !== 'none';
 
   return (
-    <div className={cn('flex items-center gap-3 w-full', className)}>
+    <div className={cn('flex items-center gap-[0.75em] w-full', className)}>
       {label && (
-        <span className="text-white/60 text-[10px] w-16 text-right shrink-0">{label}</span>
+        <span className="text-white/60 text-[0.625em] w-[4em] text-right shrink-0">{label}</span>
       )}
       <div
         className="flex-1 bg-white/5 rounded-full overflow-hidden"
-        style={{ height }}
+        style={{ height: em(height) }}
       >
         <motion.div
           className="h-full rounded-full"
@@ -59,7 +60,7 @@ export function ProgressBar({
       </div>
       {showValue && (
         <motion.span
-          className="text-white/80 text-xs font-mono w-10 tabular-nums text-right"
+          className="text-white/80 text-[0.75em] font-mono w-[2.5em] tabular-nums text-right"
           initial={isAnimated ? { opacity: 0 } : { opacity: 1 }}
           animate={{ opacity: 1 }}
           transition={isAnimated ? { duration: 0.4, delay: delay + duration * 0.7 } : { duration: 0 }}

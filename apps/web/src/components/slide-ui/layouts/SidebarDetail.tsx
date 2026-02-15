@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { IconProp, AccentColor } from '../types';
+import { em } from '../units';
 import { ItemThumbnail } from '../molecules/ItemThumbnail';
 import { HeroSpotlight } from '../molecules/HeroSpotlight';
 
@@ -26,7 +27,7 @@ interface SidebarDetailProps {
 
 export function SidebarDetail({
   items,
-  sidebarWidth = '180px',
+  sidebarWidth = em(180),
   defaultActive = 0,
   className,
 }: SidebarDetailProps) {
@@ -37,7 +38,7 @@ export function SidebarDetail({
     <div className={cn('flex w-full h-full', className)}>
       {/* Sidebar */}
       <div
-        className="bg-white/[0.03] border-r border-white/5 py-2 px-1 flex flex-col gap-1 overflow-auto"
+        className="bg-white/[0.03] border-r border-white/5 py-[0.5em] px-[0.25em] flex flex-col gap-[0.25em] overflow-auto"
         style={{ width: sidebarWidth, flexShrink: 0 }}
       >
         {items.map((item, i) => (
@@ -53,7 +54,7 @@ export function SidebarDetail({
       </div>
 
       {/* Detail area */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-[1em]">
         {current && (
           <HeroSpotlight
             key={active}

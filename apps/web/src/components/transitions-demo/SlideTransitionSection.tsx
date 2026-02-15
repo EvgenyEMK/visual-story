@@ -18,7 +18,7 @@ function MockSlideA({ label = 'Slide A' }: { label?: string }) {
         <span className="text-lg">📊</span>
       </div>
       <div className="text-white/90 text-sm font-bold">{label}</div>
-      <div className="text-white/40 text-[10px] mt-1">Market Overview</div>
+      <div className="text-white/40 text-[0.625rem] mt-1">Market Overview</div>
       <div className="flex gap-1.5 mt-3">
         <div className="w-6 h-3 rounded-sm bg-blue-500/40" />
         <div className="w-6 h-4 rounded-sm bg-blue-500/50" />
@@ -36,7 +36,7 @@ function MockSlideB({ label = 'Slide B' }: { label?: string }) {
         <span className="text-lg">🎯</span>
       </div>
       <div className="text-white/90 text-sm font-bold">{label}</div>
-      <div className="text-white/40 text-[10px] mt-1">Growth Strategy</div>
+      <div className="text-white/40 text-[0.625rem] mt-1">Growth Strategy</div>
       <div className="mt-3 flex flex-col gap-1 items-center">
         <div className="w-24 h-1.5 rounded bg-purple-400/40" />
         <div className="w-20 h-1.5 rounded bg-purple-400/30" />
@@ -118,12 +118,12 @@ function MorphDemo({ themeMode }: ThemeProps) {
         {/* Slide A content (fades out) */}
         <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ opacity: phase === 'a' ? 1 : 0, transition: 'opacity 0.6s ease' }}>
           <div className="text-white/80 text-sm font-bold mt-16">Market Overview</div>
-          <div className="text-white/40 text-[10px] mt-1">Q4 2025</div>
+          <div className="text-white/40 text-[0.625rem] mt-1">Q4 2025</div>
         </div>
         {/* Slide B content (fades in) */}
         <div className="absolute inset-0 flex flex-col items-center justify-center" style={contentStyle()}>
           <div className="text-white/80 text-sm font-bold">Detailed Analytics</div>
-          <div className="text-white/40 text-[10px] mt-1">Breaking down the numbers</div>
+          <div className="text-white/40 text-[0.625rem] mt-1">Breaking down the numbers</div>
           <div className="flex gap-1.5 mt-3">
             <div className="w-4 h-6 rounded-sm bg-purple-400/50" />
             <div className="w-4 h-8 rounded-sm bg-purple-400/60" />
@@ -216,7 +216,7 @@ function PanDemo({ themeMode }: ThemeProps) {
           ))}
         </div>
         {/* Viewport indicator */}
-        <div className="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-0.5 text-[8px] text-white/50 backdrop-blur-sm">
+        <div className="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-0.5 text-[0.5rem] text-white/50 backdrop-blur-sm">
           Panning...
         </div>
       </div>
@@ -274,12 +274,12 @@ function ZoomDemo({ themeMode }: ThemeProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-indigo-900 flex flex-col items-center justify-center" style={detailStyle()}>
           <span className="text-3xl mb-2">📋</span>
           <div className="text-white/90 text-sm font-bold">Project Timeline</div>
-          <div className="text-white/50 text-[10px] mt-1">Detailed breakdown</div>
+          <div className="text-white/50 text-[0.625rem] mt-1">Detailed breakdown</div>
           <div className="flex gap-2 mt-3">
             {[40, 65, 30, 80, 55].map((h, i) => (
               <div key={i} className="flex flex-col items-center gap-1">
                 <div className="w-4 rounded-sm bg-blue-400/60" style={{ height: `${h * 0.4}px` }} />
-                <div className="text-[7px] text-white/30">W{i + 1}</div>
+                <div className="text-[0.4375rem] text-white/30">W{i + 1}</div>
               </div>
             ))}
           </div>

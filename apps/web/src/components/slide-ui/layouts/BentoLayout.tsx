@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { IconProp, AccentColor } from '../types';
 import { renderIcon } from '../render-icon';
 
@@ -72,14 +73,14 @@ export function BentoLayout({
   };
 
   return (
-    <div className={cn('flex gap-2 w-full h-full p-3', className)}>
+    <div className={cn('flex gap-[0.5em] w-full h-full p-[0.75em]', className)}>
       {/* Main expanded area */}
       <div className="flex-1 relative">
         <AnimatePresence mode="wait">
           {current && (
             <motion.div
               key={expanded}
-              className="absolute inset-0 rounded-xl overflow-hidden"
+              className="absolute inset-0 rounded-[0.75em] overflow-hidden"
               style={{
                 backgroundColor: `${current.color ?? '#3b82f6'}15`,
                 border: `1px solid ${current.color ?? '#3b82f6'}30`,
@@ -100,14 +101,14 @@ export function BentoLayout({
       </div>
 
       {/* Right sidebar grid */}
-      <div className="flex flex-col gap-2" style={{ width: sidebarWidth }}>
+      <div className="flex flex-col gap-[0.5em]" style={{ width: sidebarWidth }}>
         {items.map((item, i) => {
           const isActive = i === expanded;
           const c = item.color ?? '#3b82f6';
           return (
             <motion.div
               key={`${item.title}-${i}`}
-              className="flex-1 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-300"
+              className="flex-1 rounded-[0.5em] flex items-center justify-center gap-[0.375em] cursor-pointer transition-all duration-300"
               style={{
                 backgroundColor: isActive ? `${c}30` : `${c}10`,
                 border: `1px solid ${isActive ? `${c}50` : `${c}15`}`,
@@ -115,8 +116,8 @@ export function BentoLayout({
               whileHover={{ scale: 1.03, borderColor: `${c}40` }}
               onClick={() => handleExpand(i)}
             >
-              {renderIcon(item.icon, { size: 16, color: `${c}bb` })}
-              <span className="text-white/60 text-[9px] font-medium">{item.title}</span>
+              {renderIcon(item.icon, { size: em(16), color: `${c}bb` })}
+              <span className="text-white/60 text-[0.5625em] font-medium">{item.title}</span>
             </motion.div>
           );
         })}
@@ -134,14 +135,14 @@ function SimpleDetail({ item }: { item: BentoItem }) {
   const c = item.color ?? '#3b82f6';
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 h-full p-4">
-      {renderIcon(item.icon, { size: 40, color: `${c}cc` })}
-      <span className="text-white/90 text-sm font-bold">{item.title}</span>
+    <div className="flex flex-col items-center justify-center gap-[0.75em] h-full p-[1em]">
+      {renderIcon(item.icon, { size: em(40), color: `${c}cc` })}
+      <span className="text-white/90 text-[0.875em] font-bold">{item.title}</span>
       {item.detailContent ? (
         <div className="w-full max-w-[85%]">{item.detailContent}</div>
       ) : (
         item.description && (
-          <span className="text-white/40 text-[10px] px-6 text-center leading-relaxed">
+          <span className="text-white/40 text-[0.625em] px-[1.5em] text-center leading-relaxed">
             {item.description}
           </span>
         )
@@ -164,22 +165,22 @@ function TwoColumnDetail({ item }: { item: BentoItem }) {
     <div className="flex h-full">
       {/* Left — identity column */}
       <div
-        className="flex flex-col items-center justify-center gap-3 shrink-0 p-4"
+        className="flex flex-col items-center justify-center gap-[0.75em] shrink-0 p-[1em]"
         style={{ width: '30%', borderRight: `1px solid ${c}20` }}
       >
-        {renderIcon(item.icon, { size: 48, color: `${c}cc` })}
-        <span className="text-white/90 text-sm font-bold text-center">{item.title}</span>
+        {renderIcon(item.icon, { size: em(48), color: `${c}cc` })}
+        <span className="text-white/90 text-[0.875em] font-bold text-center">{item.title}</span>
         {item.description && (
-          <span className="text-white/40 text-[10px] text-center leading-relaxed px-2">
+          <span className="text-white/40 text-[0.625em] text-center leading-relaxed px-[0.5em]">
             {item.description}
           </span>
         )}
       </div>
 
       {/* Right — detail content */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex-1 p-[1em] overflow-auto">
         {item.detailContent ?? (
-          <span className="text-white/30 text-xs italic">No detail content</span>
+          <span className="text-white/30 text-[0.75em] italic">No detail content</span>
         )}
       </div>
     </div>

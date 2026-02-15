@@ -16,9 +16,8 @@ import {
   StatusDot,
   ItemsList,
   StatusLegend,
-  CardExpandLayout,
 } from '@/components/slide-ui';
-import type { ListRow, LegendEntry, CardExpandItem } from '@/components/slide-ui';
+import type { ListRow, LegendEntry } from '@/components/slide-ui';
 
 import {
   Rocket,
@@ -34,112 +33,14 @@ import {
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Shared demo data for Smart Cards
+// Shared demo data for Popup Callout
 // ---------------------------------------------------------------------------
 
-const SMART_CARD_ITEMS: CardExpandItem[] = [
-  {
-    id: 'sc-launch',
-    icon: Rocket,
-    title: 'Launch',
-    description: 'Ship features faster',
-    color: '#3b82f6',
-    detailContent: (
-      <div className="flex flex-col gap-2">
-        <span className="text-white/70 text-xs font-semibold">Deployment Pipeline</span>
-        <div className="flex flex-col gap-1.5">
-          {['CI/CD setup', 'Staging deploy', 'Prod release', 'Rollback plan'].map((t, i) => (
-            <div key={t} className="flex items-center gap-2">
-              {i < 2 ? <CircleCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Circle className="w-3.5 h-3.5 text-white/30" />}
-              <span className={`text-[10px] ${i < 2 ? 'text-white/50 line-through' : 'text-white/70'}`}>{t}</span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2 text-[9px] text-white/30">2 of 4 tasks complete</div>
-      </div>
-    ),
-  },
-  {
-    id: 'sc-analytics',
-    icon: BarChart3,
-    title: 'Analytics',
-    description: 'Data-driven decisions',
-    color: '#8b5cf6',
-    detailContent: (
-      <div className="flex flex-col gap-2">
-        <span className="text-white/70 text-xs font-semibold">Key Metrics</span>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { label: 'DAU', value: '12.4K', delta: '+8%' },
-            { label: 'Retention', value: '67%', delta: '+3%' },
-            { label: 'ARPU', value: '$4.20', delta: '+12%' },
-            { label: 'Churn', value: '2.1%', delta: '-0.5%' },
-          ].map((m) => (
-            <div key={m.label} className="rounded-lg bg-white/5 p-2">
-              <div className="text-[8px] text-white/40">{m.label}</div>
-              <div className="text-xs font-bold text-white/80">{m.value}</div>
-              <div className="text-[8px] text-emerald-400">{m.delta}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'sc-security',
-    icon: Shield,
-    title: 'Security',
-    description: 'Enterprise-grade protection',
-    color: '#14b8a6',
-    detailContent: (
-      <div className="flex flex-col gap-2">
-        <span className="text-white/70 text-xs font-semibold">Compliance Status</span>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { label: 'SOC 2 Type II', status: 'Certified' },
-            { label: 'GDPR', status: 'Compliant' },
-            { label: 'ISO 27001', status: 'In Progress' },
-          ].map((c) => (
-            <div key={c.label} className="flex items-center justify-between">
-              <span className="text-[10px] text-white/60">{c.label}</span>
-              <span className={`text-[9px] font-medium ${c.status === 'In Progress' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                {c.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'sc-speed',
-    icon: Zap,
-    title: 'Speed',
-    description: '10x faster processing',
-    color: '#f59e0b',
-    detailContent: (
-      <div className="flex flex-col gap-2">
-        <span className="text-white/70 text-xs font-semibold">Performance</span>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { label: 'API Latency', value: '42ms', pct: 95 },
-            { label: 'Throughput', value: '8.2K rps', pct: 82 },
-            { label: 'Cache Hit', value: '97.3%', pct: 97 },
-          ].map((p) => (
-            <div key={p.label} className="flex flex-col gap-0.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-white/60">{p.label}</span>
-                <span className="text-[10px] text-white/80 font-medium">{p.value}</span>
-              </div>
-              <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full rounded-full bg-amber-400/60" style={{ width: `${p.pct}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
+const POPUP_CARDS = [
+  { icon: Rocket, title: 'Launch', description: 'Ship features faster with streamlined deployment', color: '#3b82f6' },
+  { icon: BarChart3, title: 'Analytics', description: 'Real-time insights and dashboards for data-driven decisions', color: '#8b5cf6' },
+  { icon: Shield, title: 'Security', description: 'Enterprise-grade encryption and compliance built in', color: '#14b8a6' },
+  { icon: Zap, title: 'Speed', description: '10x faster processing with optimized infrastructure', color: '#f59e0b' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -249,8 +150,8 @@ function NavigationSection() {
             right={
               <div className="flex items-center gap-2">
                 <StatusDot color="#22c55e" label="On Track" />
-                <span className="text-white/30 text-[8px]">|</span>
-                <span className="text-white/40 text-[9px]">Q4</span>
+                <span className="text-white/30 text-[0.5rem]">|</span>
+                <span className="text-white/40 text-[0.5625rem]">Q4</span>
               </div>
             }
             size="lg"
@@ -366,65 +267,86 @@ function ListsSection() {
 
 function SmartCardsSection() {
   const { themeMode } = useDemoPage();
+  const [activePopup, setActivePopup] = useState<number | null>(null);
 
   return (
     <DemoGrid>
-      {/* Grid-to-Overlay variant */}
+      {/* Popup Callout demo */}
       <DemoBox
-        title="CardExpandLayout — Grid to Overlay"
-        description="Click a card to expand it with a detailed view. Remaining cards stack to the right. Default variant."
+        title="Popup Callout"
+        description="Click any card to show a detail popup overlay. The underlying layout stays unchanged. Popup grows from the card."
         themeMode={themeMode}
       >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant="grid-to-overlay"
-          cardSize="sm"
-          columns={2}
-          gap={8}
-        />
+        <div className="relative w-full h-full">
+          <div className="grid grid-cols-2 gap-2 p-3 w-full h-full">
+            {POPUP_CARDS.map((card, i) => (
+              <FeatureCard
+                key={card.title}
+                icon={card.icon}
+                title={card.title}
+                description={card.description}
+                color={card.color}
+                size="sm"
+                entrance="fade"
+                delay={i * 0.1}
+                onClick={() => setActivePopup(i)}
+              />
+            ))}
+          </div>
+          {activePopup !== null && (
+            <DetailPopup
+              open={true}
+              icon={POPUP_CARDS[activePopup].icon}
+              title={POPUP_CARDS[activePopup].title}
+              description={POPUP_CARDS[activePopup].description}
+              color={POPUP_CARDS[activePopup].color}
+              onClose={() => setActivePopup(null)}
+            >
+              <div className="flex flex-col gap-2">
+                <span className="text-white/70 text-xs font-semibold">Detail Content</span>
+                <p className="text-white/50 text-[0.625rem] leading-relaxed">
+                  This is the expanded detail for {POPUP_CARDS[activePopup].title}. In a real slide, this content comes from the card&apos;s detailItems in the data model.
+                </p>
+              </div>
+            </DetailPopup>
+          )}
+        </div>
       </DemoBox>
 
-      {/* Center Popup variant */}
+      {/* DetailPopup component showcase */}
       <DemoBox
-        title="CardExpandLayout — Center Popup"
-        description="Expanded card appears as a centered overlay with backdrop blur. Grid stays dimmed behind."
+        title="DetailPopup — Two Column"
+        description="Standalone popup with icon identity on the left and detail content on the right. Solid background for readability."
         themeMode={themeMode}
       >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant="center-popup"
-          cardSize="sm"
-          columns={2}
-          gap={8}
-        />
-      </DemoBox>
-
-      {/* Sidebar-Detail variant */}
-      <DemoBox
-        title="CardExpandLayout — Sidebar Detail"
-        description="Cards become a persistent sidebar. Click to show detail in the main area."
-        themeMode={themeMode}
-      >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant="sidebar-detail"
-          cardSize="sm"
-          defaultExpanded={0}
-        />
-      </DemoBox>
-
-      {/* Row-to-Split variant */}
-      <DemoBox
-        title="CardExpandLayout — Row to Split"
-        description="Single row of cards. Clicking expands into a two-column split with remaining cards as tabs above."
-        themeMode={themeMode}
-      >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant="row-to-split"
-          cardSize="sm"
-          gap={8}
-        />
+        <div className="relative w-full h-full flex items-center justify-center">
+          <button
+            className="px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-medium hover:bg-blue-600/30 transition-colors"
+            onClick={() => setActivePopup(-1)}
+          >
+            Show Detail Popup
+          </button>
+          <DetailPopup
+            open={activePopup === -1}
+            icon={Rocket}
+            title="Launch"
+            description="Ship features faster with streamlined deployment pipelines and CI/CD."
+            color="#3b82f6"
+            onClose={() => setActivePopup(null)}
+          >
+            <div className="flex flex-col gap-2">
+              <span className="text-white/70 text-xs font-semibold">Deployment Pipeline</span>
+              <div className="flex flex-col gap-1.5">
+                {['CI/CD setup', 'Staging deploy', 'Prod release', 'Rollback plan'].map((t, i) => (
+                  <div key={t} className="flex items-center gap-2">
+                    {i < 2 ? <CircleCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Circle className="w-3.5 h-3.5 text-white/30" />}
+                    <span className={`text-[0.625rem] ${i < 2 ? 'text-white/50 line-through' : 'text-white/70'}`}>{t}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DetailPopup>
+        </div>
       </DemoBox>
     </DemoGrid>
   );

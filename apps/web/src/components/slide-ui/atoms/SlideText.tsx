@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import type { EntranceProps, ComponentSize } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
+import { em } from '../units';
 
 interface SlideTextProps extends EntranceProps {
   /** Text content. */
@@ -27,10 +28,10 @@ interface SlideTextProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, string> = {
-  sm: 'text-[10px] leading-relaxed',
-  md: 'text-xs leading-relaxed',
-  lg: 'text-sm leading-relaxed',
-  xl: 'text-base leading-relaxed',
+  sm: 'text-[0.625em] leading-relaxed',
+  md: 'text-[0.75em] leading-relaxed',
+  lg: 'text-[0.875em] leading-relaxed',
+  xl: 'text-[1em] leading-relaxed',
 };
 
 const weightClasses: Record<string, string> = {
@@ -75,7 +76,7 @@ export function SlideText({
         className,
       )}
       style={{
-        maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+        maxWidth: typeof maxWidth === 'number' ? em(maxWidth) : maxWidth,
         color: !isColorClass ? textColor : undefined,
         whiteSpace: 'pre-line',
       }}

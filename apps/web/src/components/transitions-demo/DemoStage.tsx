@@ -119,7 +119,7 @@ export function DemoStage({
             <h3 className="font-semibold text-sm leading-tight">{title}</h3>
           </div>
           {category && (
-            <Badge variant="secondary" className="text-[10px] shrink-0">
+            <Badge variant="secondary" className="text-[0.625rem] shrink-0">
               {category}
             </Badge>
           )}

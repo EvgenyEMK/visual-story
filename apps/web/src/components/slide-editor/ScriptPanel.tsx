@@ -47,7 +47,7 @@ export function ScriptPanel({
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Script
         </span>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[0.625rem] text-muted-foreground">
           {script.elements.length} element{script.elements.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -65,7 +65,7 @@ export function ScriptPanel({
               {script.opening.text}
             </p>
             {script.opening.notes && (
-              <p className="text-[11px] text-muted-foreground italic leading-snug">
+              <p className="text-[0.6875rem] text-muted-foreground italic leading-snug">
                 <span className="font-medium not-italic text-muted-foreground/70">Notes: </span>
                 {script.opening.notes}
               </p>
@@ -100,7 +100,7 @@ export function ScriptPanel({
                 >
                   {entry.label}
                 </span>
-                <span className="text-[9px] text-muted-foreground/50 font-mono">
+                <span className="text-[0.5625rem] text-muted-foreground/50 font-mono">
                   {entry.elementId}
                 </span>
               </div>
@@ -109,7 +109,7 @@ export function ScriptPanel({
                   {entry.script.text}
                 </p>
                 {entry.script.notes && (
-                  <p className="text-[11px] text-muted-foreground italic leading-snug">
+                  <p className="text-[0.6875rem] text-muted-foreground italic leading-snug">
                     <span className="font-medium not-italic text-muted-foreground/70">Notes: </span>
                     {entry.script.notes}
                   </p>

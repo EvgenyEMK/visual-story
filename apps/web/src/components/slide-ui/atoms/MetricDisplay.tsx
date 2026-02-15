@@ -25,10 +25,10 @@ interface MetricDisplayProps extends EntranceProps {
 }
 
 const sizeClasses: Record<ComponentSize, { value: string; label: string; delta: string }> = {
-  sm: { value: 'text-xl font-black tabular-nums', label: 'text-[8px] uppercase tracking-widest', delta: 'text-[9px]' },
-  md: { value: 'text-3xl font-black tabular-nums', label: 'text-[10px] uppercase tracking-widest', delta: 'text-xs' },
-  lg: { value: 'text-4xl font-black tabular-nums', label: 'text-xs uppercase tracking-widest', delta: 'text-sm' },
-  xl: { value: 'text-6xl font-black tabular-nums', label: 'text-sm uppercase tracking-widest', delta: 'text-base' },
+  sm: { value: 'text-[1.25em] font-black tabular-nums', label: 'text-[0.5em] uppercase tracking-widest', delta: 'text-[0.5625em]' },
+  md: { value: 'text-[1.875em] font-black tabular-nums', label: 'text-[0.625em] uppercase tracking-widest', delta: 'text-[0.75em]' },
+  lg: { value: 'text-[2.25em] font-black tabular-nums', label: 'text-[0.75em] uppercase tracking-widest', delta: 'text-[0.875em]' },
+  xl: { value: 'text-[3.75em] font-black tabular-nums', label: 'text-[0.875em] uppercase tracking-widest', delta: 'text-[1em]' },
 };
 
 const deltaColors = {
@@ -59,7 +59,7 @@ export function MetricDisplay({
 
   return (
     <motion.div
-      className={cn('flex flex-col gap-1', alignClass, className)}
+      className={cn('flex flex-col gap-[0.25em]', alignClass, className)}
       variants={variants}
       initial={motion$?.initial}
       animate={motion$?.animate}
@@ -72,12 +72,12 @@ export function MetricDisplay({
         {value}
       </div>
       {delta && (
-        <div className="flex items-center gap-1 mt-0.5">
+        <div className="flex items-center gap-[0.25em] mt-[0.125em]">
           {deltaDirection === 'up' && (
-            <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[6px] border-transparent border-b-emerald-400" />
+            <div className="w-0 h-0 border-l-[0.25em] border-r-[0.25em] border-b-[0.375em] border-transparent border-b-emerald-400" />
           )}
           {deltaDirection === 'down' && (
-            <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-transparent border-t-rose-400" />
+            <div className="w-0 h-0 border-l-[0.25em] border-r-[0.25em] border-t-[0.375em] border-transparent border-t-rose-400" />
           )}
           <span className={cn('font-semibold', deltaColors[deltaDirection])}>
             {delta}

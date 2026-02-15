@@ -8,33 +8,25 @@ import { flattenItemsAsElements } from '@/lib/flatten-items';
 import { SlideHeaderRenderer } from '@/components/animation/SlideHeaderRenderer';
 import { ItemRenderer } from '@/components/animation/ItemRenderer';
 import type { ItemVisibility } from '@/components/animation/ItemRenderer';
-import { CardExpandLayout } from '@/components/slide-ui';
-import type { CardExpandVariant } from '@/components/slide-ui';
-import { SMART_CARD_ITEMS } from '@/config/smart-card-items';
 import { InlineTextEditor } from '@/components/editor/inline-text-editor';
+import { em } from '@/components/slide-ui/units';
 
 interface SlideMainCanvasProps {
   slide: Slide;
   /** Current scene being viewed / edited. */
   currentScene?: Scene;
+  /** All scenes for the current slide (needed for menu/tab navigation). */
+  allScenes?: Scene[];
   selectedElementId: string | null;
   currentSubStep: number;
   totalSteps: number;
   onElementSelect: (elementId: string | null) => void;
   /** Callback when an element is updated (position, size, content). */
   onElementUpdate?: (elementId: string, updates: Partial<SlideElement>) => void;
+  /** Callback when a scene should be selected (menu/tab click). */
+  onSceneSelect?: (sceneIndex: number) => void;
   /** Whether the canvas is in preview/playback mode (disables editing). */
   isPreview?: boolean;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Parse card-expand variant from animationTemplate, e.g. 'card-expand:center-popup' */
-function parseCardExpandVariant(animationTemplate: string): CardExpandVariant | null {
-  if (!animationTemplate.startsWith('card-expand:')) return null;
-  return animationTemplate.split(':')[1] as CardExpandVariant;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,21 +80,21 @@ function EditableCanvasElement({
 
   const elementStyle: React.CSSProperties = {
     color: element.style.color ?? undefined,
-    fontSize: element.style.fontSize ?? undefined,
+    fontSize: typeof element.style.fontSize === 'number' ? em(element.style.fontSize) : (element.style.fontSize ?? undefined),
     fontWeight: element.style.fontWeight ?? undefined,
     fontFamily: element.style.fontFamily ?? undefined,
     fontStyle: element.style.fontStyle ?? undefined,
     backgroundColor: element.style.backgroundColor ?? undefined,
-    borderRadius: element.style.borderRadius ?? undefined,
+    borderRadius: typeof element.style.borderRadius === 'number' ? em(element.style.borderRadius) : (element.style.borderRadius ?? undefined),
     textAlign: (element.style.textAlign ?? undefined) as React.CSSProperties['textAlign'],
     opacity: element.style.opacity ?? undefined,
     borderWidth: element.style.borderWidth ?? undefined,
     borderColor: element.style.borderColor ?? undefined,
     borderStyle: element.style.borderWidth ? 'solid' : undefined,
     boxShadow: element.style.boxShadow ?? undefined,
-    padding: element.style.backgroundColor ? '12px 16px' : (element.style.padding ?? 4),
-    width: element.style.width ?? undefined,
-    height: element.style.height ?? undefined,
+    padding: element.style.backgroundColor ? `${em(12)} ${em(16)}` : (typeof element.style.padding === 'number' ? em(element.style.padding) : (element.style.padding ?? em(4))),
+    width: typeof element.style.width === 'number' ? em(element.style.width) : (element.style.width ?? undefined),
+    height: typeof element.style.height === 'number' ? em(element.style.height) : (element.style.height ?? undefined),
     maxWidth: '80%',
     whiteSpace: 'pre-line' as const,
     display: 'flex',
@@ -202,9 +194,7 @@ function EditableCanvasElement({
               onExit={handleExitEdit}
               style={{
                 color: element.style.color,
-                fontSize: element.style.fontSize
-                  ? `${element.style.fontSize}px`
-                  : undefined,
+                fontSize: typeof element.style.fontSize === 'number' ? em(element.style.fontSize) : (element.style.fontSize ?? undefined),
                 fontWeight: element.style.fontWeight,
                 fontFamily: element.style.fontFamily,
               }}
@@ -230,23 +220,24 @@ function EditableCanvasElement({
  * Uses ItemRenderer for layout-aware rendering of the items tree,
  * with scene-based visibility for animation steps.
  *
- * Card-expand slides use the CardExpandLayout overlay (variant parsed
- * from slide.animationTemplate, e.g. 'card-expand:center-popup').
+ * Supports popup callout (DetailPopup) for cards with detailItems, and
+ * menu/tab click-to-navigate scene switching via activatedByWidgetIds.
  */
 export function SlideMainCanvas({
   slide,
   currentScene,
+  allScenes,
   selectedElementId,
   currentSubStep,
   totalSteps,
   onElementSelect,
   onElementUpdate,
+  onSceneSelect,
   isPreview = false,
 }: SlideMainCanvasProps) {
   const isZoomWord = slide.animationTemplate === 'zoom-in-word';
-  const cardExpandVariant = parseCardExpandVariant(slide.animationTemplate);
-  const isCardExpand = cardExpandVariant !== null;
   const hasStructuredHeader = !!slide.header;
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   // Scene-derived visibility state
   const hasOverviewStep = !!(
@@ -263,8 +254,8 @@ export function SlideMainCanvas({
     [slide.items],
   );
 
-  // Use ItemRenderer for slides that have an items tree (non-card-expand, non-zoom-word)
-  const useItemRenderer = slide.items.length > 0 && !isCardExpand && !isZoomWord;
+  // Use ItemRenderer for slides that have an items tree (non-zoom-word)
+  const useItemRenderer = slide.items.length > 0 && !isZoomWord;
 
   // ----- Visibility for ItemRenderer (scene-based) -----
   const getItemVisibility = useCallback(
@@ -344,6 +335,61 @@ export function SlideMainCanvas({
     [onElementUpdate],
   );
 
+  // ----- Popup: derive expanded card from step (step-driven mode) -----
+  const hasPopupInteraction = useMemo(
+    () => currentScene?.widgetStateLayer.interactionBehaviors.some(
+      (b) => b.action === 'toggle-expand',
+    ) ?? false,
+    [currentScene],
+  );
+
+  const isClickOnlyPopup = useMemo(() => {
+    if (!hasPopupInteraction || !currentScene) return false;
+    const expandBehavior = currentScene.widgetStateLayer.interactionBehaviors.find(
+      (b) => b.action === 'toggle-expand',
+    );
+    return currentScene.widgetStateLayer.enterBehavior.revealMode === 'all-at-once'
+      && expandBehavior?.availableInAutoMode === false;
+  }, [hasPopupInteraction, currentScene]);
+
+  const stepDrivenExpandedCardId = useMemo(() => {
+    if (!hasPopupInteraction || isClickOnlyPopup || !currentScene) return null;
+    if (isExitStep) return null;
+    const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
+    if (enterBehavior.revealMode !== 'sequential') return null;
+    if (hasOverviewStep && currentSubStep === 0) return null;
+    const effectiveStep = hasOverviewStep ? currentSubStep - 1 : currentSubStep;
+    return animatedWidgetIds[effectiveStep] ?? null;
+  }, [hasPopupInteraction, isClickOnlyPopup, currentScene, currentSubStep, hasOverviewStep, isExitStep]);
+
+  const effectiveExpandedCard = isClickOnlyPopup ? expandedCardId : stepDrivenExpandedCardId;
+
+  // ----- Item click handler: menu/tab navigation + popup -----
+  const handleItemClick = useCallback(
+    (widgetId: string) => {
+      // Check for menu/tab navigation
+      if (allScenes && onSceneSelect) {
+        const targetSceneIndex = allScenes.findIndex(
+          (s) => s.activatedByWidgetIds?.includes(widgetId),
+        );
+        if (targetSceneIndex !== -1) {
+          onSceneSelect(targetSceneIndex);
+          return;
+        }
+      }
+
+      // Check for click-only popup
+      if (hasPopupInteraction && isClickOnlyPopup) {
+        setExpandedCardId((prev) => (prev === widgetId ? null : widgetId));
+        return;
+      }
+
+      // Default: select element
+      onElementSelect(widgetId);
+    },
+    [allScenes, onSceneSelect, hasPopupInteraction, isClickOnlyPopup, onElementSelect],
+  );
+
   // --- Render: Structured header ---
   const renderStructuredHeader = () => {
     if (!hasStructuredHeader) return null;
@@ -384,7 +430,7 @@ export function SlideMainCanvas({
                   key={i}
                   className="transition-all duration-400"
                   style={{
-                    fontSize: Math.min(mainEl.style.fontSize ?? 56, 40),
+                    fontSize: em(Math.min(mainEl.style.fontSize ?? 56, 40)),
                     fontWeight: (mainEl.style.fontWeight as string) ?? 'bold',
                     color: mainEl.style.color ?? '#1e293b',
                     opacity: isWordVisible ? 1 : 0.15,
@@ -401,7 +447,7 @@ export function SlideMainCanvas({
             <span
               className="transition-all duration-400"
               style={{
-                fontSize: Math.min(subtitleEl.style.fontSize ?? 14, 11),
+                fontSize: em(Math.min(subtitleEl.style.fontSize ?? 14, 11)),
                 color: subtitleEl.style.color ?? '#94a3b8',
                 opacity: subtitleVisible && !isMorphing ? 1 : 0,
               }}
@@ -414,48 +460,15 @@ export function SlideMainCanvas({
     );
   };
 
-  // --- Render: Card-Expand (smart card) via CardExpandLayout ---
-  const renderCardExpandOverlay = () => {
-    if (!isCardExpand) return null;
-    const variant = cardExpandVariant!;
-
-    // Compute expandedIndex: overview step → -1, widget steps → 0..N-1, exit step → -1
-    let expandedIndex: number;
-    if (isExitStep) {
-      expandedIndex = -1;
-    } else if (hasOverviewStep) {
-      expandedIndex = currentSubStep - 1; // step 0 → -1 (overview)
-    } else {
-      expandedIndex = currentSubStep;
-    }
-
-    return (
-      <div
-        className="absolute inset-0 z-10"
-        style={{ top: hasStructuredHeader ? 40 : 0, backgroundColor: '#0f172a' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <CardExpandLayout
-          items={SMART_CARD_ITEMS}
-          variant={variant}
-          cardSize="sm"
-          columns={variant === 'row-to-split' ? undefined : 2}
-          gap={8}
-          expandedIndex={expandedIndex}
-        />
-      </div>
-    );
-  };
-
   return (
     <div
       data-slide-canvas
-      className="relative w-full max-w-4xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900"
+      className="slide-canvas relative w-full max-w-4xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900 flex flex-col"
       style={{ aspectRatio: '16/9' }}
       onClick={() => onElementSelect(null)}
     >
       {/* Slide content label */}
-      <div className="absolute top-2 left-2 text-[9px] text-muted-foreground/50 font-mono z-20">
+      <div className="absolute top-2 left-2 text-[0.5625rem] text-muted-foreground/50 font-mono z-20">
         {slide.id} &middot; {slide.animationTemplate}
       </div>
 
@@ -465,22 +478,21 @@ export function SlideMainCanvas({
       {/* Zoom-In Word Reveal overlay */}
       {renderZoomWordOverlay()}
 
-      {/* Card-Expand (Smart Card) overlay */}
-      {renderCardExpandOverlay()}
-
-      {/* Items tree rendering (layout-aware) — for non-card-expand, non-zoom slides */}
+      {/* Items tree rendering (layout-aware) — for non-zoom slides */}
       {useItemRenderer && (
         <div className="flex-1 min-h-0 overflow-hidden">
           <ItemRenderer
             items={slide.items}
             getVisibility={getItemVisibility}
-            onItemClick={(itemId) => onElementSelect(itemId)}
+            onItemClick={handleItemClick}
+            expandedCardId={effectiveExpandedCard}
+            onCardExpand={setExpandedCardId}
           />
         </div>
       )}
 
       {/* Legacy positioned elements — for slides without items tree */}
-      {!useItemRenderer && !isCardExpand && !isZoomWord &&
+      {!useItemRenderer && !isZoomWord &&
         flatElements.map((element, idx) => {
           const { visible, isFocused } = getElementVisibility(element.id, idx);
           const isSelected = selectedElementId === element.id;
@@ -501,7 +513,7 @@ export function SlideMainCanvas({
 
       {/* Transition badge */}
       {slide.transition !== 'none' && (
-        <div className="absolute top-2 right-2 px-2 py-1 rounded text-[9px] font-medium bg-blue-100/80 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 z-20">
+        <div className="absolute top-2 right-2 px-2 py-1 rounded text-[0.5625rem] font-medium bg-blue-100/80 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 z-20">
           → {slide.transition}
         </div>
       )}

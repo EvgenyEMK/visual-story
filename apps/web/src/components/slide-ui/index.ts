@@ -4,7 +4,7 @@
  * Three tiers:
  * - Atoms:     SlideTitle, SlideText, IconBadge, MetricDisplay, ProgressBar, StatusDot, SlideImage, CTAButton
  * - Molecules: FeatureCard, StatCard, QuoteBlock, HeroSpotlight, FlowNode, TitleBar, ItemThumbnail, DetailPopup, ItemsList, StatusLegend
- * - Layouts:   GridOfCards, SidebarDetail, CenterStageShelf, BentoLayout, CardExpandLayout, HorizontalTimeline, HubSpoke, TitleSlide, StackOfCards, StatDashboard
+ * - Layouts:   GridOfCards, SidebarDetail, CenterStageShelf, BentoLayout, HorizontalTimeline, HubSpoke, TitleSlide, StackOfCards, StatDashboard
  *
  * Icon libraries available:
  * - lucide-react  (~1500 clean line icons)
@@ -26,6 +26,7 @@ export type {
 // Utilities
 export { renderIcon } from './render-icon';
 export { entranceVariants, getEntranceMotion } from './entrance';
+export { em, SLIDE_BASE_PX } from './units';
 
 // Atoms
 export { SlideTitle } from './atoms/SlideTitle';
@@ -56,8 +57,6 @@ export { GridOfCards } from './layouts/GridOfCards';
 export { SidebarDetail } from './layouts/SidebarDetail';
 export { CenterStageShelf } from './layouts/CenterStageShelf';
 export { BentoLayout } from './layouts/BentoLayout';
-export { CardExpandLayout } from './layouts/CardExpandLayout';
-export type { CardExpandItem, CardExpandVariant, CardExpandLayoutProps, CollapsedCardType } from './layouts/CardExpandLayout';
 export { HorizontalTimeline } from './layouts/HorizontalTimeline';
 export { HubSpoke } from './layouts/HubSpoke';
 export { TitleSlide } from './layouts/TitleSlide';

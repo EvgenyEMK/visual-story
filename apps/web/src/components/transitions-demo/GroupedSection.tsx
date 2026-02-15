@@ -155,7 +155,7 @@ function HubSpokePopup({ item, onClose }: { item: typeof ITEMS[0]; onClose: () =
       >
         <div className="text-3xl mb-2">{item.icon}</div>
         <div className="text-sm font-bold mb-1" style={{ color: item.color }}>{item.label}</div>
-        <div className="text-[10px] leading-relaxed" style={{ color: 'var(--demo-text-40)' }}>{item.desc}</div>
+        <div className="text-[0.625rem] leading-relaxed" style={{ color: 'var(--demo-text-40)' }}>{item.desc}</div>
       </div>
     </div>
   );
@@ -213,8 +213,8 @@ function ListAccumulatorDemo({ themeMode, triggerMode }: DemoProps) {
                 }}
                 onClick={clickable && inSidebar ? (e: React.MouseEvent) => { e.stopPropagation(); setFocus(i); } : undefined}
               >
-                <span className="text-[10px]">{item.icon}</span>
-                <span className="text-white/60 text-[8px] truncate">{item.label}</span>
+                <span className="text-[0.625rem]">{item.icon}</span>
+                <span className="text-white/60 text-[0.5rem] truncate">{item.label}</span>
               </div>
             );
           })}
@@ -246,7 +246,7 @@ function ListAccumulatorDemo({ themeMode, triggerMode }: DemoProps) {
                   {item.icon}
                 </div>
                 <div className="text-white/90 text-xs font-bold">{item.label}</div>
-                <div className="text-white/40 text-[9px]">Feature {i + 1} of {items.length}</div>
+                <div className="text-white/40 text-[0.5625rem]">Feature {i + 1} of {items.length}</div>
               </div>
             );
           })}
@@ -307,7 +307,7 @@ function CarouselFocusDemo({ themeMode, triggerMode }: DemoProps) {
                 {item.icon}
               </div>
               <div className="text-white/90 text-sm font-bold">{item.label}</div>
-              <div className="text-white/40 text-[9px]">Powerful {item.label.toLowerCase()} capabilities</div>
+              <div className="text-white/40 text-[0.5625rem]">Powerful {item.label.toLowerCase()} capabilities</div>
             </div>
           ))}
         </div>
@@ -349,7 +349,7 @@ function CarouselFocusDemo({ themeMode, triggerMode }: DemoProps) {
                 >
                   {item.icon}
                 </div>
-                <span className="text-white/40 text-[7px]">{item.label}</span>
+                <span className="text-white/40 text-[0.4375rem]">{item.label}</span>
               </div>
             );
           })}
@@ -396,7 +396,7 @@ function BentoGridDemo({ themeMode, triggerMode }: DemoProps) {
             >
               <span className="text-3xl">{item.icon}</span>
               <span className="text-white/90 text-sm font-bold">{item.label}</span>
-              <span className="text-white/40 text-[9px] px-4 text-center">
+              <span className="text-white/40 text-[0.5625rem] px-4 text-center">
                 Advanced {item.label.toLowerCase()} features for your workflow
               </span>
             </div>
@@ -424,7 +424,7 @@ function BentoGridDemo({ themeMode, triggerMode }: DemoProps) {
               onClick={clickable && i !== expandedIndex ? (e: React.MouseEvent) => { e.stopPropagation(); setFocus(i); } : undefined}
             >
               <span className="text-sm">{item.icon}</span>
-              <span className="text-white/60 text-[8px]">{item.label}</span>
+              <span className="text-white/60 text-[0.5rem]">{item.label}</span>
             </div>
           ))}
         </div>
@@ -520,7 +520,7 @@ function CircularSatelliteDemo({ themeMode, triggerMode }: DemoProps) {
                   {item.icon}
                 </div>
                 <span
-                  className="text-[7px] text-white/60 whitespace-nowrap transition-opacity duration-300"
+                  className="text-[0.4375rem] text-white/60 whitespace-nowrap transition-opacity duration-300"
                   style={{ opacity: isActive ? 1 : 0.4 }}
                 >
                   {item.label}
@@ -599,7 +599,7 @@ function InfinitePathDemo({ themeMode, triggerMode }: DemoProps) {
                   {item.icon}
                 </div>
                 <span
-                  className="text-[9px] font-medium transition-all duration-300"
+                  className="text-[0.5625rem] font-medium transition-all duration-300"
                   style={{ color: i === focus ? 'var(--demo-text)' : 'var(--demo-text-40)' }}
                 >
                   {item.label}
@@ -677,7 +677,7 @@ function StackRevealDemo({ themeMode, triggerMode }: DemoProps) {
             >
               <span className="text-2xl">{item.icon}</span>
               <span className="text-white/90 text-xs font-bold">{item.label}</span>
-              <span className="text-white/40 text-[8px]">Card {i + 1}</span>
+              <span className="text-white/40 text-[0.5rem]">Card {i + 1}</span>
             </div>
           );
         })}
@@ -738,7 +738,7 @@ function FanOutDemo({ themeMode, triggerMode }: DemoProps) {
                 }}
               >
                 <span className="text-lg">{item.icon}</span>
-                <span className="text-white/60 text-[7px] font-medium">{item.label}</span>
+                <span className="text-white/60 text-[0.4375rem] font-medium">{item.label}</span>
               </div>
             </div>
           );
@@ -813,7 +813,7 @@ function MolecularBondDemo({ themeMode, triggerMode }: DemoProps) {
           className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center z-10 shadow-lg"
           style={{ background: 'var(--demo-center-gradient)' }}
         >
-          <span className="text-[10px] font-bold" style={{ color: 'var(--demo-node-text)' }}>Ideas</span>
+          <span className="text-[0.625rem] font-bold" style={{ color: 'var(--demo-node-text)' }}>Ideas</span>
         </div>
 
         {/* Child bubbles */}
@@ -848,7 +848,7 @@ function MolecularBondDemo({ themeMode, triggerMode }: DemoProps) {
                 {item.icon}
               </div>
               <div
-                className="text-[7px] text-center mt-0.5 transition-opacity duration-300"
+                className="text-[0.4375rem] text-center mt-0.5 transition-opacity duration-300"
                 style={{ color: isActive ? 'var(--demo-text)' : 'var(--demo-text-40)' }}
               >
                 {item.label}
@@ -911,7 +911,7 @@ function PerspectivePivotDemo({ themeMode, triggerMode }: DemoProps) {
               >
                 <span className="text-2xl">{item.icon}</span>
                 <span className="text-white/90 text-xs font-bold">{item.label}</span>
-                <span className="text-white/40 text-[8px]">Face {i + 1}</span>
+                <span className="text-white/40 text-[0.5rem]">Face {i + 1}</span>
               </div>
             );
           })}
@@ -975,7 +975,7 @@ function MagnifyingGlassDemo({ themeMode, triggerMode }: DemoProps) {
               >
                 {item.icon}
               </div>
-              <span className="text-white/60 text-[8px]">{item.label}</span>
+              <span className="text-white/60 text-[0.5rem]">{item.label}</span>
             </div>
           ))}
         </div>
@@ -1017,7 +1017,7 @@ function MagnifyingGlassDemo({ themeMode, triggerMode }: DemoProps) {
                 >
                   {item.icon}
                 </div>
-                <span className="text-white/90 text-[8px] font-medium">{item.label}</span>
+                <span className="text-white/90 text-[0.5rem] font-medium">{item.label}</span>
               </div>
             ))}
           </div>
@@ -1026,7 +1026,7 @@ function MagnifyingGlassDemo({ themeMode, triggerMode }: DemoProps) {
         {/* Lens label */}
         {focusedItemIndex >= 0 && (
           <div
-            className="absolute text-[9px] text-white/80 font-medium bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm transition-all duration-1000"
+            className="absolute text-[0.5625rem] text-white/80 font-medium bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm transition-all duration-1000"
             style={{
               left: `${lensTarget.x}%`,
               top: `calc(${lensTarget.y}% + 56px)`,
@@ -1128,7 +1128,7 @@ function ItemsGridDemo({ themeMode, triggerMode }: DemoProps) {
         {(['one-by-one', 'opacity-highlight'] as GridAnimMode[]).map((mode) => (
           <button
             key={mode}
-            className="px-1.5 py-0.5 rounded text-[7px] font-medium transition-colors"
+            className="px-1.5 py-0.5 rounded text-[0.4375rem] font-medium transition-colors"
             style={{
               backgroundColor: animMode === mode ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)',
               color: animMode === mode ? '#93c5fd' : 'rgba(255,255,255,0.4)',
@@ -1154,8 +1154,8 @@ function ItemsGridDemo({ themeMode, triggerMode }: DemoProps) {
                   border: i === 0 ? `1px solid ${item.color}30` : '1px solid transparent',
                 }}
               >
-                <span className="text-[10px]">{item.icon}</span>
-                <span className="text-white/60 text-[8px] truncate">{item.label}</span>
+                <span className="text-[0.625rem]">{item.icon}</span>
+                <span className="text-white/60 text-[0.5rem] truncate">{item.label}</span>
               </div>
             ))}
           </div>
@@ -1168,7 +1168,7 @@ function ItemsGridDemo({ themeMode, triggerMode }: DemoProps) {
                 {items[0].icon}
               </div>
               <div className="text-white/90 text-xs font-bold">{items[0].label}</div>
-              <div className="text-white/40 text-[8px] max-w-[160px] text-center">{items[0].desc}</div>
+              <div className="text-white/40 text-[0.5rem] max-w-[160px] text-center">{items[0].desc}</div>
             </div>
           </div>
         </div>
@@ -1225,13 +1225,13 @@ function ItemsGridDemo({ themeMode, triggerMode }: DemoProps) {
                       >
                         {item.icon}
                       </div>
-                      <span className="text-white/80 text-[8px] font-semibold">{item.label}</span>
-                      <span className="text-white/30 text-[7px]">{item.subtitle}</span>
+                      <span className="text-white/80 text-[0.5rem] font-semibold">{item.label}</span>
+                      <span className="text-white/30 text-[0.4375rem]">{item.subtitle}</span>
 
                       {/* Callout context box for active item */}
                       {showCallout && isActive && !isTransitioning && (
                         <div
-                          className="absolute -bottom-11 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md text-[7px] text-white/70 z-10"
+                          className="absolute -bottom-11 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md text-[0.4375rem] text-white/70 z-10"
                           style={{
                             backgroundColor: `${item.color}20`,
                             border: `1px solid ${item.color}30`,

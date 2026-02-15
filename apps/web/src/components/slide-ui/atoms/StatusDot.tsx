@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { AccentColor } from '../types';
+import { em } from '../units';
 
 interface StatusDotProps {
   /** Dot color. */
@@ -24,8 +25,8 @@ export function StatusDot({
   className,
 }: StatusDotProps) {
   return (
-    <div className={cn('flex items-center gap-1.5', className)}>
-      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className={cn('flex items-center gap-[0.375em]', className)}>
+      <div className="relative flex items-center justify-center" style={{ width: em(size), height: em(size) }}>
         {pulse && (
           <div
             className="absolute inset-0 rounded-full animate-ping"
@@ -34,11 +35,11 @@ export function StatusDot({
         )}
         <div
           className="rounded-full"
-          style={{ width: size, height: size, backgroundColor: color }}
+          style={{ width: em(size), height: em(size), backgroundColor: color }}
         />
       </div>
       {label && (
-        <span className="text-white/50 text-[9px] font-medium">{label}</span>
+        <span className="text-white/50 text-[0.5625em] font-medium">{label}</span>
       )}
     </div>
   );

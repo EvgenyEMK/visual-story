@@ -13,7 +13,11 @@ import { type ReactNode, isValidElement, createElement } from 'react';
 import type { IconProp } from './types';
 
 interface RenderIconOptions {
-  size?: number;
+  /**
+   * Icon size — accepts a pixel number **or** a CSS length string (e.g. `'1.25em'`).
+   * When a string is provided it is forwarded as-is to the icon component / CSS.
+   */
+  size?: number | string;
   className?: string;
   color?: string;
 }
@@ -36,7 +40,7 @@ function isEmojiString(value: unknown): value is string {
  */
 function isIconComponent(
   value: unknown,
-): value is React.ComponentType<{ size?: number; className?: string; color?: string }> {
+): value is React.ComponentType<{ size?: number | string; className?: string; color?: string }> {
   // Plain function components or class components
   if (typeof value === 'function') return true;
   // forwardRef / memo / lazy wrappers are objects with $$typeof symbol
@@ -82,8 +86,10 @@ export function renderIcon(
 
   // Case 4: Plain string (render as text)
   if (typeof icon === 'string') {
+    const scaledFontSize =
+      typeof size === 'number' ? size * 0.6 : `calc(${size} * 0.6)`;
     return (
-      <span className={className} style={{ fontSize: size * 0.6, lineHeight: 1 }}>
+      <span className={className} style={{ fontSize: scaledFontSize, lineHeight: 1 }}>
         {icon}
       </span>
     );

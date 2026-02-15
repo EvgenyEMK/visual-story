@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { em } from '../units';
 import type { IconProp, StaggerProps, AccentColor } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
 import { FeatureCard } from '../molecules/FeatureCard';
@@ -58,7 +59,7 @@ export function GridOfCards({
       className={cn('grid w-full', className)}
       style={{
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        gap,
+        gap: em(gap),
       }}
       variants={variants ? undefined : undefined}
       initial={containerMotion?.initial}

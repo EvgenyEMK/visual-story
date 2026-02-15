@@ -38,7 +38,7 @@ const GRID_PAD = 'p-1.5';
 function Region({ label }: { label: string }) {
   return (
     <div className="flex items-center justify-center rounded-md border-2 border-dashed border-current/20 bg-current/[0.06] px-2 py-1 min-h-0 h-full w-full">
-      <span className="text-[10px] font-medium opacity-50 text-center leading-tight truncate">
+      <span className="text-[0.625rem] font-medium opacity-50 text-center leading-tight truncate">
         {label}
       </span>
     </div>
@@ -178,7 +178,7 @@ function ContentLayout({ layout }: { layout: SlideLayoutMeta }) {
       <div className={`flex-1 min-h-0 grid ${GRID_GAP} ${GRID_PAD}`} style={{ gridTemplateColumns: '28% 1fr' }}>
         <div className={`flex flex-col ${GRID_GAP} min-h-0 h-full`}>
           <div className="flex items-center rounded-md border-2 border-dashed border-current/20 bg-current/[0.08] px-2 py-1">
-            <span className="text-[9px] font-medium opacity-40">Sidebar</span>
+            <span className="text-[0.5625rem] font-medium opacity-40">Sidebar</span>
           </div>
           {[1, 2, 3].map((i) => (
             <div
@@ -315,7 +315,7 @@ function ContentLayout({ layout }: { layout: SlideLayoutMeta }) {
             <div className="h-4 w-10 rounded-sm border border-dashed border-current" />
           </div>
           <div className="h-5 w-12 rounded-sm border border-dashed border-current" />
-          <span className="text-[8px] font-medium mt-0.5">Freeform</span>
+          <span className="text-[0.5rem] font-medium mt-0.5">Freeform</span>
         </div>
       </div>
     );
@@ -338,7 +338,7 @@ function ContentLayout({ layout }: { layout: SlideLayoutMeta }) {
               />
             ))}
           </div>
-          <span className="text-[8px] font-medium mt-0.5">Custom</span>
+          <span className="text-[0.5rem] font-medium mt-0.5">Custom</span>
         </div>
       </div>
     );
