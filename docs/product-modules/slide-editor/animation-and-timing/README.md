@@ -1,7 +1,7 @@
 # Animation and Timing
 
 > **Parent module:** [Slide Editor](../README.md)
-> **Status:** `ToDo`
+> **Status:** `InProgress`
 > **MVP:** Yes
 
 ## Purpose
@@ -31,6 +31,7 @@ This is where the "story flow" of each slide is designed — the choreography of
 | AT-F07 | [Grouped Animations](#at-f07-grouped-animations) | Configure multi-element grouped animation patterns (list accumulator, carousel, etc.) | Yes | `ToDo` |
 | AT-F08 | [Auto-Animation](#at-f08-auto-animation) | AI-powered automatic animation selection based on content | Yes | `ToDo` |
 | AT-F09 | [Trigger Mode Selection](#at-f09-trigger-mode-selection) | Choose between auto (timed) and click (presenter-driven) trigger modes | No | `ToDo` |
+| AT-F10 | [Editor End State Step](#at-f10-editor-end-state-step) | Artificial "End state" step in the Animation Step Strip so the canvas defaults to showing all elements | Yes | `Done` |
 
 ---
 
@@ -209,6 +210,52 @@ This is where the "story flow" of each slide is designed — the choreography of
 - [ ] Auto mode uses configured durations and delays
 
 > **Cross-reference:** Trigger mode architecture documented in [_reference/animations/](../_reference/animations/).
+
+---
+
+### AT-F10: Editor End State Step
+
+#### US-AT-014: Default Canvas to End State When Selecting a Slide — `Done`
+**As a** business user editing slides,
+**I want** the canvas to default to showing all elements visible (the "end state") when I select a slide,
+**so that** I can immediately see the full slide content without clicking through every animation step first.
+
+**Acceptance Criteria:**
+- [x] When a slide or scene has multiple animation steps, an artificial "End state" step is prepended as the first item (index 0) in the Animation Step Strip
+- [x] The "End state" step is selected by default when navigating to a slide or switching scenes (`currentStepIndex` defaults to 0)
+- [x] When "End state" is selected, all slide elements are visible on the canvas and none are focused
+- [x] The "End state" step is visually distinct from animation steps (emerald color scheme, smaller width, "All visible" preview label)
+- [x] The animation step counter in the toolbar and strip shows "End state · N steps" when the end state is active
+- [x] Clicking any numbered animation step after "End state" shows the progressive reveal state for that step
+- [x] The "End state" step only appears when there are 2+ animation steps (i.e., not for single-step or all-at-once scenes with 1 step)
+- [x] Popup/detail expansion is inactive during end state (no card auto-expanded)
+- [x] Zoom-word slides show all words visible + morphed in end state
+
+#### US-AT-015: Navigate Between End State and Animation Steps — `Done`
+**As a** business user,
+**I want to** click through animation steps in the strip to preview the progressive reveal sequence,
+**so that** I can verify the animation order and then return to the end state to edit with full visibility.
+
+**Acceptance Criteria:**
+- [x] Clicking a numbered step in the strip shows the canvas at that point in the animation sequence
+- [x] Clicking the "End state" step returns the canvas to the all-visible default
+- [x] Sequential reveal counts on step buttons are correctly offset (e.g., step 1 shows "1/5", step 2 shows "2/5")
+- [x] Step numbering in the strip starts at 1 for animation steps (End state has no number)
+
+**Implementation Notes:**
+
+The feature introduces a sentinel value (`currentSubStep === -1`) to signal "end state" through the existing step pipeline:
+
+| Component | Change |
+|-----------|--------|
+| `SlideEditorClient` | Computes `hasEndStateStep` when `baseStepCount > 1`. Prepends "End state" label, adds +1 to display `totalSteps`. Maps `currentStepIndex === 0` to `currentSubStep = -1`. Passes `baseStepCount` (real count) to canvas, `totalSteps` (with end state) to strip. |
+| `AnimationStepStrip` | New `hasEndStateStep` prop. End state button has emerald styling, smaller width (100px vs 140px), "All visible" preview text. Counter adjusts for offset. |
+| `SlideMainCanvas` | `getItemVisibility` and `getElementVisibility` return all-visible / none-focused when `currentSubStep === -1`. Popup expansion and zoom-word overlay also handle the sentinel. |
+
+**Key files:**
+- `apps/web/src/components/slide-editor/SlideEditorClient.tsx` — step state logic, label generation
+- `apps/web/src/components/slide-editor/AnimationStepStrip.tsx` — step strip UI
+- `apps/web/src/components/slide-editor/SlideMainCanvas.tsx` — canvas visibility callbacks
 
 ---
 

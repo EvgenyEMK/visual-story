@@ -1,5 +1,5 @@
 /**
- * Subscription plan definitions and Stripe configuration for VisualStory.
+ * Subscription plan definitions and Stripe configuration for VisualFlow.
  *
  * @source docs/modules/user-management/subscription-billing.md — Plan Structure
  * @source docs/modules/user-management/subscription-billing.md — Stripe Configuration
@@ -24,7 +24,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     watermark: true,
     voiceOptions: 3,
     storageGb: 1,
-    maxProjects: 5,
+    maxPresentations: 5,
     priorityRendering: false,
     support: 'community',
   },
@@ -34,7 +34,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     watermark: false,
     voiceOptions: 'all',
     storageGb: 10,
-    maxProjects: -1, // unlimited
+    maxPresentations: -1, // unlimited
     priorityRendering: false,
     support: 'email',
   },
@@ -44,7 +44,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     watermark: false,
     voiceOptions: 'all+custom',
     storageGb: 50,
-    maxProjects: -1, // unlimited
+    maxPresentations: -1, // unlimited
     priorityRendering: true,
     support: 'priority',
   },
@@ -89,7 +89,7 @@ export const PLAN_PRICING: PlanPricing[] = [
       '2 exports/month',
       '1080p quality',
       '3 voice options',
-      '5 projects',
+      '5 presentations',
       'Watermark on exports',
     ],
   },

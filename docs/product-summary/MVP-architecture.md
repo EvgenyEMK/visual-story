@@ -1,6 +1,6 @@
 # MVP Architecture
 
-> Technical architecture details for the VisualStory MVP.
+> Technical architecture details for the VisualFlow MVP.
 > For MVP scope and features, see [MVP - Minimum Viable Product](./MVP-Minimum-Viable-Product.md).
 > For the full technical architecture, see [Technical Architecture Overview](../technical-architecture/overview.md).
 
@@ -17,7 +17,7 @@
 | State | Zustand | Simple, performant state management |
 | Video Rendering | Remotion | React-based video, serverless rendering |
 | Backend | Next.js API Routes | Unified codebase, serverless |
-| Database | PostgreSQL (Supabase) | Projects, users, tenants, subscriptions |
+| Database | PostgreSQL (Supabase) | Presentations, users, tenants, subscriptions |
 | Auth | Supabase Auth | OAuth, email auth, session management, RLS integration |
 | i18n | next-intl (or equivalent) | URL-based locale routing (`/{locale}/...`) |
 | AI - Script | OpenAI GPT-4 | Script analysis, suggestions |
@@ -105,8 +105,8 @@ interface TenantMembership {
   joinedAt: Date;
 }
 
-// Project
-interface Project {
+// Presentation
+interface Presentation {
   id: string;
   tenantId: string;
   createdByUserId: string;
@@ -169,12 +169,12 @@ for the full architecture, conversion rules, and the `em()` helper.
 | `/api/auth/*` | * | Supabase Auth handlers |
 | `/api/tenants` | GET, POST | List user's workspaces, create workspace |
 | `/api/tenants/[id]/members` | GET, POST | List/invite workspace members |
-| `/api/projects` | GET, POST | List/create projects (scoped to active tenant) |
-| `/api/projects/[id]` | GET, PUT, DELETE | Project CRUD |
-| `/api/projects/[id]/generate` | POST | Generate slides from script |
-| `/api/projects/[id]/regenerate-slide` | POST | Regenerate single slide |
-| `/api/projects/[id]/voice` | POST | Generate voice-over |
-| `/api/projects/[id]/export` | POST | Trigger video render |
+| `/api/presentations` | GET, POST | List/create presentations (scoped to active tenant) |
+| `/api/presentations/[id]` | GET, PUT, DELETE | Presentation CRUD |
+| `/api/presentations/[id]/generate` | POST | Generate slides from script |
+| `/api/presentations/[id]/regenerate-slide` | POST | Regenerate single slide |
+| `/api/presentations/[id]/voice` | POST | Generate voice-over |
+| `/api/presentations/[id]/export` | POST | Trigger video render |
 | `/api/ai/script-feedback` | POST | Get AI script suggestions |
 | `/api/billing/checkout` | POST | Create Stripe checkout |
 | `/api/billing/portal` | POST | Stripe customer portal |

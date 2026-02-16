@@ -297,8 +297,8 @@ export interface MatchingRule {
  * @source docs/modules/animation-engine/auto-animation.md — API Endpoint
  */
 export interface GenerateRequest {
-  projectId: string;
-  /** Override content intent (defaults to project intent). */
+  presentationId: string;
+  /** Override content intent (defaults to presentation intent). */
   intent?: 'educational' | 'promotional' | 'storytelling';
 }
 

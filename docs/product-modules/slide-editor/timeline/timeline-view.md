@@ -90,7 +90,7 @@ The timeline view provides a horizontal overview of all slides and their relativ
 
 ### Thumbnail Generation
 
-> **Implementation**: See `src/services/projects/thumbnail.ts` for server-side thumbnail generation using Remotion's `renderStill`
+> **Implementation**: See `src/services/presentations/thumbnail.ts` for server-side thumbnail generation using Remotion's `renderStill`
 
 ## Dependencies
 - @dnd-kit/core for drag-drop

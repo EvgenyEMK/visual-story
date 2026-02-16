@@ -45,7 +45,7 @@ Scenes are auto-generated content units within a slide. They represent meaningfu
 - All scenes within a slide share the same canvas background/layout (MVP)
 
 **Naming rationale:** "Scene" was chosen over alternatives because:
-- It evokes visual storytelling — perfect for a product called "VisualStory"
+- It evokes visual storytelling — perfect for a product called "VisualFlow"
 - Immediately understood as "a unit within a larger narrative"
 - Doesn't carry the baggage of "sub-slide" (sounds lesser) or "chapter" (too document-oriented)
 

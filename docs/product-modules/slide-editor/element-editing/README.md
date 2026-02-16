@@ -31,6 +31,7 @@ Element Editing is the most frequent activity in the editor. It covers the full 
 | EE-F08 | [Context Menu](#ee-f08-context-menu) | Right-click for quick actions (copy, paste, delete, z-order) | No | `ToDo` |
 | EE-F09 | [Multi-Element Operations](#ee-f09-multi-element-operations) | Align, distribute, or group multiple selected elements | No | `ToDo` |
 | EE-F10 | [Smart Item Lists](./smart-item-lists.md) | Configurable list widget with icon sets, hierarchy, gradual disclosure, linked legend, snapshots | Partial | `InProgress` |
+| EE-F11 | [Delete Selected Element](#ee-f11-delete-selected-element) | Delete selected element via Delete/Backspace key, fully undoable | Yes | `Done` |
 
 ---
 
@@ -251,7 +252,7 @@ LayoutItem (grid)
 **Acceptance Criteria:**
 - [x] Undo button in the top bar
 - [x] Keyboard shortcut: Ctrl/Cmd+Z (skipped when inline text editing is active — TipTap handles its own undo)
-- [x] Supports: text edits, style changes, element creation, block insertion/appending
+- [x] Supports: text edits, style changes, element creation, block insertion/appending, element deletion
 - [x] Undo stack managed by `undo-redo-store` with snapshot history
 
 #### US-EE-013: Redo Action — `Done`
@@ -263,6 +264,30 @@ LayoutItem (grid)
 - [x] Redo button next to undo in the top bar
 - [x] Keyboard shortcut: Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z
 - [x] Redo stack clears when a new action is performed after undo
+
+---
+
+### EE-F11: Delete Selected Element
+
+#### US-EE-017: Delete Element with Keyboard — `Done`
+**As a** business user,
+**I want to** press Delete or Backspace to remove the selected element from the slide,
+**so that** I can quickly remove unwanted content without right-clicking or navigating menus.
+
+**Acceptance Criteria:**
+- [x] Pressing Delete or Backspace removes the currently selected item from the slide's items tree
+- [x] Works for any item type: AtomItem, CardItem, LayoutItem (recursively found in the tree)
+- [x] Items nested inside cards or layouts are removed from their parent container (parent is preserved)
+- [x] Selection is cleared after deletion
+- [x] Delete/Backspace is ignored when inline text editing is active (so the key works normally inside TipTap)
+- [x] Delete/Backspace is ignored when no element is selected (no-op)
+- [x] The action is fully undoable via Ctrl+Z and re-doable via Ctrl+Y
+
+**Implementation notes:**
+- Keyboard handler in `SlideEditorClient.tsx` listens for `Delete` and `Backspace` keys.
+- Guards: skipped when `editingItemId` is set (inline text editing active) or when `selectedElementId` is null.
+- Calls `presentationStore.removeItem(slideId, itemId)` which uses the `setWithUndo` wrapper — a snapshot of the full slides array is saved before the mutation, enabling undo/redo.
+- Tree removal handled by `removeItemFromTree()` in `lib/flatten-items.ts` — an immutable recursive function that filters the target item from the tree at any depth, traversing `layout.children`, `card.children`, and `card.detailItems`.
 
 ---
 
@@ -329,6 +354,7 @@ A legacy flat `SlideElement[]` model still exists but is deprecated. New feature
 | Store | Action | Purpose |
 |-------|--------|---------|
 | `project-store` | `updateItem(slideId, itemId, updates)` | Immutably update a single item in the tree (content, style, children replacement) |
+| `project-store` | `removeItem(slideId, itemId)` | Remove a single item from the slide's items tree by ID (undoable) |
 | `project-store` | `appendChildToItem(slideId, parentId, newChildren)` | Append new child items to a card/layout (for adding blocks to filled cells) |
 | `project-store` | `undo()` / `redo()` | Undo/redo with snapshot history |
 | `editor-store` | `toggleProperties()` | Show/hide the properties side panel |
@@ -338,6 +364,7 @@ A legacy flat `SlideElement[]` model still exists but is deprecated. New feature
 | Function | Purpose |
 |----------|---------|
 | `updateItemInTree(items, id, updates)` | Immutably merge partial updates into a single item by ID |
+| `removeItemFromTree(items, id)` | Immutably remove a single item from the tree by ID (any depth) |
 | `appendChildrenToItem(items, parentId, children)` | Immutably append children to a card/layout by parent ID |
 | `findItemById(items, id)` | Locate any item in the tree by ID |
 | `deepCloneItemsWithNewIds(items)` | Deep-clone a tree with fresh UUIDs (for slide duplication) |

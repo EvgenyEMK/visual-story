@@ -1,4 +1,4 @@
-# VisualStory
+# VisualFlow
 
 AI-powered visual presentation builder. Create, animate, and export video presentations from scripts.
 
@@ -15,7 +15,7 @@ AI-powered visual presentation builder. Create, animate, and export video presen
 ## Project Structure
 
 ```
-visual-story/
+visual-flow/
 ├── apps/
 │   └── web/               # Next.js frontend
 ├── packages/
@@ -37,8 +37,8 @@ visual-story/
 
 ```bash
 # Clone
-git clone https://github.com/EvgenyEMK/visual-story.git
-cd visual-story
+git clone https://github.com/EvgenyEMK/visual-flow.git
+cd visual-flow
 
 # Install dependencies
 pnpm install
@@ -65,10 +65,10 @@ pnpm dev
 
 ```bash
 # Add to the web app
-pnpm --filter @visual-story/web add <package>
+pnpm --filter @visual-flow/web add <package>
 
 # Add to a shared package
-pnpm --filter @visual-story/shared add <package>
+pnpm --filter @visual-flow/shared add <package>
 
 # Add a dev dependency to the root
 pnpm add -Dw <package>

@@ -1,6 +1,6 @@
 # Key Product Changes Log
 
-This document tracks significant strategic and product-level changes to VisualStory's direction, including rationale, impact assessment, and risk analysis.
+This document tracks significant strategic and product-level changes to VisualFlow's direction, including rationale, impact assessment, and risk analysis.
 
 ---
 

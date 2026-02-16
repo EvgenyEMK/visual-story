@@ -1,5 +1,5 @@
 /**
- * Icon library categories and example entries for VisualStory.
+ * Icon library categories and example entries for VisualFlow.
  *
  * The full icon index is built at build-time from Lucide, Heroicons, and
  * Phosphor metadata. This file contains the category definitions and a

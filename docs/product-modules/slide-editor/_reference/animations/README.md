@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Animation Engine is the core motion design system for VisualStory. It handles three distinct layers of visual motion:
+The Animation Engine is the core motion design system for VisualFlow. It handles three distinct layers of visual motion:
 
 | Layer | Scope | What it Controls |
 |-------|-------|------------------|
@@ -60,7 +60,7 @@ animation-engine/
 
 ## Trigger Modes — Core Architectural Requirement
 
-Every animation and transition in VisualStory **must support two trigger modes**, reflecting the two primary use cases of the product:
+Every animation and transition in VisualFlow **must support two trigger modes**, reflecting the two primary use cases of the product:
 
 ### 1. Auto Mode (Voice-Over / Timed)
 

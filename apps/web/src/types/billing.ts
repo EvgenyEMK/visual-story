@@ -1,5 +1,5 @@
 /**
- * Billing, subscription, and export types for VisualStory.
+ * Billing, subscription, and export types for VisualFlow.
  *
  * @source docs/modules/user-management/subscription-billing.md
  * @source docs/modules/export-publish/video-export.md
@@ -34,10 +34,10 @@ export interface UsageQuota {
   storageUsed: number;
   /** Storage limit in bytes. */
   storageLimit: number;
-  /** Number of projects created. */
-  projectsUsed: number;
-  /** Maximum projects allowed (-1 = unlimited). */
-  projectsLimit: number;
+  /** Number of presentations created. */
+  presentationsUsed: number;
+  /** Maximum presentations allowed (-1 = unlimited). */
+  presentationsLimit: number;
   /** When the current billing period resets. */
   periodResetAt: Date;
 }
@@ -57,8 +57,8 @@ export interface PlanLimits {
   voiceOptions: number | 'all' | 'all+custom';
   /** Storage limit in gigabytes. */
   storageGb: number;
-  /** Maximum projects (-1 = unlimited). */
-  maxProjects: number;
+  /** Maximum presentations allowed (-1 = unlimited). */
+  maxPresentations: number;
   /** Whether priority rendering is available. */
   priorityRendering: boolean;
   /** Support tier. */
@@ -80,7 +80,7 @@ export type ExportStatus = 'pending' | 'rendering' | 'encoding' | 'complete' | '
  * @source docs/modules/export-publish/video-export.md — API Endpoints
  */
 export interface ExportRequest {
-  projectId: string;
+  presentationId: string;
   quality: VideoQuality;
   /** Whether to include the voice-over audio track. */
   includeVoiceOver: boolean;
@@ -126,7 +126,7 @@ export type UpgradePromptReason =
   | 'quality_4k'
   | 'no_watermark'
   | 'storage'
-  | 'more_projects'
+  | 'more_presentations'
   | 'priority_rendering'
   | 'custom_voice';
 

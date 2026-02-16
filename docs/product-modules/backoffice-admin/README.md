@@ -5,7 +5,7 @@
 
 ## Overview
 
-The backoffice admin panel provides internal tools for VisualStory team members to manage customers, monitor platform usage, and handle support operations. This is not a user-facing module — it is intended for internal operations and customer success teams.
+The backoffice admin panel provides internal tools for VisualFlow team members to manage customers, monitor platform usage, and handle support operations. This is not a user-facing module — it is intended for internal operations and customer success teams.
 
 ## Planned Features
 

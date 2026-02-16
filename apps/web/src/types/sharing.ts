@@ -1,5 +1,5 @@
 /**
- * Sharing, publishing, and embed types for VisualStory.
+ * Sharing, publishing, and embed types for VisualFlow.
  *
  * @source docs/modules/export-publish/embed-sharing.md
  */
@@ -31,32 +31,37 @@ export interface PublishSettings {
 }
 
 /**
- * A published project's public-facing data.
+ * A published presentation's public-facing data.
  * @source docs/modules/export-publish/embed-sharing.md — Share ID Generation
  */
-export interface PublishedProject {
+export interface PublishedPresentation {
   id: string;
-  projectId: string;
+  presentationId: string;
   /** Unique short ID used in the share URL (nanoid). */
   shareId: string;
-  /** Full public URL (e.g. https://visualstory.app/play/{shareId}). */
+  /** Full public URL (e.g. https://visualflow.app/play/{shareId}). */
   shareUrl: string;
   /** Publish/visibility settings. */
   settings: PublishSettings;
   /** Open Graph thumbnail URL. */
   thumbnailUrl?: string;
-  /** Number of times the published project has been viewed. */
+  /** Number of times the published presentation has been viewed. */
   viewCount: number;
   publishedAt: Date;
   updatedAt: Date;
 }
 
 /**
+ * @deprecated Use `PublishedPresentation` instead.
+ */
+export type PublishedProject = PublishedPresentation;
+
+/**
  * Data needed to render social share buttons and OG meta tags.
  * @source docs/modules/export-publish/embed-sharing.md — Social Share
  */
 export interface ShareData {
-  /** Project title used in share text. */
+  /** Presentation title used in share text. */
   title: string;
   /** Short description for social cards. */
   description: string;
@@ -94,8 +99,8 @@ export interface EmbedResponse {
  * @source docs/modules/export-publish/web-player.md
  */
 export interface WebPlayerProps {
-  /** The published project data. */
-  project: PublishedProject;
+  /** The published presentation data. */
+  project: PublishedPresentation;
   /** Slide data for rendering. */
   slides: import('@/types/slide').Slide[];
   /** Audio URL for voice-over playback. */

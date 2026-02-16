@@ -11,7 +11,7 @@ The user profile module provides the authenticated user's dashboard experience â
 
 | Feature | File | Summary |
 |---------|------|---------|
-| Projects Library | [projects-library.md](./projects-library.md) | Dashboard listing all user projects with create, open, duplicate, delete, and search |
+| Presentations Library | [presentations-library.md](./presentations-library.md) | Dashboard listing all user presentations with create, open, duplicate, delete, and search |
 | Subscription & Billing | [subscription-billing.md](./subscription-billing.md) | Freemium plan management, Stripe integration, usage tracking, upgrade/downgrade flows |
 
 ## Future Features (Phase 2+)

@@ -100,7 +100,7 @@ Business users frequently need status-indicating icons (todo/done, priority leve
 - Notion: excellent icon support (but not a presentation tool)
 - Monday.com / Jira: status columns with preset values (PM tools, not presentations)
 
-**Assessment:** High value for the primary ICP (project managers). The gap between Notion/PM-tool UX and presentation-tool UX is a significant frustration. Addressing this makes VisualStory feel like "Notion for presentations."
+**Assessment:** High value for the primary ICP (project managers). The gap between Notion/PM-tool UX and presentation-tool UX is a significant frustration. Addressing this makes VisualFlow feel like "Notion for presentations."
 
 ---
 
@@ -153,7 +153,7 @@ One-click status changes are the standard in every project management tool (Jira
 
 **Demand: 5 stars** | **Frequency: Daily** | **Differentiator: High**
 
-Progressive reveal of list items is the #1 most-used animation pattern in business presentations. PowerPoint offers basic "Appear" animation per bullet, but configuring it is tedious (each item requires separate animation assignment). VisualStory's approach -- list-level reveal modes with focus highlighting -- is dramatically easier and more visually polished.
+Progressive reveal of list items is the #1 most-used animation pattern in business presentations. PowerPoint offers basic "Appear" animation per bullet, but configuring it is tedious (each item requires separate animation assignment). VisualFlow's approach -- list-level reveal modes with focus highlighting -- is dramatically easier and more visually polished.
 
 **Competitors:**
 - PowerPoint: per-paragraph "Appear" animation (tedious to set up, no focus dimming)
@@ -162,7 +162,7 @@ Progressive reveal of list items is the #1 most-used animation pattern in busine
 - Beautiful.ai: some smart animation, but not per-item control
 - Prezi: motion-path based, fundamentally different approach
 
-**Assessment:** This is where VisualStory can clearly win. The combination of (1) one-click reveal mode selection, (2) focus/dim behavior, (3) voice-over sync creates an experience that's 10x better than PowerPoint's tedious per-item animation assignment. Essential for every business presentation.
+**Assessment:** This is where VisualFlow can clearly win. The combination of (1) one-click reveal mode selection, (2) focus/dim behavior, (3) voice-over sync creates an experience that's 10x better than PowerPoint's tedious per-item animation assignment. Essential for every business presentation.
 
 ---
 
@@ -191,7 +191,7 @@ No presentation tool has the concept of a legend widget that auto-links to conte
 - Prezi: zoom into topics (different paradigm)
 - PowerPoint/Google Slides: no per-item expandable content
 
-**Assessment:** Addresses a real pain point in live presentations. The callout variant (detail card appearing beside the item) is especially differentiated. This feature makes VisualStory usable for interactive workshops and team meetings, not just one-way presentations.
+**Assessment:** Addresses a real pain point in live presentations. The callout variant (detail card appearing beside the item) is especially differentiated. This feature makes VisualFlow usable for interactive workshops and team meetings, not just one-way presentations.
 
 ---
 
@@ -329,7 +329,7 @@ Showing who owns each item is a standard pattern in PM tools (Jira, Linear, Mond
 
 **Demand: 3 stars** | **Frequency: Weekly** | **Differentiator: High**
 
-AI-powered icon suggestion is an "AI-native" feature that only an AI-first tool like VisualStory can naturally offer. Users paste a list of items, and the AI assigns status icons automatically based on text semantics.
+AI-powered icon suggestion is an "AI-native" feature that only an AI-first tool like VisualFlow can naturally offer. Users paste a list of items, and the AI assigns status icons automatically based on text semantics.
 
 **Competitors:**
 - No competitor offers AI-driven status categorization for list items

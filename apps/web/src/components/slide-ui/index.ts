@@ -1,5 +1,5 @@
 /**
- * slide-ui — Reusable presentation UI components for VisualStory.
+ * slide-ui — Reusable presentation UI components for VisualFlow.
  *
  * Three tiers:
  * - Atoms:     SlideTitle, SlideText, IconBadge, MetricDisplay, ProgressBar, StatusDot, SlideImage, CTAButton

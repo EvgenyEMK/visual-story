@@ -1,5 +1,5 @@
 /**
- * Placeholder image style definitions for VisualStory.
+ * Placeholder image style definitions for VisualFlow.
  *
  * Used by the ImagePlaceholder component to render styled placeholder
  * elements before final assets are placed.

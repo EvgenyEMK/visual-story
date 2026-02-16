@@ -49,8 +49,8 @@ export async function generateSpeech(
 
   // TODO: Upload audio buffer to R2 storage via uploadToR2()
   // import { uploadToR2 } from '@/lib/storage/r2';
-  // const audioUrl = await uploadToR2(audioBuffer, `audio/${projectId}/${slideId}.mp3`, 'audio/mpeg');
-  const audioUrl = `audio/${projectId}/${slideId}.mp3`;
+  // const audioUrl = await uploadToR2(audioBuffer, `audio/${presentationId}/${slideId}.mp3`, 'audio/mpeg');
+  const audioUrl = `audio/${presentationId}/${slideId}.mp3`;
 
   // Map character-level timestamps to word timestamps
   const wordTimestamps: WordTimestamp[] = (data.alignment?.characters || []).map(

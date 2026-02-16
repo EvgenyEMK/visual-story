@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Narration and Voice covers everything related to the spoken dimension of a presentation — writing speaker notes, generating text-to-speech voice-over, selecting voices, and synchronizing audio with slide animations. This is a core differentiator for VisualStory, enabling users to produce narrated presentations without recording their own voice.
+Narration and Voice covers everything related to the spoken dimension of a presentation — writing speaker notes, generating text-to-speech voice-over, selecting voices, and synchronizing audio with slide animations. This is a core differentiator for VisualFlow, enabling users to produce narrated presentations without recording their own voice.
 
 ## UI Touchpoints
 

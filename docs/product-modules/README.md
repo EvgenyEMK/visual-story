@@ -1,4 +1,4 @@
-# VisualStory — Product Modules
+# VisualFlow — Product Modules
 
 > Product documentation managed as code. Each module represents a user-facing feature set.
 

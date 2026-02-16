@@ -22,9 +22,9 @@ import type { TriggerMode } from '@/types/slide';
 interface PlayerState {
   /** Whether playback is active. */
   isPlaying: boolean;
-  /** Project-level default trigger mode. */
-  projectTriggerMode: TriggerMode;
-  /** Per-slide trigger mode overrides (sparse — only slides that differ from project default). */
+  /** Presentation-level default trigger mode. */
+  presentationTriggerMode: TriggerMode;
+  /** Per-slide trigger mode overrides (sparse — only slides that differ from presentation default). */
   slideTriggerModes: Record<number, TriggerMode>;
   /** Current slide index (0-based). */
   currentSlideIndex: number;
@@ -114,11 +114,11 @@ interface PlayerActions {
   setCurrentSceneSteps: (totalSteps: number) => void;
 
   // -- Trigger mode --
-  /** Set the project-level default trigger mode. */
-  setProjectTriggerMode: (mode: TriggerMode) => void;
+  /** Set the presentation-level default trigger mode. */
+  setPresentationTriggerMode: (mode: TriggerMode) => void;
   /** Set a per-slide trigger mode override. */
   setSlideTriggerMode: (slideIndex: number, mode: TriggerMode) => void;
-  /** Clear a per-slide trigger mode override (revert to project default). */
+  /** Clear a per-slide trigger mode override (revert to presentation default). */
   clearSlideTriggerMode: (slideIndex: number) => void;
   /** Resolve the effective trigger mode for a given slide index. */
   getEffectiveTriggerMode: (slideIndex: number) => TriggerMode;
@@ -144,7 +144,7 @@ interface PlayerActions {
 
 const initialState: PlayerState = {
   isPlaying: false,
-  projectTriggerMode: 'auto',
+  presentationTriggerMode: 'auto',
   slideTriggerModes: {},
   currentSlideIndex: 0,
   // Scene-level (ADR-001)
@@ -314,8 +314,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
 
   // -- Trigger mode --
 
-  setProjectTriggerMode: (mode) =>
-    set({ projectTriggerMode: mode }),
+  setPresentationTriggerMode: (mode) =>
+    set({ presentationTriggerMode: mode }),
 
   setSlideTriggerMode: (slideIndex, mode) =>
     set((s) => ({
@@ -331,7 +331,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
 
   getEffectiveTriggerMode: (slideIndex) => {
     const s = get();
-    return s.slideTriggerModes[slideIndex] ?? s.projectTriggerMode;
+    return s.slideTriggerModes[slideIndex] ?? s.presentationTriggerMode;
   },
 
   // -- Playback controls --

@@ -1,6 +1,6 @@
 # Animation & Transition Catalog
 
-> Consolidated reference of all 28 animations and transitions in VisualStory.
+> Consolidated reference of all 28 animations and transitions in VisualFlow.
 > For detailed specifications, follow the link in each entry's name.
 
 ---

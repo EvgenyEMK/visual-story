@@ -1,10 +1,10 @@
 # Smart Cards and Menu/Tab Layouts
 
-Technical documentation for the interactive card popup and menu/tab navigation patterns used in VisualStory slides.
+Technical documentation for the interactive card popup and menu/tab navigation patterns used in VisualFlow slides.
 
 ## Overview
 
-VisualStory supports two interactive content patterns beyond standard animation:
+VisualFlow supports two interactive content patterns beyond standard animation:
 
 1. **Popup Callout** -- A card shows additional detail content as an overlay popup, without changing the underlying slide layout.
 2. **Menu/Tab Navigation** -- Sidebar or tab items act as navigation controls, switching between sub-slides (Scenes) when clicked.

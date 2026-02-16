@@ -1,5 +1,5 @@
 /**
- * Scene & Widget State Layer types for VisualStory.
+ * Scene & Widget State Layer types for VisualFlow.
  *
  * Scenes are the content-level children of a Slide. Each Scene represents
  * a meaningful narrative unit that the presenter walks through.

@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { Project } from '@/types/project';
+import type { Presentation } from '@/types/presentation';
 import type { Slide } from '@/types/slide';
 import type { VoiceConfig, SlideSync } from '@/types/voice';
 import { PlayerControls } from './player-controls';
@@ -16,7 +16,7 @@ import { MobilePlayerControls } from './mobile-player-controls';
 // ---------------------------------------------------------------------------
 
 interface WebPlayerProps {
-  project: Project;
+  project: Presentation;
   voiceConfig: VoiceConfig | null;
   /** Whether the player is rendered inside an iframe embed. */
   embedded?: boolean;

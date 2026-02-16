@@ -27,7 +27,7 @@ export function Watermark() {
           letterSpacing: '0.02em',
         }}
       >
-        Made with VisualStory
+        Made with VisualFlow
       </div>
     </AbsoluteFill>
   );

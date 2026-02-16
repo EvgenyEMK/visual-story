@@ -124,6 +124,58 @@ export function collectItemIds(items: SlideItem[]): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Remove item from tree
+// ---------------------------------------------------------------------------
+
+/**
+ * Immutably remove a single item from a SlideItem tree by ID.
+ * If the target is inside a layout or card, only that child is removed;
+ * the parent container is preserved. Returns the original array unchanged
+ * if the item is not found.
+ */
+export function removeItemFromTree(
+  items: SlideItem[],
+  itemId: string,
+): SlideItem[] {
+  let changed = false;
+
+  // First, check if the item exists at this level and filter it out
+  const filtered = items.filter((item) => {
+    if (item.id === itemId) {
+      changed = true;
+      return false;
+    }
+    return true;
+  });
+
+  if (changed) return filtered;
+
+  // Not found at this level — recurse into children
+  const result = items.map((item) => {
+    if (item.type === 'layout') {
+      const newChildren = removeItemFromTree(item.children, itemId);
+      if (newChildren !== item.children) {
+        changed = true;
+        return { ...item, children: newChildren };
+      }
+    } else if (item.type === 'card') {
+      const newChildren = removeItemFromTree(item.children, itemId);
+      let newDetailItems = item.detailItems;
+      if (item.detailItems) {
+        newDetailItems = removeItemFromTree(item.detailItems, itemId);
+      }
+      if (newChildren !== item.children || newDetailItems !== item.detailItems) {
+        changed = true;
+        return { ...item, children: newChildren, detailItems: newDetailItems };
+      }
+    }
+    return item;
+  });
+
+  return changed ? result : items;
+}
+
+// ---------------------------------------------------------------------------
 // Immutable tree updates
 // ---------------------------------------------------------------------------
 

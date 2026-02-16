@@ -85,7 +85,7 @@ export function DemoPageShell({
 
   return (
     <DemoPageContext.Provider value={{ themeMode, columns }}>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">{title}</h1>

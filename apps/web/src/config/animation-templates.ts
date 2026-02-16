@@ -1,5 +1,5 @@
 /**
- * Animation template catalog for VisualStory.
+ * Animation template catalog for VisualFlow.
  *
  * Each entry corresponds to a row in the template library tables from the docs.
  * Full AnimationTemplate objects (with sequences/keyframes) are loaded at runtime.

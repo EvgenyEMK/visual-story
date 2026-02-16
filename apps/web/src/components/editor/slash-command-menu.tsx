@@ -24,7 +24,8 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import type { SlideItem, AtomItem, CardItem } from '@/types/slide';
+import type { SlideItem, AtomItem, CardItem, WidgetItem } from '@/types/slide';
+import type { SmartListConfig, SmartListData } from '@/types/smart-list';
 import { em } from '@/components/slide-ui/units';
 
 // ---------------------------------------------------------------------------
@@ -43,8 +44,8 @@ export const SLASH_COMMAND_OPTIONS: SlashCommandOption[] = [
   // Cards
   { id: 'icon-card', icon: '🎴', label: 'Icon Card', description: 'Card with icon and title', category: 'Cards' },
   { id: 'stat-card', icon: '📊', label: 'Stat Card', description: 'Metric with value and trend', category: 'Cards' },
-  // Lists
-  { id: 'task-list', icon: '☑️', label: 'Task List', description: 'Checklist of tasks', category: 'Lists' },
+  // Smart Widgets
+  { id: 'task-list', icon: '☑️', label: 'Task List', description: 'Interactive checklist with status icons', category: 'Smart Widgets' },
   // Text
   { id: 'heading', icon: '🔤', label: 'Heading', description: 'Large section heading', category: 'Text' },
   { id: 'text', icon: '📝', label: 'Text', description: 'Body text paragraph', category: 'Text' },
@@ -107,18 +108,28 @@ export function createBlockItems(blockType: string, cellId: string): SlideItem[]
 
     case 'task-list':
       return [
-        makeCard(`${p}-card`, [
-          makeAtom(`${p}-title`, 'text', 'Tasks', {
-            fontSize: 12, fontWeight: 'bold', color: '#e2e8f0',
-          }),
-          makeAtom(`${p}-t1`, 'text', '☐ Task one', { fontSize: 10, color: '#e2e8f0' }),
-          makeAtom(`${p}-t2`, 'text', '☐ Task two', { fontSize: 10, color: '#e2e8f0' }),
-          makeAtom(`${p}-t3`, 'text', '☐ Task three', { fontSize: 10, color: '#e2e8f0' }),
-        ], {
-          backgroundColor: 'rgba(255,255,255,0.03)',
-          borderRadius: 12,
-          padding: 16,
-        }),
+        {
+          id: `${p}-widget`,
+          type: 'widget',
+          widgetType: 'smart-list',
+          config: {
+            iconSetId: 'task-status',
+            collapseDefault: 'all-expanded',
+            revealMode: 'all-at-once',
+            size: 'md',
+            showNumbering: false,
+            showAccentBar: true,
+            entrance: 'fade',
+            stagger: 0.06,
+          } satisfies SmartListConfig as unknown as Record<string, unknown>,
+          data: {
+            items: [
+              { id: `${p}-item-1`, text: 'Task one', primaryIcon: { setId: 'task-status', iconId: 'todo' } },
+              { id: `${p}-item-2`, text: 'Task two', primaryIcon: { setId: 'task-status', iconId: 'todo' } },
+              { id: `${p}-item-3`, text: 'Task three', primaryIcon: { setId: 'task-status', iconId: 'todo' } },
+            ],
+          } satisfies SmartListData as unknown as Record<string, unknown>,
+        } as WidgetItem,
       ];
 
     case 'stat-card':

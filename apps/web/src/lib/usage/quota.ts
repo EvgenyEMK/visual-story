@@ -6,7 +6,7 @@ import type { UsageQuota, Plan } from '@/types/billing';
 
 /**
  * Get the current usage quota for a user.
- * Queries profiles for plan, exports for monthly count, projects for total count.
+ * Queries profiles for plan, exports for monthly count, presentations for total count.
  *
  * @param userId - The user's ID
  * @returns Current usage and limits based on the user's plan
@@ -33,9 +33,9 @@ export async function getUsageQuota(userId: string): Promise<UsageQuota> {
     .eq('user_id', userId)
     .gte('created_at', startOfMonth.toISOString());
 
-  // Count projects
-  const { count: projectsCount } = await supabase
-    .from('projects')
+  // Count presentations
+  const { count: presentationsCount } = await supabase
+    .from('presentations')
     .select('*', { count: 'exact', head: true })
     .eq('created_by_user_id', userId);
 
@@ -51,8 +51,8 @@ export async function getUsageQuota(userId: string): Promise<UsageQuota> {
     exportsLimit: limits.exportsPerMonth,
     storageUsed: 0, // TODO: Calculate actual storage usage from R2
     storageLimit: limits.storageGb * 1024 * 1024 * 1024,
-    projectsUsed: projectsCount || 0,
-    projectsLimit: limits.maxProjects,
+    presentationsUsed: presentationsCount || 0,
+    presentationsLimit: limits.maxPresentations,
     periodResetAt,
   };
 }
@@ -83,15 +83,15 @@ export async function checkExportQuota(
  * Inserts a new row into the exports table.
  *
  * @param userId - The user's ID
- * @param projectId - Optional project ID associated with the export
+ * @param presentationId - Optional presentation ID associated with the export
  */
 export async function incrementExportUsage(
   userId: string,
-  projectId?: string
+  presentationId?: string
 ): Promise<void> {
   await supabase.from('exports').insert({
     user_id: userId,
-    project_id: projectId,
+    presentation_id: presentationId,
     type: 'video',
     created_at: new Date().toISOString(),
   });

@@ -1,6 +1,6 @@
 # Slide Visual Items
 
-VisualStory uses a five-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
+VisualFlow uses a five-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
 
 ## Component Hierarchy
 

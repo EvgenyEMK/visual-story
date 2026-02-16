@@ -1,5 +1,5 @@
 /**
- * Slide, element, and canvas-related types for VisualStory.
+ * Slide, element, and canvas-related types for VisualFlow.
  *
  * The item model uses a recursive tree (SlideItem = LayoutItem | CardItem | AtomItem)
  * that mirrors DOM structure: layouts contain children, cards contain children,
@@ -338,6 +338,7 @@ export type SlideLayoutTemplate =
   | 'center-band'         // Full-width bar centred vertically (section title, process flow)
   | 'center-stage'        // Full-slide centred content (title slides, hero, quote)
   | 'center-stage-2'      // Two centred items side by side
+  | 'center-stage-2x2'    // Four centred items in a 2×2 grid (2 rows of 2)
   | 'center-stage-3'      // Three centred items in a row
   | 'center-stage-4'      // Four centred items in a row
   | 'blank'               // Empty canvas — user places items manually
@@ -523,6 +524,6 @@ export interface TimelineViewProps {
   onSelectSlide: (index: number) => void;
   /** Callback when slide order changes via drag-and-drop. */
   onReorderSlides: (fromIndex: number, toIndex: number) => void;
-  /** Total project duration in milliseconds. */
+  /** Total presentation duration in milliseconds. */
   totalDuration: number;
 }

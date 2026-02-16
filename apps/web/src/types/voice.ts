@@ -1,5 +1,5 @@
 /**
- * Voice, TTS, sync, and multi-language types for VisualStory.
+ * Voice, TTS, sync, and multi-language types for VisualFlow.
  *
  * @source docs/modules/voice-sync/text-to-speech.md
  * @source docs/modules/voice-sync/audio-timeline-sync.md
@@ -103,7 +103,7 @@ export interface WordTimestamp {
  * @source docs/modules/voice-sync/text-to-speech.md — API Endpoint
  */
 export interface GenerateVoiceRequest {
-  projectId: string;
+  presentationId: string;
   voiceId: string;
   /** If provided, regenerate only for these slide IDs. */
   slideIds?: string[];
@@ -204,7 +204,7 @@ export interface VoiceOption {
  */
 // Phase 2
 export interface TranslationRequest {
-  projectId: string;
+  presentationId: string;
   /** BCP-47 language code (e.g. "es", "fr"). */
   targetLanguage: string;
   /** Optional: specific slide IDs to translate. */

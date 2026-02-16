@@ -76,7 +76,7 @@ Preview and Export covers how users view the finished presentation and produce s
 **so that** I can decide whether to upgrade.
 
 **Acceptance Criteria:**
-- [ ] Free-tier exports include a VisualStory watermark
+- [ ] Free-tier exports include a VisualFlow watermark
 - [ ] Clear upgrade prompt shown before export begins
 - [ ] Watermark-free preview available for comparison
 - [ ] Export count tracked against free-tier limits

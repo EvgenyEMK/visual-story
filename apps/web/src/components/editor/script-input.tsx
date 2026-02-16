@@ -1,6 +1,6 @@
 'use client';
 
-import type { ContentIntent } from '@/types/project';
+import type { ContentIntent } from '@/types/presentation';
 
 /**
  * Script input component for the story editor
@@ -8,14 +8,14 @@ import type { ContentIntent } from '@/types/project';
  */
 
 interface ScriptInputProps {
-  projectId: string;
+  presentationId: string;
   initialValue?: string;
   onSave: (script: string) => Promise<void>;
   onIntentChange: (intent: ContentIntent) => void;
 }
 
 export function ScriptInput({
-  projectId,
+  presentationId,
   initialValue = '',
   onSave,
   onIntentChange,

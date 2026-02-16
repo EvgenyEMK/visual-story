@@ -11,7 +11,7 @@ export function UIComponentsClient() {
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark');
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div className="w-full px-4 py-8 space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Slide UI Components</h1>

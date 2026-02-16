@@ -14,7 +14,7 @@
 import { useState, useMemo } from 'react';
 import { Presentation, type PresentationProps } from '@/remotion/compositions/Presentation';
 import { DEMO_SLIDES } from '@/config/demo-slides';
-import type { Project } from '@/types/project';
+import type { Presentation } from '@/types/presentation';
 import type { VoiceConfig } from '@/types/voice';
 
 // ---------------------------------------------------------------------------
@@ -23,8 +23,8 @@ import type { VoiceConfig } from '@/types/voice';
 
 const FPS = 30;
 
-/** Build a minimal Project object from demo slides. */
-function buildDemoProject(): Project {
+/** Build a minimal Presentation object from demo slides. */
+function buildDemoPresentation(): Presentation {
   return {
     id: 'demo-project',
     tenantId: 'demo',
@@ -50,12 +50,12 @@ function totalDurationFrames(): number {
 // ---------------------------------------------------------------------------
 
 export function VideoPlayerClient() {
-  const project = useMemo(buildDemoProject, []);
+  const presentation = useMemo(buildDemoPresentation, []);
   const [voiceConfig] = useState<VoiceConfig | null>(null);
   const durationFrames = useMemo(totalDurationFrames, []);
 
   const inputProps: PresentationProps = {
-    project,
+    project: presentation,
     voiceConfig,
     includeVoiceover: false,
     watermark: false,

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Element animations control how a **single element** — a text block, icon, shape, or image — appears, is emphasized, or exits within a slide. They are the most granular level of motion in VisualStory.
+Element animations control how a **single element** — a text block, icon, shape, or image — appears, is emphasized, or exits within a slide. They are the most granular level of motion in VisualFlow.
 
 These 12 animations are the building blocks. They can be used standalone or as part of a [Grouped Animation](../grouped-animations/) sequence.
 

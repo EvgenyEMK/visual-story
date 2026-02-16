@@ -1,11 +1,11 @@
-# VisualStory — Project Rules
+# VisualFlow — Project Rules
 
 > Cross-tool AI rules consumed by Cursor, Claude Code, Codex, and Gemini CLI.
 > Tool-specific configuration lives in `.cursor/rules/` and `CLAUDE.md`.
 
 ## Product
 
-VisualStory is a SaaS platform for creating animated interactive presentations with synchronized voice-over. Users input a script, the system generates slides with professional animations, and exports to video (Remotion) or interactive web player (motion.dev).
+VisualFlow is a SaaS platform for creating animated interactive presentations with synchronized voice-over. Users input a script, the system generates slides with professional animations, and exports to video (Remotion) or interactive web player (motion.dev).
 
 - **Primary ICP:** Business users (project managers, team leads, analysts) at SMBs who create recurring presentations.
 - **Secondary ICP:** Individual content creators building audiences on YouTube, online courses, social media.
@@ -35,9 +35,9 @@ VisualStory is a SaaS platform for creating animated interactive presentations w
 ## Monorepo Structure
 
 ```
-visual-story/
+visual-flow/
 ├── apps/
-│   └── web/                  # @visual-story/web — Next.js frontend
+│   └── web/                  # @visual-flow/web — Next.js frontend
 │       ├── src/
 │       │   ├── app/          # App Router (pages, layouts, API routes)
 │       │   ├── components/   # React components by feature
@@ -51,8 +51,8 @@ visual-story/
 │       │   └── i18n/         # Internationalisation messages
 │       └── ...config files
 ├── packages/
-│   ├── shared/               # @visual-story/shared — shared types & utils (scaffold)
-│   └── db/                   # @visual-story/db — database client layer (scaffold)
+│   ├── shared/               # @visual-flow/shared — shared types & utils (scaffold)
+│   └── db/                   # @visual-flow/db — database client layer (scaffold)
 ├── docs/                     # Product & technical documentation (131+ files)
 └── ...root config
 ```
@@ -66,7 +66,7 @@ visual-story/
 | `pnpm build` | Build all packages (cached) |
 | `pnpm test` | Run all tests |
 | `pnpm lint` | Lint all packages |
-| `pnpm --filter @visual-story/web add <pkg>` | Add dependency to web app |
+| `pnpm --filter @visual-flow/web add <pkg>` | Add dependency to web app |
 
 **Package manager:** pnpm is enforced via `preinstall` script. Never use npm or yarn.
 

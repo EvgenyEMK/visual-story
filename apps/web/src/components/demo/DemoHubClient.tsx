@@ -48,12 +48,12 @@ const DEMO_SECTIONS = [
 
 export function DemoHubClient() {
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Component Library</h1>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Explore the full VisualStory presentation toolkit — from atomic building
+          Explore the full VisualFlow presentation toolkit — from atomic building
           blocks to complete slide layouts and cinematic transitions.
         </p>
       </div>

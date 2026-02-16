@@ -65,20 +65,20 @@ export function estimateRenderTime(
  * Create an export record in the database.
  * Called at the start of the export pipeline to track progress.
  *
- * @param projectId - The project being exported
+ * @param presentationId - The presentation being exported
  * @param userId - The user initiating the export
  * @param quality - Selected quality setting
  * @returns The created export record ID
  */
 export async function createExportRecord(
-  projectId: string,
+  presentationId: string,
   userId: string,
   quality: string
 ): Promise<string> {
   const { data, error } = await supabase
     .from('exports')
     .insert({
-      project_id: projectId,
+      presentation_id: presentationId,
       user_id: userId,
       quality,
       status: 'queued',

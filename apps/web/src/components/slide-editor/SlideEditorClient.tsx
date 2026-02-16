@@ -4,10 +4,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DEMO_SLIDES, DEMO_SCRIPTS, DEMO_SECTIONS } from '@/config/demo-slides';
 import { SlideThumbnail } from './SlideThumbnail';
 import { SlideMainCanvas } from './SlideMainCanvas';
-import { ScriptPanel } from './ScriptPanel';
-import { AnimationStepStrip } from './AnimationStepStrip';
+import { BottomPanel } from './BottomPanel';
 import { useEditorStore } from '@/stores/editor-store';
-import { useProjectStore } from '@/stores/project-store';
+import { usePresentationStore } from '@/stores/presentation-store';
 import { useUndoRedoStore } from '@/stores/undo-redo-store';
 import { ItemPropertiesPanel } from '@/components/editor/item-properties-panel';
 import type { Slide, SlideItem } from '@/types/slide';
@@ -55,28 +54,29 @@ function buildWidgetTitleMap(slide: Slide): Record<string, string> {
 type SlideEntry = { slide: Slide; index: number };
 
 export function SlideEditorClient() {
-  // Project store — source of truth for slide data
-  const slides = useProjectStore((s) => s.slides);
-  const updateItem = useProjectStore((s) => s.updateItem);
-  const appendChildToItem = useProjectStore((s) => s.appendChildToItem);
-  const undo = useProjectStore((s) => s.undo);
-  const redo = useProjectStore((s) => s.redo);
+  // Presentation store — source of truth for slide data
+  const slides = usePresentationStore((s) => s.slides);
+  const updateItem = usePresentationStore((s) => s.updateItem);
+  const removeItem = usePresentationStore((s) => s.removeItem);
+  const appendChildToItem = usePresentationStore((s) => s.appendChildToItem);
+  const undo = usePresentationStore((s) => s.undo);
+  const redo = usePresentationStore((s) => s.redo);
 
   // Undo/redo state — for button disabled states
   const canUndo = useUndoRedoStore((s) => s.past.length > 0);
   const canRedo = useUndoRedoStore((s) => s.future.length > 0);
 
-  // Initialize project store with demo data on first mount, or
+  // Initialize presentation store with demo data on first mount, or
   // re-initialize when the demo deck has been extended with new slides
   // (handles HMR / code changes without requiring a hard refresh).
-  const setProject = useProjectStore((s) => s.setProject);
+  const setPresentation = usePresentationStore((s) => s.setPresentation);
   useEffect(() => {
-    const currentSlides = useProjectStore.getState().slides;
+    const currentSlides = usePresentationStore.getState().slides;
     const currentIds = new Set(currentSlides.map((s) => s.id));
     const hasMissing = DEMO_SLIDES.some((ds) => !currentIds.has(ds.id));
 
     if (currentSlides.length === 0 || hasMissing) {
-      setProject({
+      setPresentation({
         id: 'demo-project',
         tenantId: 'demo-tenant',
         createdByUserId: 'demo-user',
@@ -90,13 +90,12 @@ export function SlideEditorClient() {
         updatedAt: new Date(),
       });
     }
-  }, [setProject]);
+  }, [setPresentation]);
 
   const [scripts] = useState<SlideScript[]>(DEMO_SCRIPTS);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [showScenes, setShowScenes] = useState(true);
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
@@ -123,7 +122,12 @@ export function SlideEditorClient() {
   const currentScene = scenes[currentSceneIndex] ?? scenes[0];
 
   // Calculate steps for the current scene
-  const totalSteps = useMemo(() => (currentScene ? calcSceneSteps(currentScene) : 1), [currentScene]);
+  const baseStepCount = useMemo(() => (currentScene ? calcSceneSteps(currentScene) : 1), [currentScene]);
+
+  // Add an artificial "End state" step (index 0) when the scene has multiple
+  // animation steps so the editor canvas defaults to showing all items visible.
+  const hasEndStateStep = baseStepCount > 1;
+  const totalSteps = hasEndStateStep ? baseStepCount + 1 : baseStepCount;
 
   // Build widget title map for step labels
   const widgetTitles = useMemo(() => (currentSlide ? buildWidgetTitleMap(currentSlide) : {}), [currentSlide]);
@@ -137,8 +141,12 @@ export function SlideEditorClient() {
         titles[el.elementId] = el.label;
       }
     }
-    return generateSceneStepLabels(currentScene, titles);
-  }, [currentScene, widgetTitles, currentScript]);
+    const labels = generateSceneStepLabels(currentScene, titles);
+    if (hasEndStateStep) {
+      labels.unshift('End state');
+    }
+    return labels;
+  }, [currentScene, widgetTitles, currentScript, hasEndStateStep]);
 
   // ---------------------------------------------------------------------------
   // Navigation handlers
@@ -227,6 +235,16 @@ export function SlideEditorClient() {
         }
       }
 
+      // Delete selected item: skip when inline text editing is active so
+      // the Delete/Backspace key works normally inside text fields.
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !editingItemId) {
+        if (selectedElementId && currentSlide) {
+          e.preventDefault();
+          removeItem(currentSlide.id, selectedElementId);
+          setSelectedElementId(null);
+        }
+      }
+
       // Undo/redo: skip when inline text editing is active (Tiptap handles
       // its own undo within the rich-text field).
       const isModifier = e.ctrlKey || e.metaKey;
@@ -246,7 +264,7 @@ export function SlideEditorClient() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [editingItemId, selectedElementId, currentSlide, undo, redo]);
+  }, [editingItemId, selectedElementId, currentSlide, removeItem, undo, redo]);
 
   // ---------------------------------------------------------------------------
   // Compute currentSubStep for canvas rendering
@@ -254,14 +272,21 @@ export function SlideEditorClient() {
 
   const currentSubStep = useMemo(() => {
     if (!currentScene) return 0;
+
+    // End state: sentinel value -1 means "show all items visible"
+    if (hasEndStateStep && currentStepIndex === 0) return -1;
+
+    // Map from display index to real animation step index
+    const realStep = hasEndStateStep ? currentStepIndex - 1 : currentStepIndex;
+
     if (currentScene.widgetStateLayer.enterBehavior.revealMode === 'sequential') {
-      return currentStepIndex;
+      return realStep;
     }
     // All-at-once: if step > 0, all widgets are revealed
-    return currentStepIndex > 0
+    return realStep > 0
       ? currentScene.widgetStateLayer.animatedWidgetIds.length - 1
       : 0;
-  }, [currentScene, currentStepIndex]);
+  }, [currentScene, currentStepIndex, hasEndStateStep]);
 
   const activeScriptElementId = selectedElementId ?? undefined;
 
@@ -311,16 +336,6 @@ export function SlideEditorClient() {
           <div className="w-px h-5 bg-border mx-1" />
 
           <button
-            onClick={() => setShowScenes(!showScenes)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-              showScenes
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-foreground border-border hover:bg-muted'
-            }`}
-          >
-            {showScenes ? 'Scenes ON' : 'Scenes OFF'}
-          </button>
-          <button
             onClick={toggleProperties}
             className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               showProperties
@@ -332,10 +347,16 @@ export function SlideEditorClient() {
           </button>
           <span className="text-xs text-muted-foreground">
             Slide {currentSlideIndex + 1}/{slides.length}
-            {showScenes && scenes.length > 1 && (
+            {scenes.length > 1 && (
               <> &middot; Scene {currentSceneIndex + 1}/{scenes.length}</>
             )}
-            {showScenes && <> &middot; Step {currentStepIndex + 1}/{totalSteps}</>}
+            <>
+              {' '}&middot;{' '}
+              {hasEndStateStep && currentStepIndex === 0
+                ? `End state · ${baseStepCount} steps`
+                : `Step ${hasEndStateStep ? currentStepIndex : currentStepIndex + 1}/${baseStepCount}`
+              }
+            </>
           </span>
         </div>
       </div>
@@ -359,7 +380,7 @@ export function SlideEditorClient() {
                     scenes={getSlideScenes(slide)}
                     activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
                     onSceneSelect={handleSceneSelect}
-                    showScenes={showScenes}
+                    showScenes
                   />
                 ))}
               </div>
@@ -395,7 +416,7 @@ export function SlideEditorClient() {
                           scenes={getSlideScenes(slide)}
                           activeSceneIndex={index === currentSlideIndex ? currentSceneIndex : undefined}
                           onSceneSelect={handleSceneSelect}
-                          showScenes={showScenes}
+                          showScenes
                         />
                       ))}
                     </div>
@@ -406,9 +427,8 @@ export function SlideEditorClient() {
           </div>
         </div>
 
-        {/* Center — main canvas + animation step strip */}
+        {/* Center — main canvas */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Canvas area */}
           <div className="flex-1 min-h-0 flex items-center justify-center p-4 bg-muted/10 overflow-auto">
             <SlideMainCanvas
               slide={currentSlide}
@@ -417,7 +437,7 @@ export function SlideEditorClient() {
               selectedElementId={selectedElementId}
               editingItemId={editingItemId}
               currentSubStep={currentSubStep}
-              totalSteps={totalSteps}
+              totalSteps={baseStepCount}
               onElementSelect={handleItemSelect}
               onItemEditStart={handleItemEditStart}
               onItemEditEnd={handleItemEditEnd}
@@ -426,18 +446,6 @@ export function SlideEditorClient() {
               onSceneSelect={handleSceneSelect}
             />
           </div>
-
-          {/* Animation step strip */}
-          {showScenes && currentScene && (
-            <AnimationStepStrip
-              labels={stepLabels}
-              currentStep={currentStepIndex}
-              totalSteps={totalSteps}
-              scene={currentScene}
-              onStepSelect={handleStepSelect}
-              isMenuNavigation={scenes.some((s) => s.activatedByWidgetIds && s.activatedByWidgetIds.length > 0)}
-            />
-          )}
         </div>
 
         {/* Right panel — item properties */}
@@ -451,8 +459,16 @@ export function SlideEditorClient() {
         )}
       </div>
 
-      {/* Bottom panel — script */}
-      <ScriptPanel
+      {/* Unified bottom panel — animation steps + script */}
+      <BottomPanel
+        showScenes
+        currentScene={currentScene}
+        stepLabels={stepLabels}
+        currentStep={currentStepIndex}
+        totalSteps={totalSteps}
+        onStepSelect={handleStepSelect}
+        hasEndStateStep={hasEndStateStep}
+        isMenuNavigation={scenes.some((s) => s.activatedByWidgetIds && s.activatedByWidgetIds.length > 0)}
         script={currentScript}
         activeElementId={activeScriptElementId}
         onElementClick={(elementId) => setSelectedElementId(elementId)}

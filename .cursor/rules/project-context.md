@@ -1,19 +1,19 @@
 ---
-description: "VisualStory monorepo structure, workspace packages, key directories, and dev commands"
+description: "VisualFlow monorepo structure, workspace packages, key directories, and dev commands"
 alwaysApply: true
 ---
 
 # Project Context
 
-VisualStory is a Turborepo monorepo with pnpm workspaces.
+VisualFlow is a Turborepo monorepo with pnpm workspaces.
 
 ## Workspace Packages
 
 | Package | Path | Purpose |
 |---------|------|---------|
-| `@visual-story/web` | `apps/web` | Next.js 16 frontend (App Router) |
-| `@visual-story/shared` | `packages/shared` | Shared types and utilities (scaffold) |
-| `@visual-story/db` | `packages/db` | Database client layer (scaffold) |
+| `@visual-flow/web` | `apps/web` | Next.js 16 frontend (App Router) |
+| `@visual-flow/shared` | `packages/shared` | Shared types and utilities (scaffold) |
+| `@visual-flow/db` | `packages/db` | Database client layer (scaffold) |
 
 ## Key Directories (`apps/web/src/`)
 
@@ -49,7 +49,7 @@ VisualStory is a Turborepo monorepo with pnpm workspaces.
 **pnpm is enforced.** Never use npm, yarn, or bun. To add a dependency to the web app:
 
 ```
-pnpm --filter @visual-story/web add <package>
+pnpm --filter @visual-flow/web add <package>
 ```
 
 ## Documentation

@@ -72,7 +72,7 @@ const MESSAGES: Record<
   no_watermark: {
     title: 'Remove Watermark',
     description:
-      'Upgrade to Creator ($29/mo) or Pro to export videos without the VisualStory watermark.',
+      'Upgrade to Creator ($29/mo) or Pro to export videos without the VisualFlow watermark.',
     cta: 'Upgrade to Creator',
     icon: (
       <svg

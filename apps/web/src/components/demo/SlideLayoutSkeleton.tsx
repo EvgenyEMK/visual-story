@@ -270,6 +270,29 @@ function ContentLayout({ layout }: { layout: SlideLayoutMeta }) {
     );
   }
 
+  if (id === 'center-stage-2x2') {
+    return (
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 p-4">
+        <div className="flex gap-4 w-[78%] h-[38%]">
+          <div className="w-1/2 h-full">
+            <Region label="Card 1" />
+          </div>
+          <div className="w-1/2 h-full">
+            <Region label="Card 2" />
+          </div>
+        </div>
+        <div className="flex gap-4 w-[78%] h-[38%]">
+          <div className="w-1/2 h-full">
+            <Region label="Card 3" />
+          </div>
+          <div className="w-1/2 h-full">
+            <Region label="Card 4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (id === 'center-stage-3') {
     return (
       <div className="flex-1 min-h-0 flex items-center justify-center gap-3 p-4">

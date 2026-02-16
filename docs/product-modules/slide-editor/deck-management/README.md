@@ -26,7 +26,7 @@ Deck Management covers everything related to the overall presentation structure 
 | DM-F04 | [Add / Duplicate / Delete Slide](#dm-f04-add--duplicate--delete-slide) | Slide lifecycle management from the list bar | Yes | `ToDo` |
 | DM-F05 | [Scene Grouping](#dm-f05-scene-grouping) | Organize slides into named, collapsible scene sections | Yes | `ToDo` |
 | DM-F06 | [Presentation Title](#dm-f06-presentation-title) | Inline-editable title in the top bar | Yes | `ToDo` |
-| DM-F07 | [Back Navigation](#dm-f07-back-navigation) | Return to the projects dashboard from the editor | Yes | `ToDo` |
+| DM-F07 | [Back Navigation](#dm-f07-back-navigation) | Return to the presentations dashboard from the editor | Yes | `ToDo` |
 | DM-F08 | [Auto-Save Indicator](#dm-f08-auto-save-indicator) | Show save status — saved, saving, error | Yes | `ToDo` |
 | DM-F09 | [Slide Status Indicators](#dm-f09-slide-status-indicators) | Visual badges showing completion status per slide | No | `ToDo` |
 | DM-F10 | [Collapse / Resize Slide List](#dm-f10-collapse--resize-slide-list) | Collapse or resize the slide list bar | No | `ToDo` |

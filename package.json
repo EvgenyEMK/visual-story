@@ -1,5 +1,5 @@
 {
-  "name": "visual-story",
+  "name": "visual-flow",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.29.3",
@@ -9,7 +9,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
-    "dev:web": "turbo dev --filter=@visual-story/web"
+    "dev:web": "turbo dev --filter=@visual-flow/web"
   },
   "devDependencies": {
     "turbo": "^2.5.4"

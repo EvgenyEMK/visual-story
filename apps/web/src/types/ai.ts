@@ -49,7 +49,7 @@ export interface Suggestion {
  * @source docs/modules/ai-assistant/script-feedback.md — API Endpoint
  */
 export interface ScriptFeedbackRequest {
-  projectId: string;
+  presentationId: string;
   script: string;
   intent: 'educational' | 'promotional' | 'storytelling';
 }

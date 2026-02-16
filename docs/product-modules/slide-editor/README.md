@@ -5,7 +5,7 @@
 
 ## Overview
 
-The Slide Editor is the core authoring experience of VisualStory. It is where users create, edit, and refine animated interactive presentations. Features are organized by **functional task clusters** — each sub-folder represents a coherent user workflow (what the user is trying to accomplish), not a UI panel.
+The Slide Editor is the core authoring experience of VisualFlow. It is where users create, edit, and refine animated interactive presentations. Features are organized by **functional task clusters** — each sub-folder represents a coherent user workflow (what the user is trying to accomplish), not a UI panel.
 
 ## Editor Layout
 
@@ -40,7 +40,7 @@ The editor workspace consists of five UI zones. Features in each task cluster ma
 | [deck-management/](./deck-management/) | Slides CRUD, scenes, reorder, navigate between slides | `ToDo` |
 | [element-editing/](./element-editing/) | Select, create, edit text/style/size/position, element animation assignment | `In Progress` |
 | [layouts-and-templates/](../slide-visuals/layouts-and-templates/) | Layout templates, slide backgrounds, alignment, grid/snap *(moved to slide-visuals/)* | `ToDo` |
-| [animation-and-timing/](./animation-and-timing/) | Animation step sequence, grouped animations, transitions, timing, preview | `ToDo` |
+| [animation-and-timing/](./animation-and-timing/) | Animation step sequence, grouped animations, transitions, timing, preview | `InProgress` |
 | [narration-and-voice/](./narration-and-voice/) | Speaker notes, TTS generation, voice selection, audio-animation sync | `ToDo` |
 | [theming/](./theming/) | Visual themes, colors, fonts, branding | `ToDo` |
 | [ai-assistant/](./ai-assistant/) | AI prompts, script feedback, visual suggestions, regeneration | `ToDo` |

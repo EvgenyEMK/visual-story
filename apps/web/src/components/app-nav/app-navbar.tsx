@@ -20,7 +20,7 @@ import { UserMenu } from '@/components/app-nav/user-menu';
 import { Link } from '@/lib/navigation';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-const appNameText = 'VisualStory';
+const appNameText = 'VisualFlow';
 
 // Hamburger icon component
 const HamburgerIcon = ({ className, ...props }: React.SVGAttributes<SVGElement>) => (
@@ -96,12 +96,12 @@ export const AppNavbar = React.forwardRef<HTMLElement, AppNavbarProps>(
       <header
         ref={combinedRef}
         className={cn(
-          'sticky top-0 z-50 w-full max-w-7xl mx-auto bg-background px-4 md:px-6 [&_*]:no-underline',
+          'sticky top-0 z-50 w-full max-w-[2560px] mx-auto bg-background px-4 md:px-6 [&_*]:no-underline',
           className
         )}
         {...props}
       >
-        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-4">
           {/* Left side */}
           <div className="flex items-center gap-2">
             {/* Mobile menu trigger - hidden on desktop, shown on mobile */}

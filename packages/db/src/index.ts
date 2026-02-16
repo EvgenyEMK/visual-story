@@ -1,12 +1,12 @@
 /**
- * @visual-story/db
+ * @visual-flow/db
  *
  * Supabase client setup and database query helpers shared across the monorepo.
  *
  * When you start implementing API routes and the worker, move the Supabase
  * client and query helpers here from apps/web/src/lib/ so both apps can use them:
  *
- *   import { createClient, getProject } from '@visual-story/db';
+ *   import { createClient, getPresentation } from '@visual-flow/db';
  *
  * Candidates for extraction:
  *   - apps/web/src/lib/supabase/client.ts

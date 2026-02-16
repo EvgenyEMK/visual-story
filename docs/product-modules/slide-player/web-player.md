@@ -15,7 +15,7 @@ The Web Player provides an interactive, shareable web-based presentation viewer.
 
 **Acceptance Criteria:**
 - [ ] One-click to generate link
-- [ ] Link format: visualstory.app/play/{id}
+- [ ] Link format: visualflow.app/play/{id}
 - [ ] Link works without login
 - [ ] Can regenerate/invalidate link
 
@@ -79,7 +79,7 @@ The Web Player provides an interactive, shareable web-based presentation viewer.
 
 ### Embed Code Generation
 
-> **Implementation**: See `src/app/api/projects/[id]/embed/route.ts` for the embed code generation endpoint (TODO)
+> **Implementation**: See `src/app/api/presentations/[id]/embed/route.ts` for the embed code generation endpoint (TODO)
 
 ## UI Components
 
@@ -92,7 +92,7 @@ The Web Player provides an interactive, shareable web-based presentation viewer.
 │                                                             │
 │  📎 Share Link                                              │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │ https://visualstory.app/play/abc123xyz               │  │
+│  │ https://visualflow.app/play/abc123xyz               │  │
 │  └───────────────────────────────────────────────────────┘  │
 │  [Copy Link]                                                │
 │                                                             │
@@ -100,7 +100,7 @@ The Web Player provides an interactive, shareable web-based presentation viewer.
 │                                                             │
 │  📋 Embed Code                                              │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │ <iframe src="https://visualstory.app/embed/abc123"   │  │
+│  │ <iframe src="https://visualflow.app/embed/abc123"   │  │
 │  │   width="800" height="450" frameborder="0"           │  │
 │  │   allow="autoplay; fullscreen" allowfullscreen>      │  │
 │  │ </iframe>                                             │  │

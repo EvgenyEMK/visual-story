@@ -11,7 +11,7 @@ import {
   Sequence,
   useVideoConfig,
 } from 'remotion';
-import type { Project } from '@/types/project';
+import type { Presentation } from '@/types/presentation';
 import type { Slide } from '@/types/slide';
 import type { VoiceConfig } from '@/types/voice';
 import { flattenItemsAsElements } from '@/lib/flatten-items';
@@ -23,7 +23,7 @@ import { Watermark } from './Watermark';
 // ---------------------------------------------------------------------------
 
 export interface PresentationProps {
-  project: Project;
+  project: Presentation;
   voiceConfig: VoiceConfig | null;
   includeVoiceover: boolean;
   watermark: boolean;

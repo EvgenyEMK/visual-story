@@ -1,4 +1,4 @@
-# VisualStory — Claude Code Configuration
+# VisualFlow — Claude Code Configuration
 
 See AGENTS.md for all project rules, architecture, and conventions.
 
@@ -24,7 +24,7 @@ This project uses pnpm. All dependency commands must use pnpm:
 
 ```bash
 pnpm install
-pnpm --filter @visual-story/web add <package>
+pnpm --filter @visual-flow/web add <package>
 pnpm dev
 pnpm build
 pnpm test

@@ -5,7 +5,7 @@
 
 ## Overview
 
-The demo module provides an interactive product demonstration for prospective users. It allows visitors to experience the core value of VisualStory without signing up — either through a guided walkthrough or a sandbox environment with pre-loaded content.
+The demo module provides an interactive product demonstration for prospective users. It allows visitors to experience the core value of VisualFlow without signing up — either through a guided walkthrough or a sandbox environment with pre-loaded content.
 
 ## Planned Features
 

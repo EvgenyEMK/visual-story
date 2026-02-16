@@ -37,7 +37,7 @@ Video Export renders the presentation as an MP4 video file with synchronized ani
 
 **Acceptance Criteria:**
 - [ ] Subtle watermark in corner
-- [ ] Watermark shows "Made with VisualStory"
+- [ ] Watermark shows "Made with VisualFlow"
 - [ ] Upgrade prompt before export
 - [ ] Watermark not on paid tier exports
 
@@ -68,7 +68,7 @@ sequenceDiagram
     participant Lambda as Remotion Lambda
     participant R2 as Cloudflare R2
     
-    User->>API: POST /api/projects/{id}/export
+    User->>API: POST /api/presentations/{id}/export
     API->>DB: Check user quota
     DB-->>API: Quota OK
     API->>DB: Create export record (status: pending)
@@ -94,7 +94,7 @@ sequenceDiagram
 
 ### Export Handler
 
-> **Implementation**: See `src/services/export/video-export.ts` for the export logic (quota checking, quality config, Lambda render trigger) and `src/app/api/projects/[id]/export/route.ts` for the API route handler
+> **Implementation**: See `src/services/export/video-export.ts` for the export logic (quota checking, quality config, Lambda render trigger) and `src/app/api/presentations/[id]/export/route.ts` for the API route handler
 
 ### Remotion Composition
 

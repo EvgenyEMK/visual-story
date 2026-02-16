@@ -1,7 +1,7 @@
 // Extracted from docs/modules/ai-assistant/script-feedback.md
 
 import { openai } from './openai';
-import type { ContentIntent } from '@/types/project';
+import type { ContentIntent } from '@/types/presentation';
 import type { ScriptFeedbackResponse } from '@/types/ai';
 
 /**

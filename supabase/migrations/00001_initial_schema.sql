@@ -1,4 +1,4 @@
--- VisualStory Initial Schema
+-- VisualFlow Initial Schema
 -- Supabase PostgreSQL
 -- See docs/product-summary/MVP-architecture.md for data model overview
 
@@ -8,7 +8,7 @@
 
 CREATE TYPE plan_type AS ENUM ('free', 'creator', 'pro');
 CREATE TYPE visibility_type AS ENUM ('public', 'unlisted', 'password');
-CREATE TYPE project_status AS ENUM ('draft', 'generating', 'ready', 'exporting');
+CREATE TYPE presentation_status AS ENUM ('draft', 'generating', 'ready', 'exporting');
 CREATE TYPE member_role AS ENUM ('owner', 'admin', 'editor', 'viewer');
 CREATE TYPE content_intent AS ENUM ('educational', 'promotional', 'storytelling');
 
@@ -52,29 +52,29 @@ CREATE TABLE tenant_memberships (
 );
 COMMENT ON TABLE tenant_memberships IS 'User-to-tenant membership with roles';
 
--- Projects — the core content entity
-CREATE TABLE projects (
+-- Presentations — the core content entity
+CREATE TABLE presentations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   created_by_user_id UUID NOT NULL REFERENCES auth.users(id),
-  name TEXT NOT NULL DEFAULT 'Untitled Project',
+  name TEXT NOT NULL DEFAULT 'Untitled Presentation',
   description TEXT,
   intent content_intent NOT NULL DEFAULT 'educational',
   script TEXT DEFAULT '',
   settings JSONB NOT NULL DEFAULT '{"aspectRatio":"16:9","defaultTransition":"fade"}',
-  status project_status NOT NULL DEFAULT 'draft',
+  status presentation_status NOT NULL DEFAULT 'draft',
   thumbnail_url TEXT,
   is_published BOOLEAN NOT NULL DEFAULT false,
   published_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-COMMENT ON TABLE projects IS 'User projects — scoped to tenant';
+COMMENT ON TABLE presentations IS 'User presentations — scoped to tenant';
 
--- Slides — ordered visual slides within a project
+-- Slides — ordered visual slides within a presentation
 CREATE TABLE slides (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  presentation_id UUID NOT NULL REFERENCES presentations(id) ON DELETE CASCADE,
   "order" INT NOT NULL DEFAULT 0,
   content TEXT DEFAULT '',
   animation_template TEXT,
@@ -85,23 +85,40 @@ CREATE TABLE slides (
 );
 COMMENT ON TABLE slides IS 'Slides with elements stored as JSONB. Duration in milliseconds.';
 
--- Voice configs — TTS and sync settings per project
+-- Smart List Sources — shared structured list data (can belong to a presentation or be standalone)
+-- Phase 3a: Foundation for cross-slide list sharing and future standalone lists
+CREATE TABLE smart_list_sources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  presentation_id UUID REFERENCES presentations(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  icon_set_id TEXT NOT NULL DEFAULT 'bullets',
+  secondary_icon_set_id TEXT,
+  data JSONB NOT NULL DEFAULT '{"items":[]}',
+  share_token TEXT UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE smart_list_sources IS 'Shared smart list data sources. Currently scoped to presentations; tenant_id enables future standalone lists.';
+
+-- Voice configs — TTS and sync settings per presentation
 CREATE TABLE voice_configs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  presentation_id UUID NOT NULL UNIQUE REFERENCES presentations(id) ON DELETE CASCADE,
   voice_id TEXT NOT NULL,
   global_audio_url TEXT,
   slide_configs JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-COMMENT ON TABLE voice_configs IS 'Voice-over configuration and sync data per project';
+COMMENT ON TABLE voice_configs IS 'Voice-over configuration and sync data per presentation';
 
 -- Exports — tracks video/web export jobs
 CREATE TABLE exports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id),
-  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+  presentation_id UUID REFERENCES presentations(id) ON DELETE SET NULL,
   type TEXT NOT NULL DEFAULT 'video',
   quality TEXT NOT NULL DEFAULT '1080p',
   status TEXT NOT NULL DEFAULT 'queued',
@@ -112,10 +129,10 @@ CREATE TABLE exports (
 );
 COMMENT ON TABLE exports IS 'Export jobs — video (Remotion Lambda) or web link';
 
--- Published projects — sharing and embedding
-CREATE TABLE published_projects (
+-- Published presentations — sharing and embedding
+CREATE TABLE published_presentations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  presentation_id UUID NOT NULL UNIQUE REFERENCES presentations(id) ON DELETE CASCADE,
   share_id TEXT NOT NULL UNIQUE,
   visibility visibility_type NOT NULL DEFAULT 'unlisted',
   password TEXT,
@@ -127,19 +144,19 @@ CREATE TABLE published_projects (
   thumbnail_url TEXT,
   og_image_url TEXT
 );
-COMMENT ON TABLE published_projects IS 'Published/shared presentations with visibility controls';
+COMMENT ON TABLE published_presentations IS 'Published/shared presentations with visibility controls';
 
--- Project views — analytics for published presentations
-CREATE TABLE project_views (
+-- Presentation views — analytics for published presentations
+CREATE TABLE presentation_views (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  published_id UUID NOT NULL REFERENCES published_projects(id) ON DELETE CASCADE,
+  published_id UUID NOT NULL REFERENCES published_presentations(id) ON DELETE CASCADE,
   viewed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   watch_duration INT,
   country TEXT,
   referrer TEXT,
   user_agent TEXT
 );
-COMMENT ON TABLE project_views IS 'View analytics for published presentations';
+COMMENT ON TABLE presentation_views IS 'View analytics for published presentations';
 
 -- Subscriptions — Stripe subscription tracking
 CREATE TABLE subscriptions (
@@ -161,15 +178,18 @@ COMMENT ON TABLE subscriptions IS 'Stripe subscription state per user';
 
 CREATE INDEX idx_tenant_memberships_user ON tenant_memberships(user_id);
 CREATE INDEX idx_tenant_memberships_tenant ON tenant_memberships(tenant_id);
-CREATE INDEX idx_projects_tenant ON projects(tenant_id);
-CREATE INDEX idx_projects_created_by ON projects(created_by_user_id);
-CREATE INDEX idx_projects_status ON projects(status);
-CREATE INDEX idx_slides_project ON slides(project_id);
-CREATE INDEX idx_slides_order ON slides(project_id, "order");
+CREATE INDEX idx_presentations_tenant ON presentations(tenant_id);
+CREATE INDEX idx_presentations_created_by ON presentations(created_by_user_id);
+CREATE INDEX idx_presentations_status ON presentations(status);
+CREATE INDEX idx_slides_presentation ON slides(presentation_id);
+CREATE INDEX idx_slides_order ON slides(presentation_id, "order");
+CREATE INDEX idx_smart_list_sources_presentation ON smart_list_sources(presentation_id);
+CREATE INDEX idx_smart_list_sources_tenant ON smart_list_sources(tenant_id);
+CREATE INDEX idx_smart_list_sources_share ON smart_list_sources(share_token) WHERE share_token IS NOT NULL;
 CREATE INDEX idx_exports_user ON exports(user_id);
 CREATE INDEX idx_exports_created ON exports(created_at);
-CREATE INDEX idx_published_share ON published_projects(share_id);
-CREATE INDEX idx_project_views_published ON project_views(published_id);
+CREATE INDEX idx_published_share ON published_presentations(share_id);
+CREATE INDEX idx_presentation_views_published ON presentation_views(published_id);
 CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id);
 
 -- =============================================================================
@@ -179,12 +199,13 @@ CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id);
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenant_memberships ENABLE ROW LEVEL SECURITY;
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE presentations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slides ENABLE ROW LEVEL SECURITY;
+ALTER TABLE smart_list_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE voice_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE published_projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE project_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE published_presentations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE presentation_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read/update their own profile
@@ -205,36 +226,54 @@ CREATE POLICY "Members can view memberships" ON tenant_memberships
     SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
   ));
 
--- Projects: tenant-scoped CRUD
-CREATE POLICY "Members can view projects" ON projects
+-- Presentations: tenant-scoped CRUD
+CREATE POLICY "Members can view presentations" ON presentations
   FOR SELECT USING (tenant_id IN (
     SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
   ));
-CREATE POLICY "Members can create projects" ON projects
+CREATE POLICY "Members can create presentations" ON presentations
   FOR INSERT WITH CHECK (tenant_id IN (
     SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
   ));
-CREATE POLICY "Members can update projects" ON projects
+CREATE POLICY "Members can update presentations" ON presentations
   FOR UPDATE USING (tenant_id IN (
     SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
   ));
-CREATE POLICY "Members can delete projects" ON projects
+CREATE POLICY "Members can delete presentations" ON presentations
   FOR DELETE USING (tenant_id IN (
     SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
   ));
 
--- Slides: accessible via project tenant membership
+-- Slides: accessible via presentation tenant membership
 CREATE POLICY "Members can manage slides" ON slides
-  FOR ALL USING (project_id IN (
-    SELECT id FROM projects WHERE tenant_id IN (
+  FOR ALL USING (presentation_id IN (
+    SELECT id FROM presentations WHERE tenant_id IN (
       SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
     )
   ));
 
--- Voice configs: accessible via project tenant membership
+-- Smart list sources: accessible via tenant membership (supports both presentation-scoped and standalone lists)
+CREATE POLICY "Members can view smart list sources" ON smart_list_sources
+  FOR SELECT USING (tenant_id IN (
+    SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
+  ));
+CREATE POLICY "Members can create smart list sources" ON smart_list_sources
+  FOR INSERT WITH CHECK (tenant_id IN (
+    SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
+  ));
+CREATE POLICY "Members can update smart list sources" ON smart_list_sources
+  FOR UPDATE USING (tenant_id IN (
+    SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
+  ));
+CREATE POLICY "Members can delete smart list sources" ON smart_list_sources
+  FOR DELETE USING (tenant_id IN (
+    SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
+  ));
+
+-- Voice configs: accessible via presentation tenant membership
 CREATE POLICY "Members can manage voice configs" ON voice_configs
-  FOR ALL USING (project_id IN (
-    SELECT id FROM projects WHERE tenant_id IN (
+  FOR ALL USING (presentation_id IN (
+    SELECT id FROM presentations WHERE tenant_id IN (
       SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
     )
   ));
@@ -245,23 +284,23 @@ CREATE POLICY "Users can view own exports" ON exports
 CREATE POLICY "Users can create exports" ON exports
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
--- Published projects: public read, owner manage
-CREATE POLICY "Anyone can view published projects" ON published_projects
+-- Published presentations: public read, owner manage
+CREATE POLICY "Anyone can view published presentations" ON published_presentations
   FOR SELECT USING (true);
-CREATE POLICY "Project owners can manage publishing" ON published_projects
-  FOR ALL USING (project_id IN (
-    SELECT id FROM projects WHERE tenant_id IN (
+CREATE POLICY "Presentation owners can manage publishing" ON published_presentations
+  FOR ALL USING (presentation_id IN (
+    SELECT id FROM presentations WHERE tenant_id IN (
       SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
     )
   ));
 
--- Project views: anyone can insert (analytics), owners can read
-CREATE POLICY "Anyone can record views" ON project_views
+-- Presentation views: anyone can insert (analytics), owners can read
+CREATE POLICY "Anyone can record views" ON presentation_views
   FOR INSERT WITH CHECK (true);
-CREATE POLICY "Owners can view analytics" ON project_views
+CREATE POLICY "Owners can view analytics" ON presentation_views
   FOR SELECT USING (published_id IN (
-    SELECT id FROM published_projects WHERE project_id IN (
-      SELECT id FROM projects WHERE tenant_id IN (
+    SELECT id FROM published_presentations WHERE presentation_id IN (
+      SELECT id FROM presentations WHERE tenant_id IN (
         SELECT tenant_id FROM tenant_memberships WHERE user_id = auth.uid()
       )
     )
@@ -325,8 +364,12 @@ CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
-CREATE TRIGGER projects_updated_at
-  BEFORE UPDATE ON projects
+CREATE TRIGGER presentations_updated_at
+  BEFORE UPDATE ON presentations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER smart_list_sources_updated_at
+  BEFORE UPDATE ON smart_list_sources
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER voice_configs_updated_at

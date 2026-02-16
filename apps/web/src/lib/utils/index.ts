@@ -1,4 +1,4 @@
-// General utility functions for VisualStory
+// General utility functions for VisualFlow
 
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';

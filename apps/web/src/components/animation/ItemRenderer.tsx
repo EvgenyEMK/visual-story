@@ -161,26 +161,33 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
   const style: CSSProperties = { display: 'flex' };
 
   if (!layoutConfig) {
-    // Sensible defaults per layout type
+    // Sensible defaults per layout type — all default to center alignment
     switch (layoutType) {
       case 'grid':
         style.display = 'grid';
         style.gridTemplateColumns = 'repeat(auto-fit, minmax(0, 1fr))';
         style.gap = em(16);
+        style.alignItems = 'center';
+        style.justifyItems = 'center';
         break;
       case 'stack':
         style.flexDirection = 'column';
         style.gap = em(8);
+        style.alignItems = 'center';
+        style.justifyContent = 'center';
         break;
       case 'sidebar':
         style.flexDirection = 'row';
         break;
       case 'split':
         style.flexDirection = 'row';
+        style.alignItems = 'center';
         break;
       default:
         style.flexDirection = 'row';
         style.gap = em(16);
+        style.alignItems = 'center';
+        style.justifyContent = 'center';
     }
     return style;
   }
@@ -195,13 +202,23 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
     if (cfg.rows) {
       style.gridTemplateRows = `repeat(${cfg.rows}, minmax(0, 1fr))`;
     }
+    // Ensure auto-created rows also distribute available height evenly.
+    // Without this, grid rows default to `auto` (content-sized) and the
+    // grid container's height (100%) goes unused.
+    style.gridAutoRows = 'minmax(0, 1fr)';
+    // Default: center items both horizontally and vertically within cells
+    style.alignItems = 'center';
+    style.justifyItems = 'center';
   } else {
     style.flexDirection = cfg.direction ?? 'row';
+    // Default: center items on both axes
+    style.alignItems = 'center';
+    style.justifyContent = 'center';
   }
 
   if (cfg.gap != null) style.gap = typeof cfg.gap === 'number' ? em(cfg.gap) : cfg.gap;
 
-  // Align / justify
+  // Align / justify — explicit config overrides the defaults above
   const alignMap: Record<string, string> = {
     start: 'flex-start',
     center: 'center',
@@ -216,8 +233,16 @@ function buildLayoutStyle(layoutConfig?: LayoutConfig, layoutType?: string): CSS
     around: 'space-around',
   };
 
-  if (cfg.align) style.alignItems = alignMap[cfg.align] ?? cfg.align;
-  if (cfg.justify) style.justifyContent = justifyMap[cfg.justify] ?? cfg.justify;
+  if (cfg.align) {
+    style.alignItems = alignMap[cfg.align] ?? cfg.align;
+  }
+  if (cfg.justify) {
+    style.justifyContent = justifyMap[cfg.justify] ?? cfg.justify;
+    // For grid, also update cell-level horizontal alignment
+    if (layoutType === 'grid') {
+      style.justifyItems = justifyMap[cfg.justify] ?? cfg.justify;
+    }
+  }
 
   return style;
 }
@@ -423,6 +448,25 @@ function RenderItem({
   if (item.type === 'layout') {
     const layoutStyle = buildLayoutStyle(item.layoutConfig, item.layoutType);
 
+    // Determine whether this is a flex-row layout whose children should
+    // be equally distributed (e.g. two-column 50/50, center-stage-3).
+    // Grid layouts already use `repeat(N, minmax(0, 1fr))` so they don't
+    // need this. Sidebar and stack layouts use explicit widths or column direction.
+    //
+    // Heuristic: only force equal widths when ALL children are container types
+    // (card, layout, widget). Layouts containing atoms (e.g. icon + text row)
+    // are utility layouts where children should size to their content.
+    const isGrid = item.layoutType === 'grid';
+    const effectiveDirection = item.layoutConfig?.direction ??
+      (item.layoutType === 'stack' ? 'column' : 'row');
+    const allChildrenAreContainers = item.children.length > 1 && item.children.every(
+      (c) => c.type === 'card' || c.type === 'layout' || c.type === 'widget',
+    );
+    const isEqualFlexRow = !isGrid
+      && item.layoutType !== 'sidebar'
+      && effectiveDirection === 'row'
+      && allChildrenAreContainers;
+
     // Sidebar layout: first child gets fixed width, second gets flex:1
     if (item.layoutType === 'sidebar' && item.children.length >= 2) {
       const sidebarWidth = item.layoutConfig?.sidebarWidth ?? '30%';
@@ -469,15 +513,26 @@ function RenderItem({
         transition={{ duration: 0.3 }}
         onClick={isEditable ? handleClick : undefined}
       >
-        {item.children.map((child) => (
-          <RenderItem
-            key={child.id}
-            item={child}
-            getVisibility={getVisibility}
-            onItemClick={onItemClick}
-            editing={editing}
-          />
-        ))}
+        {item.children.map((child) =>
+          isEqualFlexRow ? (
+            <div key={child.id} style={{ flex: '1 1 0%', minWidth: 0, minHeight: 0, display: 'grid' }}>
+              <RenderItem
+                item={child}
+                getVisibility={getVisibility}
+                onItemClick={onItemClick}
+                editing={editing}
+              />
+            </div>
+          ) : (
+            <RenderItem
+              key={child.id}
+              item={child}
+              getVisibility={getVisibility}
+              onItemClick={onItemClick}
+              editing={editing}
+            />
+          ),
+        )}
       </motion.div>
     );
   }
@@ -529,15 +584,14 @@ function RenderItem({
             : {}),
           cursor: isEditable || hasDetail || onItemClick ? 'pointer' : undefined,
         }}
-        initial={visibility.visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+        initial={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
         animate={
           visibility.isFocused
-            ? { opacity: 1, scale: 1.03 }
+            ? { opacity: 1, scale: 1.02 }
             : visibility.visible
             ? { opacity: 1, scale: 1 }
-            : { opacity: 0, scale: 0.95 }
+            : { opacity: 0 }
         }
-        whileHover={visibility.visible ? { scale: 1.02 } : undefined}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onClick={isEditable ? handleClick : (onItemClick ? (e) => { e.stopPropagation(); onItemClick(item.id); } : undefined)}
       >

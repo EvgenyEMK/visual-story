@@ -26,7 +26,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">VisualStory</h1>
+      <h1 className="text-3xl font-bold mb-4">VisualFlow</h1>
       <p className="text-muted-foreground">
         Transform your scripts into engaging visual presentations.
       </p>

@@ -14,10 +14,7 @@ import {
   ItemThumbnail,
   DetailPopup,
   StatusDot,
-  ItemsList,
-  StatusLegend,
 } from '@/components/slide-ui';
-import type { ListRow, LegendEntry } from '@/components/slide-ui';
 
 import { SmartItemsList, SmartLegend } from '@/components/slide-ui';
 import type { SmartListData, SmartListItem as SmartListItemType } from '@/types/smart-list';
@@ -30,9 +27,7 @@ import {
   Target,
   ChevronRight,
   Circle,
-  CircleDot,
   CircleCheck,
-  Clock,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -203,69 +198,6 @@ function NavigationSection() {
             description="Ship features faster with streamlined deployment pipelines and CI/CD."
             color="#3b82f6"
             onClose={() => setPopupOpen(false)}
-          />
-        </div>
-      </DemoBox>
-    </DemoGrid>
-  );
-}
-
-function ListsSection() {
-  const { themeMode } = useDemoPage();
-  return (
-    <DemoGrid>
-      {/* ItemsList */}
-      <DemoBox title="ItemsList" description="Vertical items list with icons, headers, checked states, and nested sub-lists." themeMode={themeMode} aspect="auto">
-        <div className="p-4 w-full">
-          <ItemsList
-            size="md"
-            entrance="slide-up"
-            stagger={0.06}
-            items={[
-              { id: 'h1', kind: 'header', text: 'Project Alpha', color: '#3b82f6' },
-              { id: 'i1', text: 'Design system setup', icon: CircleCheck, color: '#22c55e', checked: true },
-              { id: 'i2', text: 'API integration', icon: CircleDot, color: '#f59e0b', description: 'In progress — 60% complete',
-                children: [
-                  { id: 'i2a', text: 'Auth endpoints', icon: CircleCheck, color: '#22c55e', checked: true },
-                  { id: 'i2b', text: 'Data sync endpoints', icon: Clock, color: '#f59e0b' },
-                ],
-              },
-              { id: 'i3', text: 'Write unit tests', icon: Circle, color: '#94a3b8' },
-              { id: 'h2', kind: 'header', text: 'Project Beta', color: '#8b5cf6' },
-              { id: 'i4', text: 'Requirements gathering', icon: CircleCheck, color: '#22c55e', checked: true },
-              { id: 'i5', text: 'UI wireframes', icon: CircleDot, color: '#f59e0b' },
-              { id: 'i6', text: 'Backend scaffolding', icon: Circle, color: '#94a3b8' },
-            ] satisfies ListRow[]}
-          />
-        </div>
-      </DemoBox>
-
-      {/* StatusLegend */}
-      <DemoBox title="StatusLegend" description="Icon legend explaining status indicators used in lists or slides." themeMode={themeMode} aspect="auto">
-        <div className="p-4 w-full flex flex-col gap-4">
-          <StatusLegend
-            title="Task Status"
-            size="md"
-            entrance="fade"
-            stagger={0.08}
-            entries={[
-              { id: 'l1', icon: Circle, label: 'To Do', color: '#94a3b8' },
-              { id: 'l2', icon: Clock, label: 'In Progress', color: '#f59e0b' },
-              { id: 'l3', icon: CircleCheck, label: 'Done', color: '#22c55e' },
-            ] satisfies LegendEntry[]}
-          />
-          <StatusLegend
-            title="Priority"
-            size="sm"
-            direction="horizontal"
-            entrance="fade"
-            delay={0.3}
-            stagger={0.06}
-            entries={[
-              { id: 'p1', icon: '🔴', label: 'Critical', color: '#ef4444' },
-              { id: 'p2', icon: '🟡', label: 'Medium', color: '#f59e0b' },
-              { id: 'p3', icon: '🟢', label: 'Low', color: '#22c55e' },
-            ] satisfies LegendEntry[]}
           />
         </div>
       </DemoBox>
@@ -1045,7 +977,6 @@ export function ContentWidgetsClient() {
         { value: 'smart-cards', label: 'Smart Cards', count: 4, content: <SmartCardsSection /> },
         { value: 'cards', label: 'Cards & Heroes', count: 4, content: <CardsSection /> },
         { value: 'navigation', label: 'Navigation & Chrome', count: 4, content: <NavigationSection /> },
-        { value: 'lists', label: 'Lists & Legends', count: 2, content: <ListsSection /> },
       ]}
     />
   );

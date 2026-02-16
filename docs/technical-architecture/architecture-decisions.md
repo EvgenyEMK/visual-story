@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-This folder documents significant architectural decisions made during the development of VisualStory.
+This folder documents significant architectural decisions made during the development of VisualFlow.
 
 Each decision is recorded in its own file with the following structure:
 - **Context**: What problem or question prompted the decision

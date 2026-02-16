@@ -149,7 +149,7 @@ flowchart LR
 │  ☐ Allow viewers to download video                          │
 │                                                             │
 │  Preview Link                                               │
-│  visualstory.app/play/a1b2c3d4e5                           │
+│  visualflow.app/play/a1b2c3d4e5                           │
 │                                                             │
 │              [Cancel]  [Publish]                            │
 └─────────────────────────────────────────────────────────────┘
@@ -164,7 +164,7 @@ flowchart LR
 │                                                             │
 │  Link                                                       │
 │  ┌───────────────────────────────────┬─────────┐           │
-│  │ visualstory.app/play/a1b2c3d4e5   │ [Copy]  │           │
+│  │ visualflow.app/play/a1b2c3d4e5   │ [Copy]  │           │
 │  └───────────────────────────────────┴─────────┘           │
 │                                                             │
 │  Share on                                                   │
@@ -172,7 +172,7 @@ flowchart LR
 │                                                             │
 │  Embed                                                      │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │ <iframe src="https://visualstory.app/embed/a1b2c...   │  │
+│  │ <iframe src="https://visualflow.app/embed/a1b2c...   │  │
 │  └───────────────────────────────────────────────────────┘  │
 │  [Copy Embed Code]                                          │
 │                                                             │

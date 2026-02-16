@@ -10,7 +10,7 @@ The market for AI-powered visual content creation is fragmented across several c
 - **AI Video Generators** (adjacent market): Synthesia, HeyGen, Pictory, Lumen5
 - **Video Editing with AI** (adjacent market): Descript, InVideo, Canva Video
 
-No single tool currently addresses the full VisualStory value proposition: **smart interactive slides with automated in-slide animations and interactive widgets (click-to-expand, linked status indicators, reusable templates)**.
+No single tool currently addresses the full VisualFlow value proposition: **smart interactive slides with automated in-slide animations and interactive widgets (click-to-expand, linked status indicators, reusable templates)**.
 
 ---
 
@@ -160,7 +160,7 @@ Through market research, these additional pain points have high demand but poor 
                                     │
     HIGH                           │
     AI Generation                  │    ┌─────────────────────┐
-         ▲                         │    │  VisualStory        │ ← TARGET POSITION
+         ▲                         │    │  VisualFlow        │ ← TARGET POSITION
          │         ┌───────┐       │    │  (Smart Widgets +   │
          │         │ Gamma │       │    │   Animation +       │
          │         └───────┘       │    │   Interactivity)    │
@@ -208,8 +208,8 @@ Based on competitive analysis:
 
 1. **Blue ocean opportunity**: No tool combines smart interactive widgets + automated in-slide animations for business presentations
 2. **Gamma is closest competitor** (70M+ users, AI-generated slides) but has **no animation engine, no interactivity, and no smart widgets**
-3. **Beautiful.ai** has business positioning but **no AI generation and no interactivity** — VisualStory leapfrogs on both axes
-4. **PowerPoint/Google Slides** are the incumbents to displace; their animation capabilities are manual, painful, and outdated — VisualStory automates what they make users do by hand
+3. **Beautiful.ai** has business positioning but **no AI generation and no interactivity** — VisualFlow leapfrogs on both axes
+4. **PowerPoint/Google Slides** are the incumbents to displace; their animation capabilities are manual, painful, and outdated — VisualFlow automates what they make users do by hand
 5. **MVP should focus on**: Smart interactive widgets (card-expand, linked status, reusable templates) + automated in-slide animations (our moat)
 6. **Phase 2 moat**: Voice-over sync + data-linked widgets (Jira/Asana integration) create a defensible premium tier
 7. **Avoid competing on**: Stock footage (Pictory), avatars (HeyGen), basic AI slide generation (Gamma does it well at $10/month)

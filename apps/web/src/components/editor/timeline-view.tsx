@@ -14,8 +14,8 @@ interface TimelineViewProps {
   currentSlideIndex: number;
   currentTime: number;
   totalDuration: number;
-  /** Project-level default trigger mode. */
-  projectTriggerMode: TriggerMode;
+  /** Presentation-level default trigger mode. */
+  presentationTriggerMode: TriggerMode;
   onSlideSelect: (index: number) => void;
   onSlideReorder: (fromIndex: number, toIndex: number) => void;
   onSlideDurationChange: (slideId: string, duration: number) => void;
@@ -48,7 +48,7 @@ export function TimelineView({
   currentSlideIndex,
   currentTime,
   totalDuration,
-  projectTriggerMode,
+  presentationTriggerMode,
   onSlideSelect,
   onSlideReorder,
   onSlideDurationChange,
@@ -74,7 +74,7 @@ export function TimelineView({
       </div>
       <div className="flex gap-2 overflow-x-auto pb-2">
         {slides.map((slide, index) => {
-          const effectiveMode = resolveMode(slide, projectTriggerMode);
+          const effectiveMode = resolveMode(slide, presentationTriggerMode);
           const sceneCount = slide.scenes?.length ?? 0;
           const widgetCount = slide.scenes?.reduce(
             (acc, s) => acc + s.widgetStateLayer.animatedWidgetIds.length, 0
@@ -123,7 +123,7 @@ export function TimelineView({
                   e.stopPropagation();
                   const newMode: TriggerMode | undefined =
                     slide.triggerMode === undefined
-                      ? (projectTriggerMode === 'auto' ? 'click' : 'auto')
+                      ? (presentationTriggerMode === 'auto' ? 'click' : 'auto')
                       : undefined; // toggle back to inherit
                   onSlideTriggerModeChange(slide.id, newMode);
                 }}

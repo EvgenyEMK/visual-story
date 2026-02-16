@@ -1,5 +1,5 @@
 /**
- * Structured script types for VisualStory.
+ * Structured script types for VisualFlow.
  *
  * Each slide has an overall opening script and per-element scripts.
  * Each script part contains "text to say" (for voice-over) and

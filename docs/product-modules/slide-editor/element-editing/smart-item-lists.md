@@ -8,7 +8,7 @@
 
 Smart Item Lists are configurable, interactive list widgets for business presentations. They go far beyond basic bullet points -- supporting hierarchical items with status icons, collapse/expand behavior, gradual disclosure in presentation mode, linked legends, expandable per-item detail, snapshot comparison for progress reviews, and external data source integration.
 
-This is the most frequently used element type in business presentations (project task lists, feature lists, agendas, status updates, action items, checklists). The Smart Item Lists widget system is designed to be a key differentiator for VisualStory, addressing pain points that no existing presentation tool solves well.
+This is the most frequently used element type in business presentations (project task lists, feature lists, agendas, status updates, action items, checklists). The Smart Item Lists widget system is designed to be a key differentiator for VisualFlow, addressing pain points that no existing presentation tool solves well.
 
 ## UI Touchpoints
 

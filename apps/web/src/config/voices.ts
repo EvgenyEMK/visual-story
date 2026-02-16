@@ -1,5 +1,5 @@
 /**
- * Voice options and per-language voice configuration for VisualStory.
+ * Voice options and per-language voice configuration for VisualFlow.
  *
  * @source docs/modules/voice-sync/text-to-speech.md — Voice Options (MVP)
  * @source docs/modules/voice-sync/multi-language.md — Voice Selection per Language

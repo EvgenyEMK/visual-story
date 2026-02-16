@@ -279,6 +279,11 @@ export function SlideMainCanvas({
         return { visible: true, isFocused: false, hidden: false };
       }
 
+      // End state (edit mode): all items visible, none focused
+      if (currentSubStep === -1) {
+        return { visible: true, isFocused: false, hidden: false };
+      }
+
       const { animatedWidgetIds, enterBehavior, initialStates } =
         currentScene.widgetStateLayer;
       const widgetIndex = animatedWidgetIds.indexOf(itemId);
@@ -325,6 +330,11 @@ export function SlideMainCanvas({
   // ----- Legacy element visibility (for positioned elements) -----
   const getElementVisibility = useCallback(
     (elementId: string, _index: number): { visible: boolean; isFocused: boolean } => {
+      // End state (edit mode): all elements visible, none focused
+      if (currentSubStep === -1) {
+        return { visible: true, isFocused: false };
+      }
+
       if (currentScene) {
         const vis = getItemVisibility(elementId);
         return { visible: vis.visible, isFocused: vis.isFocused };
@@ -370,6 +380,8 @@ export function SlideMainCanvas({
   const stepDrivenExpandedCardId = useMemo(() => {
     if (!hasPopupInteraction || isClickOnlyPopup || !currentScene) return null;
     if (isExitStep) return null;
+    // End state: no expanded card
+    if (currentSubStep === -1) return null;
     const { animatedWidgetIds, enterBehavior } = currentScene.widgetStateLayer;
     if (enterBehavior.revealMode !== 'sequential') return null;
     if (hasOverviewStep && currentSubStep === 0) return null;
@@ -425,8 +437,8 @@ export function SlideMainCanvas({
     const wordCount = words.length;
     const subtitleStep = wordCount;
     const morphStep = wordCount + 1;
-    const isMorphing = currentSubStep >= morphStep;
-    const subtitleVisible = currentSubStep >= subtitleStep;
+    const isMorphing = currentSubStep === -1 || currentSubStep >= morphStep;
+    const subtitleVisible = currentSubStep === -1 || currentSubStep >= subtitleStep;
 
     return (
       <div
@@ -439,7 +451,7 @@ export function SlideMainCanvas({
         <div className="flex flex-col items-center gap-3">
           <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 px-10 max-w-[80%]">
             {words.map((word, i) => {
-              const isWordVisible = currentSubStep >= i;
+              const isWordVisible = currentSubStep === -1 || currentSubStep >= i;
               return (
                 <span
                   key={i}

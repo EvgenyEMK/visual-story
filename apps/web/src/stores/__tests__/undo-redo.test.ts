@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useUndoRedoStore, MAX_HISTORY_SIZE } from '../undo-redo-store';
-import { useProjectStore } from '../project-store';
+import { usePresentationStore } from '../presentation-store';
 import type { Slide } from '@/types/slide';
 
 // =============================================================================
@@ -20,7 +20,7 @@ function makeSlide(id: string, title = `Slide ${id}`): Slide {
   };
 }
 
-function makeProject(slides: Slide[]) {
+function makePresentation(slides: Slide[]) {
   return {
     id: 'test-project',
     tenantId: 'tenant',
@@ -42,8 +42,8 @@ function makeProject(slides: Slide[]) {
 
 beforeEach(() => {
   useUndoRedoStore.setState({ past: [], future: [] });
-  useProjectStore.setState({
-    project: null,
+  usePresentationStore.setState({
+    presentation: null,
     slides: [],
     isDirty: false,
     isLoading: false,
@@ -213,12 +213,12 @@ describe('useUndoRedoStore', () => {
 // Project Store — undo/redo integration tests
 // =============================================================================
 
-describe('useProjectStore — undo/redo integration', () => {
+describe('usePresentationStore - undo/redo integration', () => {
   const slide1 = makeSlide('slide-1', 'First');
   const slide2 = makeSlide('slide-2', 'Second');
 
   function initStore(slides: Slide[] = [slide1, slide2]) {
-    useProjectStore.getState().setProject(makeProject(slides));
+    usePresentationStore.getState().setPresentation(makePresentation(slides));
   }
 
   it('setProject clears undo/redo history', () => {
@@ -235,11 +235,11 @@ describe('useProjectStore — undo/redo integration', () => {
     expect(future).toEqual([]);
   });
 
-  it('clearProject clears undo/redo history', () => {
+  it('clearPresentation clears undo/redo history', () => {
     initStore();
     useUndoRedoStore.setState({ past: [[makeSlide('old')]] });
 
-    useProjectStore.getState().clearProject();
+    usePresentationStore.getState().clearPresentation();
 
     const { past, future } = useUndoRedoStore.getState();
     expect(past).toEqual([]);
@@ -249,169 +249,169 @@ describe('useProjectStore — undo/redo integration', () => {
   it('updateSlide creates a history entry', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Updated' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Updated' });
 
     const { past } = useUndoRedoStore.getState();
     expect(past).toHaveLength(1);
     // The saved snapshot should contain the original title
     expect(past[0].find((s) => s.id === 'slide-1')?.title).toBe('First');
     // The current state should be updated
-    expect(useProjectStore.getState().slides.find((s) => s.id === 'slide-1')?.title).toBe('Updated');
+    expect(usePresentationStore.getState().slides.find((s) => s.id === 'slide-1')?.title).toBe('Updated');
   });
 
   it('undo restores the previous slide state after updateSlide', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Changed' });
-    expect(useProjectStore.getState().slides[0].title).toBe('Changed');
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Changed' });
+    expect(usePresentationStore.getState().slides[0].title).toBe('Changed');
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
   });
 
   it('redo restores the slide state after undo', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Changed' });
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Changed' });
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('Changed');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('Changed');
   });
 
   it('undo is a no-op when history is empty', () => {
     initStore();
-    const slidesBefore = useProjectStore.getState().slides;
+    const slidesBefore = usePresentationStore.getState().slides;
 
-    useProjectStore.getState().undo();
+    usePresentationStore.getState().undo();
 
-    expect(useProjectStore.getState().slides).toBe(slidesBefore);
+    expect(usePresentationStore.getState().slides).toBe(slidesBefore);
   });
 
   it('redo is a no-op when future is empty', () => {
     initStore();
-    const slidesBefore = useProjectStore.getState().slides;
+    const slidesBefore = usePresentationStore.getState().slides;
 
-    useProjectStore.getState().redo();
+    usePresentationStore.getState().redo();
 
-    expect(useProjectStore.getState().slides).toBe(slidesBefore);
+    expect(usePresentationStore.getState().slides).toBe(slidesBefore);
   });
 
   it('multiple undos walk back through changes step by step', () => {
     initStore();
 
     // Make 3 changes
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Change 1' });
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Change 2' });
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Change 3' });
-    expect(useProjectStore.getState().slides[0].title).toBe('Change 3');
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Change 1' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Change 2' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Change 3' });
+    expect(usePresentationStore.getState().slides[0].title).toBe('Change 3');
 
     // Undo step by step
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('Change 2');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('Change 2');
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('Change 1');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('Change 1');
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
 
     // No more undo — stays at original
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
   });
 
   it('multiple redos walk forward through undone changes', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'A' });
-    useProjectStore.getState().updateSlide('slide-1', { title: 'B' });
-    useProjectStore.getState().updateSlide('slide-1', { title: 'C' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'A' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'B' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'C' });
 
     // Undo all 3
-    useProjectStore.getState().undo();
-    useProjectStore.getState().undo();
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    usePresentationStore.getState().undo();
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
 
     // Redo step by step
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('A');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('A');
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('B');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('B');
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('C');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('C');
 
     // No more redo
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('C');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('C');
   });
 
   it('new mutation after undo clears the redo stack', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'A' });
-    useProjectStore.getState().updateSlide('slide-1', { title: 'B' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'A' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'B' });
 
     // Undo one step
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('A');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('A');
 
     // New change — should fork the timeline
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Z' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Z' });
 
     // Redo should be impossible (future was cleared)
     const { future } = useUndoRedoStore.getState();
     expect(future).toEqual([]);
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('Z');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('Z');
   });
 
   it('addSlide is undoable', () => {
     initStore();
     const newSlide = makeSlide('slide-3', 'Third');
 
-    useProjectStore.getState().addSlide(newSlide);
-    expect(useProjectStore.getState().slides).toHaveLength(3);
+    usePresentationStore.getState().addSlide(newSlide);
+    expect(usePresentationStore.getState().slides).toHaveLength(3);
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides).toHaveLength(2);
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
   });
 
   it('removeSlide is undoable', () => {
     initStore();
 
-    useProjectStore.getState().removeSlide('slide-1');
-    expect(useProjectStore.getState().slides).toHaveLength(1);
+    usePresentationStore.getState().removeSlide('slide-1');
+    expect(usePresentationStore.getState().slides).toHaveLength(1);
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides).toHaveLength(2);
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
   });
 
   it('reorderSlides is undoable', () => {
     initStore();
-    expect(useProjectStore.getState().slides[0].id).toBe('slide-1');
+    expect(usePresentationStore.getState().slides[0].id).toBe('slide-1');
 
-    useProjectStore.getState().reorderSlides(0, 1);
-    expect(useProjectStore.getState().slides[0].id).toBe('slide-2');
+    usePresentationStore.getState().reorderSlides(0, 1);
+    expect(usePresentationStore.getState().slides[0].id).toBe('slide-2');
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].id).toBe('slide-1');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].id).toBe('slide-1');
   });
 
   it('duplicateSlide is undoable', () => {
     initStore();
 
-    useProjectStore.getState().duplicateSlide('slide-1');
-    expect(useProjectStore.getState().slides).toHaveLength(3);
+    usePresentationStore.getState().duplicateSlide('slide-1');
+    expect(usePresentationStore.getState().slides).toHaveLength(3);
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides).toHaveLength(2);
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
   });
 
   it('updateItem is undoable', () => {
@@ -426,76 +426,76 @@ describe('useProjectStore — undo/redo integration', () => {
     ];
     initStore([slideWithItem]);
 
-    useProjectStore.getState().updateItem('item-slide', 'text-1', { content: 'Modified' } as any);
-    const updated = useProjectStore.getState().slides[0].items[0];
+    usePresentationStore.getState().updateItem('item-slide', 'text-1', { content: 'Modified' } as any);
+    const updated = usePresentationStore.getState().slides[0].items[0];
     expect(updated.type === 'atom' && updated.content).toBe('Modified');
 
-    useProjectStore.getState().undo();
-    const restored = useProjectStore.getState().slides[0].items[0];
+    usePresentationStore.getState().undo();
+    const restored = usePresentationStore.getState().slides[0].items[0];
     expect(restored.type === 'atom' && restored.content).toBe('Original');
   });
 
   it('undo sets isDirty to true', () => {
     initStore();
-    expect(useProjectStore.getState().isDirty).toBe(false);
+    expect(usePresentationStore.getState().isDirty).toBe(false);
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'X' });
-    useProjectStore.getState().markSaved();
-    expect(useProjectStore.getState().isDirty).toBe(false);
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'X' });
+    usePresentationStore.getState().markSaved();
+    expect(usePresentationStore.getState().isDirty).toBe(false);
 
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().isDirty).toBe(true);
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().isDirty).toBe(true);
   });
 
   it('redo sets isDirty to true', () => {
     initStore();
 
-    useProjectStore.getState().updateSlide('slide-1', { title: 'X' });
-    useProjectStore.getState().undo();
-    useProjectStore.getState().markSaved();
-    expect(useProjectStore.getState().isDirty).toBe(false);
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'X' });
+    usePresentationStore.getState().undo();
+    usePresentationStore.getState().markSaved();
+    expect(usePresentationStore.getState().isDirty).toBe(false);
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().isDirty).toBe(true);
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().isDirty).toBe(true);
   });
 
   it('interleaving different action types produces correct undo sequence', () => {
     initStore();
 
     // 1. Update slide title
-    useProjectStore.getState().updateSlide('slide-1', { title: 'Renamed' });
+    usePresentationStore.getState().updateSlide('slide-1', { title: 'Renamed' });
 
     // 2. Add a new slide
     const newSlide = makeSlide('slide-3', 'Third');
-    useProjectStore.getState().addSlide(newSlide);
+    usePresentationStore.getState().addSlide(newSlide);
 
     // 3. Remove slide-2
-    useProjectStore.getState().removeSlide('slide-2');
+    usePresentationStore.getState().removeSlide('slide-2');
 
     // Current: [Renamed slide-1, Third slide-3]
-    expect(useProjectStore.getState().slides).toHaveLength(2);
-    expect(useProjectStore.getState().slides[0].title).toBe('Renamed');
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
+    expect(usePresentationStore.getState().slides[0].title).toBe('Renamed');
 
     // Undo remove
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides).toHaveLength(3);
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides).toHaveLength(3);
 
     // Undo add
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides).toHaveLength(2);
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
 
     // Undo rename
-    useProjectStore.getState().undo();
-    expect(useProjectStore.getState().slides[0].title).toBe('First');
+    usePresentationStore.getState().undo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('First');
 
     // Redo all
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides[0].title).toBe('Renamed');
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides[0].title).toBe('Renamed');
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides).toHaveLength(3);
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides).toHaveLength(3);
 
-    useProjectStore.getState().redo();
-    expect(useProjectStore.getState().slides).toHaveLength(2);
+    usePresentationStore.getState().redo();
+    expect(usePresentationStore.getState().slides).toHaveLength(2);
   });
 });

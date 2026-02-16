@@ -57,10 +57,10 @@ This was designed for exactly this scenario — referencing a shared item defini
 
 ### 3.1. New Entity: `SmartListSource`
 
-Introduce a new **project-level** entity that holds the canonical list data:
+Introduce a new **presentation-level** entity that holds the canonical list data:
 
 ```
-PROJECT row
+PRESENTATION row
   └── smart_list_sources (jsonb OR separate table)
         └── SmartListSource[]
               ├── id: string (UUID)
@@ -171,8 +171,8 @@ A **dedicated full-screen editor** for list data that is independent of the slid
 
 **Entry points:**
 - Side panel → "Edit in Smart List Editor" button when a shared list is selected.
-- Project menu → "Manage Smart Lists" (shows all lists in the project).
-- Direct URL: `/[locale]/projects/[projectId]/lists/[listId]` (shareable).
+- Presentation menu → "Manage Smart Lists" (shows all lists in the project).
+- Direct URL: `/[locale]/presentations/[presentationId]/lists/[listId]` (shareable).
 
 ### 5.2. Editor Capabilities
 
@@ -216,7 +216,7 @@ Slide 8 — "Risk Report" view config:
 Each shared list gets a direct URL:
 
 ```
-https://app.visualstory.com/en/projects/proj-123/lists/list-abc
+https://app.visualflow.app/en/presentations/proj-123/lists/list-abc
 ```
 
 **Use cases:**
@@ -225,7 +225,7 @@ https://app.visualstory.com/en/projects/proj-123/lists/list-abc
 - List is bookmarked in Slack / Teams for easy access without navigating through slides.
 - List can be edited on mobile (the Smart List Editor is responsive).
 
-**Authentication:** Same project-level permissions apply. The share token allows read-only access without authentication (for embedding in dashboards, etc.).
+**Authentication:** Same presentation-level permissions apply. The share token allows read-only access without authentication (for embedding in dashboards, etc.).
 
 ---
 
@@ -240,21 +240,21 @@ The current architecture stores all presentation data as JSONB in Supabase. Ther
 | Approach | Complexity | Cross-ref capability |
 |----------|-----------|---------------------|
 | **Embedded (today)** | Minimal | None — each list is isolated |
-| **DB-light (proposed)** | Low-medium | Lists reference sources by ID; sources stored as project-level JSONB |
+| **DB-light (proposed)** | Low-medium | Lists reference sources by ID; sources stored as presentation-level JSONB |
 | **Full relational** | High | Individual items are rows with foreign keys, full SQL querying |
 
 ### 6.2. Recommended: DB-Light with JSONB Sources
 
-Store `SmartListSource[]` as a **JSONB column** on the PROJECT table (or a separate `smart_list_sources` table with a JSONB `data` column):
+Store `SmartListSource[]` as a **JSONB column** on the PRESENTATIONS table (or a separate `smart_list_sources` table with a JSONB `data` column):
 
 ```sql
 -- Option A: JSONB column on PROJECT
-ALTER TABLE projects ADD COLUMN smart_list_sources jsonb DEFAULT '[]';
+ALTER TABLE presentations ADD COLUMN smart_list_sources jsonb DEFAULT '[]';
 
 -- Option B: Separate table (preferred for larger lists)
 CREATE TABLE smart_list_sources (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  uuid REFERENCES projects(id) ON DELETE CASCADE,
+  presentation_id  uuid REFERENCES presentations(id) ON DELETE CASCADE,
   name        text NOT NULL,
   icon_set_id text NOT NULL,
   data        jsonb NOT NULL DEFAULT '{"items":[]}',
@@ -263,7 +263,7 @@ CREATE TABLE smart_list_sources (
   updated_at  timestamptz DEFAULT now()
 );
 
-CREATE INDEX idx_smart_list_sources_project ON smart_list_sources(project_id);
+CREATE INDEX idx_smart_list_sources_presentation ON smart_list_sources(presentation_id);
 CREATE INDEX idx_smart_list_sources_share ON smart_list_sources(share_token) WHERE share_token IS NOT NULL;
 ```
 
@@ -314,7 +314,7 @@ This is **not recommended for Phase 3** — it adds significant UI complexity (s
 
 ### 7.1. Competitive Landscape
 
-| Feature | Gamma | Google Slides | PowerPoint | Keynote | VisualStory (proposed) |
+| Feature | Gamma | Google Slides | PowerPoint | Keynote | VisualFlow (proposed) |
 |---------|-------|---------------|------------|---------|----------------------|
 | Inline list editing | ✅ Basic | ✅ Basic bullets | ✅ Basic bullets | ✅ Basic bullets | ✅ Smart widgets |
 | Shared list data across slides | ❌ | ❌ | ❌ | ❌ | ✅ **Unique** |
@@ -340,7 +340,7 @@ This is **not recommended for Phase 3** — it adds significant UI complexity (s
 
 ### 7.3. Verdict
 
-**Yes, this is a strong differentiator.** The combination of shared list data + dedicated editor + per-list URLs + cross-slide aggregation creates a unique value proposition that no existing presentation tool offers. It transforms VisualStory from "a slide tool with smart lists" into "a data-aware presentation platform where content flows from structured sources into visual views."
+**Yes, this is a strong differentiator.** The combination of shared list data + dedicated editor + per-list URLs + cross-slide aggregation creates a unique value proposition that no existing presentation tool offers. It transforms VisualFlow from "a slide tool with smart lists" into "a data-aware presentation platform where content flows from structured sources into visual views."
 
 The key insight is that **business presentations are not documents — they are views on top of evolving data**. No current tool treats them this way.
 
@@ -356,32 +356,38 @@ The key insight is that **business presentations are not documents — they are 
 
 ---
 
-## 8. Proposed Implementation Phases
+## 8. Implementation Phases
 
-### Phase 3a — Shared Sources (Foundation)
+### Phase 3a — Shared Sources (Foundation) — `Done`
 
-1. Add `SmartListSource` type definitions.
-2. Add `smart_list_sources` table (or project-level JSONB).
-3. Add `sourceId` to `SmartListConfig`.
-4. Zustand store: `useSmartListSourceStore` — CRUD, subscriptions.
-5. "Convert to shared list" action in the side panel.
-6. Widgets with `sourceId` read from the source store instead of embedded data.
+1. ✅ `SmartListSource` type definitions (`types/smart-list-source.ts`).
+2. ✅ `smart_list_sources` table in initial DB migration (with `presentation_id` nullable for future standalone lists, `tenant_id` for RLS).
+3. ✅ `sourceId` added to `SmartListConfig` (backward-compatible — no sourceId = embedded mode).
+4. ✅ `useSmartListSourceStore` Zustand store with selectors (`selectSourceById`, `selectSourcesByPresentation`, `selectSourceItems`).
+5. ✅ `SmartListRepository` abstraction interface (`services/smart-lists/smart-list-repository.ts`) with `InMemorySmartListRepository` implementation and singleton provider.
+6. ✅ `useSmartListData` hook resolves items from embedded data, shared source, or aggregator transparently.
+7. ✅ `convertEmbeddedToShared()` method on the repository for "Convert to shared list" flow.
 
-### Phase 3b — Cross-Slide Aggregator (SL-F19)
+**Architecture decision:** All data access goes through `SmartListRepository` abstraction. The in-memory implementation reads/writes Zustand. To switch to Supabase persistence, create `SupabaseSmartListRepository` and change the provider — no other code changes needed.
 
-1. `aggregator` config variant.
-2. Aggregator renderer: collects items from multiple sources, applies filters.
-3. Demo + side panel UI for configuring aggregate sources.
+**Flexibility decision:** `SmartListSource.presentationId` is nullable. Currently MVP scopes lists to a presentation, but the schema supports standalone tenant-level lists for future use as independent list trackers.
 
-### Phase 3c — Smart List Editor UI
+### Phase 3b — Cross-Slide Aggregator (SL-F19) — `Done`
 
-1. Route: `/[locale]/projects/[projectId]/lists/[listId]`.
-2. Table view with inline editing.
-3. Column mapping configuration.
-4. Kanban view by status.
-5. Import from clipboard (paste from Excel).
+1. ✅ `aggregator`, `aggregateFrom`, `groupBySource`, `deduplicateById` fields on `SmartListConfig`.
+2. ✅ Aggregation logic in `useSmartListData` hook — collects from multiple sources, applies per-source filters, deduplicates, inserts synthetic source-name headers.
+3. ✅ Pure `aggregateFromSources()` function in repository for server-side aggregation.
+4. ⬜ Demo + side panel UI for configuring aggregate sources (pending).
 
-### Phase 3d — Shareable URLs + Collaboration
+### Phase 3c — Smart List Editor UI — `Done`
+
+1. ✅ Route: `/[locale]/presentations/[presentationId]/lists/[listId]`.
+2. ✅ Table view with inline editing (text, description, detail, icon picker, visibility toggle).
+3. ⬜ Column mapping configuration (deferred — data model defined in types but UI not yet built).
+4. ✅ Kanban view by status (read-only grouping).
+5. ✅ Import from clipboard (paste text, auto-detect hierarchy from indentation, preview before import).
+
+### Phase 3d — Shareable URLs + Collaboration — `Deferred`
 
 1. `shareToken` generation.
 2. Read-only public URL.

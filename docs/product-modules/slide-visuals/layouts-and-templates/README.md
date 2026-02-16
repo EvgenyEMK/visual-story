@@ -121,8 +121,8 @@ Layouts and Templates covers how users choose and apply structural arrangements 
 
 **Acceptance Criteria:**
 - [ ] Aspect ratio displayed in canvas toolbar (e.g., "16:9")
-- [ ] Default is 16:9 for all new projects
-- [ ] Changing aspect ratio is a project-level setting (not per-slide)
+- [ ] Default is 16:9 for all new presentations
+- [ ] Changing aspect ratio is a presentation-level setting (not per-slide)
 
 ---
 
@@ -134,5 +134,5 @@ Layouts and Templates covers how users choose and apply structural arrangements 
 ## Dependencies
 
 - Zustand `editor-store` (grid toggle, zoom level)
-- Zustand `project-store` (slide background, layout data)
+- Zustand `presentation-store` (slide background, layout data)
 - Element editing (elements are positioned within layouts)

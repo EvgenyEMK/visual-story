@@ -35,10 +35,10 @@ export function DemoBox({
 
   return (
     <div className={cn('rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden', className)}>
-      {/* Stage */}
+      {/* Stage — slide-canvas enables container-query responsive em scaling */}
       <div
         className={cn(
-          'relative overflow-hidden flex items-center justify-center',
+          'slide-canvas relative overflow-hidden flex items-center justify-center',
           aspectClass,
           !aspectClass && 'min-h-[200px]',
         )}

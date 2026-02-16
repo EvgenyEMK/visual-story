@@ -11,7 +11,7 @@ Authentication handles user sign-up, login, and session management. The system u
 ### US-AU-001: Sign Up with Email
 **As a** new user  
 **I want to** create an account with my email  
-**So that** I can start using VisualStory
+**So that** I can start using VisualFlow
 
 **Acceptance Criteria:**
 - [ ] Email input with validation
@@ -89,7 +89,7 @@ Authentication handles user sign-up, login, and session management. The system u
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│                    VisualStory Logo                         │
+│                    VisualFlow Logo                         │
 │                                                             │
 │                    Welcome back                             │
 │                                                             │
@@ -144,5 +144,5 @@ Authentication handles user sign-up, login, and session management. The system u
 - Resend for email delivery
 
 ## Related Features
-- [Projects Library](./projects-library.md)
+- [Presentations Library](../user-profile/presentations-library.md)
 - [Subscription Billing](./subscription-billing.md)

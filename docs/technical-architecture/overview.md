@@ -44,7 +44,7 @@
 - **Synergy**: Shared `SlideItem` data model consumed by both engines; `flattenItemsAsElements()` bridges the item tree to Remotion's flat rendering
 
 #### Why Supabase over Firebase?
-- PostgreSQL = relational queries, better for project/slide relationships
+- PostgreSQL = relational queries, better for presentation/slide relationships
 - Row-level security for multi-tenant data
 - Generous free tier, predictable pricing
 - Better TypeScript/Prisma integration
@@ -150,7 +150,7 @@ flowchart LR
     end
     
     subgraph state [State Management]
-        ProjectStore[Project Store]
+        PresentationStore[Presentation Store]
         UIStore[UI Store]
         UserStore[User Store]
     end
@@ -204,17 +204,17 @@ graph TB
 
 ```mermaid
 erDiagram
-    USER ||--o{ PROJECT : owns
+    USER ||--o{ PRESENTATION : owns
     USER ||--o{ SUBSCRIPTION : has
-    PROJECT ||--o{ SLIDE : contains
-    PROJECT ||--o{ SLIDE_SECTION : "organised by"
+    PRESENTATION ||--o{ SLIDE : contains
+    PRESENTATION ||--o{ SLIDE_SECTION : "organised by"
     SLIDE ||--o{ SLIDE_ITEM : "contains (tree)"
     SLIDE ||--o{ SCENE : "has scenes (ADR-001)"
     SCENE ||--|| WIDGET_STATE_LAYER : "has behavior"
     SLIDE ||--o{ ELEMENT : "contains (deprecated flat)"
     SLIDE_ITEM ||--o{ SLIDE_ITEM : "children (recursive)"
-    PROJECT ||--o| VOICE_CONFIG : has
-    PROJECT ||--o{ EXPORT : generates
+    PRESENTATION ||--o| VOICE_CONFIG : has
+    PRESENTATION ||--o{ EXPORT : generates
     
     USER {
         uuid id PK
@@ -227,7 +227,7 @@ erDiagram
         timestamp created_at
     }
     
-    PROJECT {
+    PRESENTATION {
         uuid id PK
         uuid user_id FK
         string name
@@ -241,7 +241,7 @@ erDiagram
     
     SLIDE {
         uuid id PK
-        uuid project_id FK
+        uuid presentation_id FK
         int order
         text content
         string template_id
@@ -304,7 +304,7 @@ erDiagram
     
     VOICE_CONFIG {
         uuid id PK
-        uuid project_id FK
+        uuid presentation_id FK
         string voice_id
         string audio_url
         jsonb sync_points
@@ -312,7 +312,7 @@ erDiagram
     
     EXPORT {
         uuid id PK
-        uuid project_id FK
+        uuid presentation_id FK
         enum type
         enum status
         string output_url
@@ -336,7 +336,7 @@ erDiagram
 | Data Type | Storage | Retention | Access Pattern |
 |-----------|---------|-----------|----------------|
 | User data | Supabase | Permanent | Frequent read/write |
-| Project data | Supabase | Permanent | Frequent read/write |
+| Presentation data | Supabase | Permanent | Frequent read/write |
 | Generated audio | R2 | 90 days | Read-heavy, CDN cached |
 | Exported videos | R2 | 30 days (free) / 1 year (paid) | Read-heavy, CDN cached |
 | Temp render files | R2 | 24 hours | Write once, read once |
@@ -357,7 +357,7 @@ sequenceDiagram
     participant DB as Supabase
     
     U->>FE: Submit script + intent
-    FE->>API: POST /api/projects/{id}/generate
+    FE->>API: POST /api/presentations/{id}/generate
     API->>AI: Analyze script structure
     AI-->>API: Section breakdown
     
@@ -384,7 +384,7 @@ sequenceDiagram
     participant DB as Supabase
     
     U->>FE: Click "Generate Voice"
-    FE->>API: POST /api/projects/{id}/voice
+    FE->>API: POST /api/presentations/{id}/voice
     API->>TTS: Generate speech with timestamps
     TTS-->>API: Audio + word timestamps
     API->>R2: Upload audio file
@@ -408,7 +408,7 @@ sequenceDiagram
     participant DB as Supabase
     
     U->>FE: Click "Export Video"
-    FE->>API: POST /api/projects/{id}/export
+    FE->>API: POST /api/presentations/{id}/export
     API->>DB: Create export record (pending)
     API->>Lambda: Trigger render job
     Lambda-->>API: Job ID
@@ -531,8 +531,8 @@ node >= 20.x
 pnpm >= 10.x  (enforced via packageManager field)
 
 # Clone and install
-git clone https://github.com/EvgenyEMK/visual-story.git
-cd visual-story
+git clone https://github.com/EvgenyEMK/visual-flow.git
+cd visual-flow
 pnpm install
 
 # Environment setup
@@ -555,7 +555,7 @@ pnpm dev:web
 The project uses a **Turborepo monorepo** with **pnpm workspaces**:
 
 ```
-visual-story/
+visual-flow/
 ├── apps/
 │   └── web/                           # Next.js frontend app
 │       ├── src/
@@ -601,7 +601,7 @@ visual-story/
 │       │
 │       ├── next.config.ts
 │       ├── tsconfig.json              # Extends ../../tsconfig.base.json
-│       └── package.json               # @visual-story/web
+│       └── package.json               # @visual-flow/web
 │
 ├── packages/
 │   ├── shared/                        # Shared types, constants, utils
@@ -623,9 +623,9 @@ visual-story/
 
 | Package | Path | Purpose |
 |---------|------|---------|
-| `@visual-story/web` | `apps/web` | Next.js frontend application |
-| `@visual-story/shared` | `packages/shared` | Shared types and utilities (scaffold) |
-| `@visual-story/db` | `packages/db` | Database client layer (scaffold) |
+| `@visual-flow/web` | `apps/web` | Next.js frontend application |
+| `@visual-flow/shared` | `packages/shared` | Shared types and utilities (scaffold) |
+| `@visual-flow/db` | `packages/db` | Database client layer (scaffold) |
 
 #### Key Commands
 
@@ -636,7 +636,7 @@ visual-story/
 | `pnpm build` | Build all packages (with caching) |
 | `pnpm test` | Run all tests across workspace |
 | `pnpm lint` | Lint all packages |
-| `pnpm --filter @visual-story/web add <pkg>` | Add a dependency to the web app |
+| `pnpm --filter @visual-flow/web add <pkg>` | Add a dependency to the web app |
 
 ---
 

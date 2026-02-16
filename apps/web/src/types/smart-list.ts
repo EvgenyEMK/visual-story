@@ -1,5 +1,5 @@
 /**
- * Smart List widget types for VisualStory.
+ * Smart List widget types for VisualFlow.
  *
  * SmartItemsList is the first "Smart Widget" — a self-contained interactive
  * molecule backed by the WidgetItem SlideItem variant. It supports hierarchical
@@ -160,6 +160,33 @@ export interface SmartListConfig {
   filterByStatuses?: string[];
   /** Group items by their primary icon status instead of original order (SL-F16). */
   groupByStatus?: boolean;
+
+  // --- Phase 3a: Shared source reference ---
+
+  /**
+   * ID of a SmartListSource that provides the canonical item data.
+   * When set, the widget reads items from the source store instead of
+   * its own embedded `data.items`. The `data` field may be empty.
+   * When unset, the widget uses embedded data (backward-compatible mode).
+   */
+  sourceId?: string;
+
+  // --- Phase 3b: Aggregator mode ---
+
+  /**
+   * When `true`, this widget is an aggregator that collects items from
+   * multiple SmartListSources. Use `aggregateFrom` to specify sources.
+   */
+  aggregator?: boolean;
+  /** Sources to aggregate from (only used when `aggregator` is true). */
+  aggregateFrom?: Array<{
+    sourceId: string;
+    filter?: string[];
+  }>;
+  /** Group aggregated items under source-name headers. */
+  groupBySource?: boolean;
+  /** Deduplicate items that appear in multiple sources (by item ID). */
+  deduplicateById?: boolean;
 }
 
 /** Data payload for a Smart Items List widget. */

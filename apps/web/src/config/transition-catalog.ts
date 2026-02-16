@@ -1,5 +1,5 @@
 /**
- * Complete catalog of all visual transitions and animations for VisualStory.
+ * Complete catalog of all visual transitions and animations for VisualFlow.
  *
  * Three categories:
  * 1. In-Slide Animations (element-level) — 10 templates
