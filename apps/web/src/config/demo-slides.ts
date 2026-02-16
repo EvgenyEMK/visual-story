@@ -468,6 +468,48 @@ const slide7Scenes: Scene[] = [{
 }];
 
 // ---------------------------------------------------------------------------
+// Slide 8 — Editable 2×2 Grid (slash-command ready)
+//
+// Four empty cells in a 2×2 grid. Each cell is a card with a single
+// placeholder text atom (empty content). The ItemRenderer detects these
+// as empty slots and renders the EmptyCardSlot component, which supports
+// the "/" slash-command menu for inserting blocks.
+// ---------------------------------------------------------------------------
+
+const GRID_CELL_IDS = ['s8-cell-1', 's8-cell-2', 's8-cell-3', 's8-cell-4'];
+
+const slide8Items: SlideItem[] = [
+  layout('s8-grid', 'grid', GRID_CELL_IDS.map((cellId) =>
+    card(cellId, [
+      atom(`${cellId}-ph`, 'text', '', { style: { fontSize: 11, color: '#64748b' } }),
+    ], { style: { borderRadius: 16, padding: 16 } }),
+  ), { layoutConfig: { columns: 2, rows: 2, gap: 16 }, style: { padding: 24 } }),
+];
+
+const slide8Scenes: Scene[] = [{
+  id: 'slide-8-scene-0',
+  title: 'Editable Grid',
+  icon: '✏️',
+  order: 0,
+  widgetStateLayer: {
+    initialStates: GRID_CELL_IDS.map((cellId) => ({
+      widgetId: cellId,
+      visible: true,
+      isFocused: false,
+      displayMode: 'normal' as const,
+    })),
+    enterBehavior: {
+      revealMode: 'all-at-once',
+      animationType: 'fade-in',
+      duration: 0.3,
+      easing: 'ease-out',
+    },
+    interactionBehaviors: [],
+    animatedWidgetIds: [],
+  },
+}];
+
+// ---------------------------------------------------------------------------
 // Demo Sections (organizational hierarchy for sidebar)
 // ---------------------------------------------------------------------------
 
@@ -489,6 +531,12 @@ export const DEMO_SECTIONS: SlideSection[] = [
     title: 'Layouts',
     icon: '📐',
     slideIds: ['slide-5', 'slide-6', 'slide-7'],
+  },
+  {
+    id: 'section-editable',
+    title: 'Editable Grid',
+    icon: '✏️',
+    slideIds: ['slide-8'],
   },
 ];
 
@@ -639,6 +687,29 @@ export const DEMO_SLIDES: Slide[] = [
     transition: 'fade',
     scenes: slide7Scenes,
   },
+
+  // -----------------------------------------------------------------------
+  // Editable Grid slides — slash-command ready
+  // -----------------------------------------------------------------------
+
+  // Slide 8 — Editable 2×2 Grid
+  {
+    id: 'slide-8',
+    order: 7,
+    sectionId: 'section-editable',
+    title: 'Editable Grid',
+    subtitle: 'Click a cell and type / to insert blocks',
+    icon: '✏️',
+    content: 'Editable 2×2 grid — slash-command block insertion',
+    layoutTemplate: 'grid-2x2',
+    header: titleBarHeader('h-slide-8', { statusColor: '#f59e0b', statusLabel: 'Editable' }),
+    animationTemplate: 'none',
+    items: slide8Items,
+    elements: [],
+    duration: 5000,
+    transition: 'fade',
+    scenes: slide8Scenes,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -710,6 +781,16 @@ export const DEMO_SCRIPTS: SlideScript[] = [
       elementId: `s7-${fi.id}`,
       label: fi.title,
       script: { text: `${fi.title}: ${fi.description}`, notes: 'Static card.' },
+    })),
+  },
+  // Editable Grid
+  {
+    slideId: 'slide-8',
+    opening: { text: 'Editable Grid — click any cell and type / to insert a block. Choose from Icon Cards, Task Lists, Stat Cards, Quotes, and more.', notes: 'Slash-command demo.' },
+    elements: GRID_CELL_IDS.map((cellId, i) => ({
+      elementId: cellId,
+      label: `Cell ${i + 1}`,
+      script: { text: `Empty cell — use slash command to fill.`, notes: 'Empty slot.' },
     })),
   },
 ];

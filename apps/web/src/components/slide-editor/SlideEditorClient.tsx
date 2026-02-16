@@ -65,11 +65,16 @@ export function SlideEditorClient() {
   const canUndo = useUndoRedoStore((s) => s.past.length > 0);
   const canRedo = useUndoRedoStore((s) => s.future.length > 0);
 
-  // Initialize project store with demo data on first mount
+  // Initialize project store with demo data on first mount, or
+  // re-initialize when the demo deck has been extended with new slides
+  // (handles HMR / code changes without requiring a hard refresh).
   const setProject = useProjectStore((s) => s.setProject);
   useEffect(() => {
-    // Only initialize if the store has no slides yet
-    if (useProjectStore.getState().slides.length === 0) {
+    const currentSlides = useProjectStore.getState().slides;
+    const currentIds = new Set(currentSlides.map((s) => s.id));
+    const hasMissing = DEMO_SLIDES.some((ds) => !currentIds.has(ds.id));
+
+    if (currentSlides.length === 0 || hasMissing) {
       setProject({
         id: 'demo-project',
         tenantId: 'demo-tenant',

@@ -31,6 +31,7 @@ import { em } from '@/components/slide-ui/units';
 import { DetailPopup } from '@/components/slide-ui/molecules/DetailPopup';
 import type { PopupOriginRect } from '@/components/slide-ui/molecules/DetailPopup';
 import { InlineTextEditor } from '@/components/editor/inline-text-editor';
+import { EmptyCardSlot, isEmptyCard } from '@/components/editor/slash-command-menu';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -452,6 +453,29 @@ function RenderItem({
 
   // --- Card ---
   if (item.type === 'card') {
+    // Empty placeholder card: show slash-command slot in edit mode
+    if (isEmptyCard(item.children) && isEditable && editing.onItemUpdate) {
+      const handleInsertBlock = (
+        cardId: string,
+        children: SlideItem[],
+        style?: Record<string, unknown>,
+      ) => {
+        const updates: Partial<SlideItem> & { children?: SlideItem[] } = { children };
+        if (style) {
+          updates.style = style as SlideItem['style'];
+        }
+        editing.onItemUpdate!(cardId, updates as Partial<SlideItem>);
+      };
+
+      return (
+        <EmptyCardSlot
+          cardId={item.id}
+          cardStyle={baseStyle}
+          onInsertBlock={handleInsertBlock}
+        />
+      );
+    }
+
     const hasDetail = item.detailItems && item.detailItems.length > 0;
     return (
       <motion.div
