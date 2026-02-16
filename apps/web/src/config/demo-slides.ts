@@ -639,7 +639,7 @@ export const DEMO_SLIDES: Slide[] = [
     order: 4,
     sectionId: 'section-layouts',
     title: 'Grid of Cards',
-    subtitle: 'Auto-grid of FeatureCards with staggered entrance',
+    subtitle: 'Auto-grid of IconTitleCards with staggered entrance',
     icon: '🔲',
     content: 'Header + Grid 2x2 — feature cards grid',
     layoutTemplate: 'grid-2x2',

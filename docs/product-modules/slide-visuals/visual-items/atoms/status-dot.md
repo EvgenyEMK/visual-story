@@ -24,6 +24,6 @@ The component displays a small circular dot in a customizable color. The dot can
 ## Works Well With
 - TitleBar for header status indicators
 - StatusLegend for explaining status color meanings
-- FeatureCard for feature availability status
+- IconTitleCard for feature availability status
 - ItemThumbnail for item state indicators
 - FlowNode for process step completion status

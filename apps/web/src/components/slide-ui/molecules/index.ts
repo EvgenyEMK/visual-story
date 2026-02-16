@@ -1,4 +1,5 @@
-export { FeatureCard } from './FeatureCard';
+export { IconTitleCard, FeatureCard } from './IconTitleCard';
+export type { IconTitleCardVariant } from './IconTitleCard';
 export { StatCard } from './StatCard';
 export { QuoteBlock } from './QuoteBlock';
 export { HeroSpotlight } from './HeroSpotlight';

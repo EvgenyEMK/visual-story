@@ -15,7 +15,8 @@
 
 | Module | Description | MVP | Status |
 |--------|-------------|-----|--------|
-| [slide-editor/](./slide-editor/) | Core authoring experience — canvas, timeline, animations, voice sync, AI, content layouts, visual items, and export | Yes | `in-progress` |
+| [slide-editor/](./slide-editor/) | Core authoring experience — canvas, timeline, animations, voice sync, AI, and export | Yes | `in-progress` |
+| [slide-visuals/](./slide-visuals/) | Visual building blocks — atoms, molecules, smart widgets, content layouts, layout templates | Yes | `in-progress` |
 | [slide-player/](./slide-player/) | Interactive web-based presentation viewer with shareable URLs | Yes | `planned` |
 | [home-page/](./home-page/) | Landing page for new visitors — value proposition, demo showcase, CTA | Yes | `planned` |
 | [demo/](./demo/) | Interactive product demonstration and sample presentations | Yes | `planned` |
@@ -49,18 +50,20 @@ product-modules/
 │   │   └── slide-transitions/
 │   ├── voice-sync/
 │   ├── ai-assistant/
+│   └── export/
+├── slide-visuals/             ★ Visual building blocks (shared across editor & player)
+│   ├── visual-items/
+│   │   ├── atoms/
+│   │   ├── molecules/
+│   │   ├── layout-molecules/
+│   │   └── interactive-layouts/
 │   ├── content-layouts/
 │   │   ├── columns/
 │   │   ├── grids/
 │   │   ├── cards-slide/
 │   │   ├── navigation/
 │   │   └── other/
-│   ├── visual-items/
-│   │   ├── atoms/
-│   │   ├── molecules/
-│   │   ├── layout-molecules/
-│   │   └── interactive-layouts/
-│   └── export/
+│   └── layouts-and-templates/
 ├── slide-player/
 ├── home-page/
 ├── demo/

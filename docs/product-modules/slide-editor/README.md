@@ -39,7 +39,7 @@ The editor workspace consists of five UI zones. Features in each task cluster ma
 |------------|-------------|--------|
 | [deck-management/](./deck-management/) | Slides CRUD, scenes, reorder, navigate between slides | `ToDo` |
 | [element-editing/](./element-editing/) | Select, create, edit text/style/size/position, element animation assignment | `In Progress` |
-| [layouts-and-templates/](./layouts-and-templates/) | Layout templates, slide backgrounds, alignment, grid/snap | `ToDo` |
+| [layouts-and-templates/](../slide-visuals/layouts-and-templates/) | Layout templates, slide backgrounds, alignment, grid/snap *(moved to slide-visuals/)* | `ToDo` |
 | [animation-and-timing/](./animation-and-timing/) | Animation step sequence, grouped animations, transitions, timing, preview | `ToDo` |
 | [narration-and-voice/](./narration-and-voice/) | Speaker notes, TTS generation, voice selection, audio-animation sync | `ToDo` |
 | [theming/](./theming/) | Visual themes, colors, fonts, branding | `ToDo` |
@@ -68,8 +68,8 @@ Data-model catalogs and design-system docs that are referenced by multiple featu
 | Reference | Description | Status |
 |-----------|-------------|--------|
 | [_reference/animations/](./_reference/animations/) | Animation engine — element animations, grouped animations, slide transitions, catalog | `in-progress` |
-| [_reference/visual-items/](./_reference/visual-items/) | Visual building blocks — atoms, molecules, interactive layouts | `in-progress` |
-| [_reference/content-layouts/](./_reference/content-layouts/) | Slide layout templates — columns, grids, cards, navigation patterns | `in-progress` |
+| [visual-items/](../slide-visuals/visual-items/) | Visual building blocks — atoms, molecules, smart widgets, interactive layouts | `in-progress` |
+| [content-layouts/](../slide-visuals/content-layouts/) | Slide layout templates — columns, grids, cards, navigation patterns | `in-progress` |
 
 ## User Flow (Editor)
 

@@ -27,4 +27,4 @@ The layout displays cards stacked in 3D space with perspective effects. The top 
 - SlideText for card descriptions
 - TitleBar for slide headers
 - CTAButton for action prompts
-- FeatureCard concepts (similar card-based content)
+- IconTitleCard concepts (similar card-based content)

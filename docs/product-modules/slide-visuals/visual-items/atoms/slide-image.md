@@ -25,7 +25,7 @@ The component displays an image with configurable dimensions and border radius f
 
 ## Works Well With
 - SlideText for captions and descriptions
-- FeatureCard for feature illustrations
+- IconTitleCard for feature illustrations
 - HeroSpotlight for hero section visuals
 - GridOfCards when images are part of card content
 - SidebarDetail for detail view images

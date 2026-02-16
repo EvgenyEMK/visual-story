@@ -1,6 +1,6 @@
 # Layouts and Templates
 
-> **Parent module:** [Slide Editor](../README.md)
+> **Parent module:** [Slide Visuals](../README.md) | [Slide Editor](../../slide-editor/README.md)
 > **Status:** `ToDo`
 > **MVP:** Yes
 
@@ -128,8 +128,8 @@ Layouts and Templates covers how users choose and apply structural arrangements 
 
 ## Technical References
 
-- [_reference/content-layouts/](../_reference/content-layouts/) — Full catalog of layout templates (columns, grids, cards, navigation)
-- [_reference/visual-items/](../_reference/visual-items/) — Visual building blocks that populate layouts
+- [content-layouts/](../content-layouts/) — Full catalog of layout templates (columns, grids, cards, navigation)
+- [visual-items/](../visual-items/) — Visual building blocks that populate layouts
 
 ## Dependencies
 

@@ -25,6 +25,6 @@ The component displays a quotation with a decorative accent bar at the top (a co
 ## Works Well With
 - SlideTitle for quote section headings
 - SlideText for context around quotes
-- FeatureCard when quotes are part of feature content
+- IconTitleCard when quotes are part of feature content
 - ItemsList when mixing quotes with lists
 - HeroSpotlight for hero section quotes

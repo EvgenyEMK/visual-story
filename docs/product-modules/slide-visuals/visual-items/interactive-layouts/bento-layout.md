@@ -22,7 +22,7 @@ The layout splits the slide into two sections. The left side (main area) display
 - **Sidebar item styling**: Active state highlighting for selected items
 
 ## Works Well With
-- FeatureCard concepts (expanded in main area)
+- IconTitleCard concepts (expanded in main area)
 - IconBadge for sidebar item icons
 - TitleBar for slide headers
 - SlideText for additional context

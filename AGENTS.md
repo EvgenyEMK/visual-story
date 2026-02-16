@@ -125,13 +125,13 @@ The slide editor module (`docs/product-modules/slide-editor/`) is organized by *
 |--------------|----------------|
 | `deck-management/` | Slides CRUD, scenes, reorder, navigate, presentation title, auto-save |
 | `element-editing/` | Select, create, edit, style, position elements, element animation assignment |
-| `layouts-and-templates/` | Layout templates, slide backgrounds, alignment, grid/snap |
+| `layouts-and-templates/` | Layout templates, slide backgrounds, alignment, grid/snap *(moved to `slide-visuals/`)* |
 | `animation-and-timing/` | Animation step sequence, grouped animations, transitions, timing, preview |
 | `narration-and-voice/` | Speaker notes, TTS generation, voice selection, audio-animation sync |
 | `theming/` | Visual themes, colors, fonts, branding |
 | `ai-assistant/` | AI prompts, script feedback, visual suggestions, regeneration |
 | `preview-and-export/` | Full-screen preview, video export, web link, sharing |
-| `_reference/` | Data-model catalogs (animations, visual-items, content-layouts, canvas specs) |
+| `_reference/` | Data-model catalogs (animations, canvas specs); visual-items and content-layouts moved to `slide-visuals/` |
 
 The root `slide-editor/README.md` contains a **feature-to-UI-zone cross-reference matrix** mapping each cluster to the UI zones it touches.
 

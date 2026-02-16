@@ -27,5 +27,5 @@ The component displays a centered card overlay with a blurred backdrop that dims
 - HubSpoke layout for showing spoke item details
 - FlowNode when clicking nodes shows details
 - ItemThumbnail for thumbnail-to-detail interactions
-- FeatureCard when cards trigger detail views
+- IconTitleCard when cards trigger detail views
 - GridOfCards for interactive feature exploration

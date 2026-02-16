@@ -2,7 +2,7 @@
 
 > **Note:** This is a technical reference folder. For feature documentation and user stories, see:
 > - [element-editing/](../../element-editing/) — Element selection, editing, and properties
-> - [layouts-and-templates/](../../layouts-and-templates/) — Layout templates and alignment
+> - [layouts-and-templates/](../../../slide-visuals/layouts-and-templates/) — Layout templates and alignment
 > - [animation-and-timing/](../../animation-and-timing/) — Animation preview on canvas
 
 ## Contents

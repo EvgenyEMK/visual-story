@@ -1,7 +1,7 @@
 # GridOfCards
 
 ## What It Is
-An auto-grid layout that arranges FeatureCard components in a responsive grid pattern. Automatically determines optimal column count based on item quantity and supports staggered entrance animations.
+An auto-grid layout that arranges IconTitleCard components in a responsive grid pattern. Automatically determines optimal column count based on item quantity and supports staggered entrance animations.
 
 ## Visual Appearance
 The component displays a grid of feature cards arranged in columns. The grid automatically calculates the optimal number of columns based on the item count (typically 2-4 columns). Cards are evenly spaced with configurable gaps between them. When entrance animations are enabled, cards appear with staggered delays, creating a cascading reveal effect. Cards maintain consistent sizing and can be arranged vertically (icon above text) or horizontally (icon beside text).
@@ -25,7 +25,7 @@ The component displays a grid of feature cards arranged in columns. The grid aut
 
 ## Works Well With
 - SlideTitle for section headings above grids
-- FeatureCard components (used internally)
+- IconTitleCard components (used internally)
 - SlideText for context around the grid
 - TitleBar for slide headers
 - CTAButton for action prompts below grids

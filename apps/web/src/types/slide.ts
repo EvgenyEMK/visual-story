@@ -48,8 +48,8 @@ export type EasingType =
 // SlideItem — Recursive Tree Model
 // ---------------------------------------------------------------------------
 
-/** Discriminator for the three SlideItem variants. */
-export type SlideItemType = 'layout' | 'card' | 'atom';
+/** Discriminator for the SlideItem variants. */
+export type SlideItemType = 'layout' | 'card' | 'atom' | 'widget';
 
 /** Layout strategies for LayoutItem containers. */
 export type LayoutType = 'grid' | 'flex' | 'sidebar' | 'split' | 'stack';
@@ -196,10 +196,39 @@ export interface AtomItem extends SlideItemBase {
 }
 
 /**
+ * A smart widget — a self-contained interactive component with internal
+ * configuration and data. Backed by a dedicated renderer component per widgetType.
+ *
+ * Unlike atoms and cards, widgets manage their own internal state and
+ * participate in the Scene/WidgetStateLayer system for presentation behaviors
+ * (gradual disclosure, click interactions, etc.).
+ */
+export interface WidgetItem extends SlideItemBase {
+  type: 'widget';
+  /** Which smart widget renderer to use. */
+  widgetType: 'smart-list' | 'smart-legend';
+  /**
+   * Widget-specific configuration.
+   * Typed per widgetType — cast to the specific config interface.
+   */
+  config: Record<string, unknown>;
+  /**
+   * Widget-specific data payload.
+   * Typed per widgetType — cast to the specific data interface.
+   */
+  data: Record<string, unknown>;
+  /**
+   * IDs of other WidgetItems linked to this one.
+   * E.g., a SmartLegend linked to a SmartItemsList.
+   */
+  linkedWidgetIds?: string[];
+}
+
+/**
  * Recursive union of all slide item types.
  * The slide's visual tree is composed of these nodes.
  */
-export type SlideItem = LayoutItem | CardItem | AtomItem;
+export type SlideItem = LayoutItem | CardItem | AtomItem | WidgetItem;
 
 // ---------------------------------------------------------------------------
 // Legacy SlideElement (deprecated — use SlideItem tree)

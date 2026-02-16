@@ -1,7 +1,7 @@
 # Smart Item Lists
 
 > **Parent module:** [Element Editing](./README.md) > [Slide Editor](../README.md)
-> **Status:** `ToDo`
+> **Status:** `InProgress`
 > **MVP:** Partial (Phase 1 features)
 
 ## Purpose
@@ -23,26 +23,26 @@ This is the most frequently used element type in business presentations (project
 
 | ID | Feature | Description | Phase | Status |
 |----|---------|-------------|-------|--------|
-| SL-F01 | [Hierarchical Bullet List](#sl-f01-hierarchical-bullet-list) | Items with indent to sub-bullets, section headers, configurable bullet styles | 1 | `ToDo` |
-| SL-F02 | [Predefined Icon Sets](#sl-f02-predefined-icon-sets) | Built-in icon vocabularies: bullets, todo/done, priority, risk/warning, custom emoji | 1 | `ToDo` |
-| SL-F03 | [Dual Icon Slots](#sl-f03-dual-icon-slots) | Primary status icon + secondary flag icon per item | 2 | `ToDo` |
-| SL-F04 | [Collapse / Expand Sub-Items](#sl-f04-collapse--expand-sub-items) | Configurable defaults for sub-item visibility (all-expanded, all-collapsed, first-expanded) | 1 | `ToDo` |
-| SL-F05 | [Icon Quick-Pick Interaction](#sl-f05-icon-quick-pick-interaction) | Click icon to open preset dropdown; "More..." for full picker | 1 | `ToDo` |
-| SL-F06 | [Gradual Disclosure in Presentation](#sl-f06-gradual-disclosure-in-presentation) | Multiple reveal modes with visual focus on current item | 1 (basic), 2 (full) | `ToDo` |
-| SL-F07 | [Linked Legend Widget](#sl-f07-linked-legend-widget) | StatusLegend auto-linked to ItemsList; legend defines icon vocabulary | 2 | `ToDo` |
-| SL-F08 | [Expandable Detail per Item](#sl-f08-expandable-detail-per-item) | Hidden content per item revealed on click/hover (inline or callout) | 2 | `ToDo` |
-| SL-F09 | [Edit Mode vs. Presentation Mode](#sl-f09-edit-mode-vs-presentation-mode) | Detailed fields in editor, simplified display on slide | 3 | `ToDo` |
+| SL-F01 | [Hierarchical Bullet List](#sl-f01-hierarchical-bullet-list) | Items with indent to sub-bullets, section headers, configurable bullet styles | 1 | `InProgress` |
+| SL-F02 | [Predefined Icon Sets](#sl-f02-predefined-icon-sets) | Built-in icon vocabularies: bullets, todo/done, priority, risk/warning, custom emoji | 1 | `InProgress` |
+| SL-F03 | [Dual Icon Slots](#sl-f03-dual-icon-slots) | Primary status icon + secondary flag icon per item | 2 | `InProgress` |
+| SL-F04 | [Collapse / Expand Sub-Items](#sl-f04-collapse--expand-sub-items) | Configurable defaults for sub-item visibility (all-expanded, all-collapsed, first-expanded) | 1 | `InProgress` |
+| SL-F05 | [Icon Quick-Pick Interaction](#sl-f05-icon-quick-pick-interaction) | Click icon to open preset dropdown; "More..." for full picker | 1 | `InProgress` |
+| SL-F06 | [Gradual Disclosure in Presentation](#sl-f06-gradual-disclosure-in-presentation) | Multiple reveal modes with visual focus on current item — all 4 modes implemented | 1 (basic), 2 (full) | `InProgress` |
+| SL-F07 | [Linked Legend Widget](#sl-f07-linked-legend-widget) | SmartLegend component with auto-link, visibility modes (always/edit-only/expandable) | 2 | `InProgress` |
+| SL-F08 | [Expandable Detail per Item](#sl-f08-expandable-detail-per-item) | Hidden content per item revealed on click (inline mode implemented) | 2 | `InProgress` |
+| SL-F09 | [Edit Mode vs. Presentation Mode](#sl-f09-edit-mode-vs-presentation-mode) | Detailed fields in editor, simplified display on slide | 3 | `Done` |
 | SL-F10 | [External Data Source Linking](#sl-f10-external-data-source-linking) | Connect to Jira/Asana/Linear, select items, sync status | 4 | `ToDo` |
 | SL-F11 | [Status Field Mapping](#sl-f11-status-field-mapping) | Map external statuses to presentation statuses | 4 | `ToDo` |
-| SL-F12 | [Numbered / Ordered Lists](#sl-f12-numbered--ordered-lists) | Auto-numbering with custom prefixes (1., a., i., Step N) | 1 | `ToDo` |
-| SL-F13 | [Auto-Progress Summary](#sl-f13-auto-progress-summary) | Calculated bar/fraction from status icons | 2 | `ToDo` |
-| SL-F14 | [Conditional Formatting](#sl-f14-conditional-formatting) | Item rows auto-color based on status | 2 | `ToDo` |
-| SL-F15 | [Drag-to-Reorder in Edit Mode](#sl-f15-drag-to-reorder-in-edit-mode) | Reorder items by dragging; keyboard indent/outdent | 1 | `ToDo` |
-| SL-F16 | [Smart Filtering / Grouping](#sl-f16-smart-filtering--grouping) | Toggle to group by status or filter visible items | 3 | `ToDo` |
+| SL-F12 | [Numbered / Ordered Lists](#sl-f12-numbered--ordered-lists) | Auto-numbering with custom prefixes (1., a., i., Step N) | 1 | `InProgress` |
+| SL-F13 | [Auto-Progress Summary](#sl-f13-auto-progress-summary) | Segmented progress bar + text summary auto-calculated from status icons | 2 | `InProgress` |
+| SL-F14 | [Conditional Formatting](#sl-f14-conditional-formatting) | Item rows auto-tinted by status accent color (3 intensities) | 2 | `InProgress` |
+| SL-F15 | [Drag-to-Reorder in Edit Mode](#sl-f15-drag-to-reorder-in-edit-mode) | Reorder items by dragging; keyboard indent/outdent | 1 | `InProgress` |
+| SL-F16 | [Smart Filtering / Grouping](#sl-f16-smart-filtering--grouping) | Toggle to group by status or filter visible items | 3 | `Done` |
 | SL-F17 | [Assignee Indicators](#sl-f17-assignee-indicators) | Small avatar/initials chip per item | 3 | `ToDo` |
 | SL-F18 | [AI Auto-Categorization](#sl-f18-ai-auto-categorization) | AI suggests status icon based on item text | 3 | `ToDo` |
 | SL-F19 | [Cross-Slide Item Aggregator](#sl-f19-cross-slide-item-aggregator) | Summary widget collecting items from multiple lists across the deck | 3 | `ToDo` |
-| SL-F20 | [Keyboard-First Editing](#sl-f20-keyboard-first-editing) | Enter, Tab, Shift+Tab, arrow keys, / for icon change | 1 | `ToDo` |
+| SL-F20 | [Keyboard-First Editing](#sl-f20-keyboard-first-editing) | Enter, Tab, Shift+Tab, arrow keys, / for icon change | 1 | `InProgress` |
 | SL-F21 | [Snapshot Comparison](#sl-f21-snapshot-comparison) | Timestamped snapshots with visual diff for progress reviews | 3 (manual), 4 (auto-sync) | `ToDo` |
 
 ## Implementation Phases
@@ -614,7 +614,7 @@ Smart Item Lists require introducing `WidgetItem` as a 4th variant of the `Slide
 3. Cross-widget linking (legend <-> list) needs to be persisted in the data model
 4. Snapshot data and external source config require serializable widget-specific storage
 
-See [visual-items/README.md](../_reference/visual-items/README.md) for how Smart Widgets fit in the component hierarchy.
+See [visual-items/README.md](../../slide-visuals/visual-items/README.md) for how Smart Widgets fit in the component hierarchy.
 
 ### Key Type Definitions
 
@@ -632,10 +632,10 @@ For full type definitions, see the implementation plan.
 
 ## Technical References
 
-- [_reference/visual-items/](../_reference/visual-items/) -- Visual building blocks and Smart Widgets tier
-- [_reference/visual-items/molecules/items-list.md](../_reference/visual-items/molecules/items-list.md) -- Existing ItemsList molecule (base for Phase 1)
-- [_reference/visual-items/molecules/status-legend.md](../_reference/visual-items/molecules/status-legend.md) -- Existing StatusLegend molecule
-- [_reference/animations/grouped-animations/list-accumulator.md](../_reference/animations/grouped-animations/list-accumulator.md) -- List Accumulator animation pattern
+- [visual-items/](../../slide-visuals/visual-items/) -- Visual building blocks and Smart Widgets tier
+- [visual-items/molecules/items-list.md](../../slide-visuals/visual-items/molecules/items-list.md) -- Existing ItemsList molecule (base for Phase 1)
+- [visual-items/molecules/status-legend.md](../../slide-visuals/visual-items/molecules/status-legend.md) -- Existing StatusLegend molecule
+- [animations/grouped-animations/list-accumulator.md](../_reference/animations/grouped-animations/list-accumulator.md) -- List Accumulator animation pattern
 - ADR-001: Scenes + Widget State Layers -- how interaction behaviors are modeled
 
 ## Dependencies

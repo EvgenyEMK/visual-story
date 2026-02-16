@@ -11,7 +11,7 @@ Smart Widgets        — Self-contained interactive molecules with internal stat
   ↑ composed of / sits alongside
 Layout Molecules     — Spatial arrangements of molecules (GridOfCards, StatDashboard, ...)
   ↑ composed of
-Molecules            — Multi-part components (FeatureCard, TitleBar, StatCard, ...)
+Molecules            — Multi-part components (IconTitleCard, TitleBar, StatCard, ...)
   ↑ composed of
 Atoms                — Single visual elements (SlideTitle, SlideText, IconBadge, ...)
 ```
@@ -38,7 +38,7 @@ Molecules combine multiple atoms into meaningful visual units.
 | Component | Purpose |
 |-----------|---------|
 | [TitleBar](./molecules/title-bar.md) | Header bar with title, subtitle, icon, and trailing section |
-| [FeatureCard](./molecules/feature-card.md) | Icon + title + description card |
+| [IconTitleCard](./molecules/icon-title-card.md) | Icon + title + optional description; variants: icon-title, icon-only, card |
 | [StatCard](./molecules/stat-card.md) | Metric value with label, delta, and progress |
 | [HeroSpotlight](./molecules/hero-spotlight.md) | Large centered icon + title + description |
 | [FlowNode](./molecules/flow-node.md) | Circular node for timelines and diagrams |
@@ -67,8 +67,8 @@ Smart Widgets are backed by the `WidgetItem` type in the `SlideItem` data model,
 
 | Component | Purpose | Spec |
 |-----------|---------|------|
-| SmartItemsList | Configurable list with icon sets, hierarchy, collapse/expand, gradual disclosure, snapshot comparison | [smart-item-lists](../../element-editing/smart-item-lists.md) |
-| SmartLegend | Linked legend widget that defines icon vocabulary for SmartItemsList | [smart-item-lists (SL-F07)](../../element-editing/smart-item-lists.md#sl-f07-linked-legend-widget) |
+| SmartItemsList | Configurable list with icon sets, hierarchy, collapse/expand, gradual disclosure, snapshot comparison | [smart-item-lists](../../slide-editor/element-editing/smart-item-lists.md) |
+| SmartLegend | Linked legend widget that defines icon vocabulary for SmartItemsList | [smart-item-lists (SL-F07)](../../slide-editor/element-editing/smart-item-lists.md#sl-f07-linked-legend-widget) |
 
 ### How Smart Widgets Differ from Other Tiers
 
@@ -95,12 +95,12 @@ Interactive layouts are stateful, navigational full-slide experiences. User inte
 
 ## Relationship to Slide Layout Templates
 
-Visual items live inside the content region of a slide. The [Slide Content Layout](../slide-content-layouts/README.md) defines the spatial arrangement of the content area — how it is divided into columns, grids, or other regions — while visual items fill those regions with actual content.
+Visual items live inside the content region of a slide. The [Slide Content Layout](../content-layouts/README.md) defines the spatial arrangement of the content area — how it is divided into columns, grids, or other regions — while visual items fill those regions with actual content.
 
 For example:
 - A "Header + 2x2 Grid" layout template provides a header and a content region.
 - The header region uses a **TitleBar** molecule.
-- The content region contains a **GridOfCards** layout filled with **FeatureCard** molecules.
+- The content region contains a **GridOfCards** layout filled with **IconTitleCard** molecules.
 
 ## Entrance Animations
 

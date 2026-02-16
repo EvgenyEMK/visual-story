@@ -3,7 +3,7 @@
  *
  * Three tiers:
  * - Atoms:     SlideTitle, SlideText, IconBadge, MetricDisplay, ProgressBar, StatusDot, SlideImage, CTAButton
- * - Molecules: FeatureCard, StatCard, QuoteBlock, HeroSpotlight, FlowNode, TitleBar, ItemThumbnail, DetailPopup, ItemsList, StatusLegend
+ * - Molecules: IconTitleCard, StatCard, QuoteBlock, HeroSpotlight, FlowNode, TitleBar, ItemThumbnail, DetailPopup, ItemsList, StatusLegend
  * - Layouts:   GridOfCards, SidebarDetail, CenterStageShelf, BentoLayout, HorizontalTimeline, HubSpoke, TitleSlide, StackOfCards, StatDashboard
  *
  * Icon libraries available:
@@ -39,7 +39,8 @@ export { SlideImage } from './atoms/SlideImage';
 export { CTAButton } from './atoms/CTAButton';
 
 // Molecules
-export { FeatureCard } from './molecules/FeatureCard';
+export { IconTitleCard, FeatureCard } from './molecules/IconTitleCard';
+export type { IconTitleCardVariant } from './molecules/IconTitleCard';
 export { StatCard } from './molecules/StatCard';
 export { QuoteBlock } from './molecules/QuoteBlock';
 export { HeroSpotlight } from './molecules/HeroSpotlight';
@@ -51,6 +52,13 @@ export { ItemsList } from './molecules/ItemsList';
 export type { ListItem, ListHeader, ListRow } from './molecules/ItemsList';
 export { StatusLegend } from './molecules/StatusLegend';
 export type { LegendEntry } from './molecules/StatusLegend';
+
+// Smart Widgets
+export { SmartItemsList } from './widgets/SmartItemsList';
+export type { SmartItemsListProps } from './widgets/SmartItemsList';
+export { SmartLegend } from './widgets/SmartLegend';
+export type { SmartLegendProps, LegendVisibility } from './widgets/SmartLegend';
+export { IconQuickPick } from './widgets/IconQuickPick';
 
 // Layouts
 export { GridOfCards } from './layouts/GridOfCards';

@@ -76,7 +76,7 @@ function GridLayoutsSection() {
   return (
     <DemoGrid>
       {/* GridOfCards */}
-      <DemoBox title="GridOfCards" description="Auto-grid of FeatureCards with staggered entrance. Configurable columns, gap, card size." themeMode={themeMode}>
+      <DemoBox title="GridOfCards" description="Auto-grid of IconTitleCards with staggered entrance. Configurable columns, gap, card size, variant." themeMode={themeMode}>
         <div className="p-4 w-full h-full flex items-center">
           <GridOfCards
             items={DEMO_ITEMS}

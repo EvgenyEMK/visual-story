@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DemoBox } from '../DemoBox';
 import {
-  FeatureCard,
+  IconTitleCard,
   StatCard,
   QuoteBlock,
   HeroSpotlight,
@@ -43,15 +43,15 @@ export function MoleculesSection({ themeMode }: Props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* FeatureCard */}
-        <DemoBox title="FeatureCard" description="Icon + title + description. Vertical or horizontal layout, multiple sizes." themeMode={themeMode}>
+        {/* IconTitleCard */}
+        <DemoBox title="IconTitleCard" description="Icon + title + description. Three variants: icon-title (default), icon-only, card." themeMode={themeMode}>
           <div className="flex flex-col gap-3 p-4 w-full">
             <div className="flex gap-3">
-              <FeatureCard icon={Rocket} title="Launch" description="Ship fast" color="#3b82f6" size="sm" entrance="float-in" />
-              <FeatureCard icon={Shield} title="Secure" description="Built-in encryption" color="#8b5cf6" size="sm" entrance="float-in" delay={0.1} />
-              <FeatureCard icon={Zap} title="Fast" description="10x speed" color="#f59e0b" size="sm" entrance="float-in" delay={0.2} />
+              <IconTitleCard icon={Rocket} title="Launch" description="Ship fast" color="#3b82f6" size="sm" entrance="float-in" />
+              <IconTitleCard icon={Shield} title="Secure" description="Built-in encryption" color="#8b5cf6" size="sm" entrance="float-in" delay={0.1} />
+              <IconTitleCard icon={Zap} title="Fast" description="10x speed" color="#f59e0b" size="sm" entrance="float-in" delay={0.2} />
             </div>
-            <FeatureCard icon={Target} title="Precision Targeting" description="Advanced audience segmentation and personalization for every campaign." color="#ef4444" size="md" direction="horizontal" entrance="float-in" delay={0.35} />
+            <IconTitleCard icon={Target} title="Precision Targeting" description="Advanced audience segmentation and personalization for every campaign." variant="card" color="#ef4444" size="md" direction="horizontal" entrance="float-in" delay={0.35} />
           </div>
         </DemoBox>
 

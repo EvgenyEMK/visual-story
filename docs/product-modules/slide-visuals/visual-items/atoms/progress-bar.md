@@ -28,4 +28,4 @@ The component shows a horizontal bar with a semi-transparent background track. T
 - StatDashboard for dashboard progress views
 - MetricDisplay when showing both value and progress
 - ItemsList for task completion indicators
-- FeatureCard when showing feature adoption or usage
+- IconTitleCard when showing feature adoption or usage

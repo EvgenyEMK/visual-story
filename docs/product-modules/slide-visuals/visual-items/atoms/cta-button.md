@@ -26,6 +26,6 @@ The component displays a rounded button with a customizable gradient background 
 ## Works Well With
 - HeroSpotlight for hero section call-to-actions
 - SlideTitle and SlideText for complete CTA sections
-- FeatureCard when cards are clickable actions
+- IconTitleCard when cards are clickable actions
 - TitleSlide for title slide action buttons
 - GridOfCards when cards trigger actions

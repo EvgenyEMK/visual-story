@@ -23,5 +23,5 @@ The component displays a bold, high-contrast heading text in white with slight t
 ## Works Well With
 - SlideText for body content below the title
 - IconBadge when you need an icon alongside the title
-- FeatureCard and other card components that benefit from a clear heading
+- IconTitleCard and other card components that benefit from a clear heading
 - TitleBar when used within the content area (not the header)

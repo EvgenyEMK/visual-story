@@ -23,12 +23,19 @@ interface RenderIconOptions {
 }
 
 /**
- * Determine if a value is an emoji string (starts with an emoji codepoint).
+ * Determine if a value is a short icon-like string — an emoji, Unicode symbol,
+ * or single glyph used as a visual icon rather than text content.
+ *
+ * Catches emoji (🔴, ✅, 🔥), geometric shapes (●, ○, ◐), mathematical
+ * symbols (⊘), arrows (→), dashes (—), check marks (✓), and similar.
+ * These must render at full icon size, not scaled-down text size.
  */
-function isEmojiString(value: unknown): value is string {
+function isIconString(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  // Simple heuristic: emoji strings are short and don't start with ASCII
-  return value.length <= 4 && /^\p{Emoji}/u.test(value);
+  if (value.length === 0 || value.length > 4) return false;
+  // Any short string containing a non-ASCII character is icon-like
+  // eslint-disable-next-line no-control-regex
+  return /[^\x00-\x7F]/.test(value);
 }
 
 /**
@@ -61,8 +68,8 @@ export function renderIcon(
 
   const { size = 24, className, color } = options;
 
-  // Case 1: Emoji string
-  if (isEmojiString(icon)) {
+  // Case 1: Icon string (emoji, Unicode symbol, single glyph)
+  if (isIconString(icon)) {
     return (
       <span
         className={className}

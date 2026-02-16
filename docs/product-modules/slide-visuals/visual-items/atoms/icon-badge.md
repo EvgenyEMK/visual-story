@@ -23,7 +23,7 @@ The component features a colored badge container with rounded corners that can b
 - **Entrance animation**: Optional animation effects when the badge appears
 
 ## Works Well With
-- FeatureCard when used as the card icon
+- IconTitleCard when used as the card icon
 - GridOfCards for consistent icon presentation across cards
 - StatusLegend for explaining icon meanings
 - FlowNode for process step indicators

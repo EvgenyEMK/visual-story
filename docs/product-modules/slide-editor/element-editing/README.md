@@ -30,7 +30,7 @@ Element Editing is the most frequent activity in the editor. It covers the full 
 | EE-F07 | [Undo / Redo](#ee-f07-undo--redo) | Undo and redo editing actions (Ctrl+Z / Ctrl+Y) | Yes | `Done` |
 | EE-F08 | [Context Menu](#ee-f08-context-menu) | Right-click for quick actions (copy, paste, delete, z-order) | No | `ToDo` |
 | EE-F09 | [Multi-Element Operations](#ee-f09-multi-element-operations) | Align, distribute, or group multiple selected elements | No | `ToDo` |
-| EE-F10 | [Smart Item Lists](./smart-item-lists.md) | Configurable list widget with icon sets, hierarchy, gradual disclosure, linked legend, snapshots | Partial | `ToDo` |
+| EE-F10 | [Smart Item Lists](./smart-item-lists.md) | Configurable list widget with icon sets, hierarchy, gradual disclosure, linked legend, snapshots | Partial | `InProgress` |
 
 ---
 
@@ -346,7 +346,7 @@ A legacy flat `SlideElement[]` model still exists but is deprecated. New feature
 
 - [canvas/slide-canvas.md](../_reference/canvas/slide-canvas.md) — SlideCanvas component technical spec
 - [canvas/element-properties.md](../_reference/canvas/element-properties.md) — Element properties panel spec
-- [_reference/visual-items/](../_reference/visual-items/) — Visual building blocks (atoms, molecules, smart widgets)
+- [visual-items/](../../slide-visuals/visual-items/) — Visual building blocks (atoms, molecules, smart widgets)
 - [_reference/animations/](../_reference/animations/) — Animation catalog for element animation assignment
 - [smart-item-lists.md](./smart-item-lists.md) — Smart Item Lists feature spec (21 features, 4 phases)
 - [smart-item-lists-assessment.md](./smart-item-lists-assessment.md) — Business importance assessment

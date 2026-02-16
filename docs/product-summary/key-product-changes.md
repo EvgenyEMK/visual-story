@@ -107,7 +107,7 @@ These features solve real daily problems for project managers, team leads, and b
 | **Gamma's $10/month creates pricing pressure** | Medium | Medium | Justify 3-5x premium with interactive widgets, animation, and rich content — Gamma has none of these. |
 | **Losing content creator market** | Low | Low | Content creators remain a secondary persona; the product still supports video export and voice-over (Phase 2). |
 | **Voice-over delay reduces differentiation** | Medium | Medium | Voice-over moves to Phase 2 but remains on the roadmap; in-slide interactivity is a stronger differentiator for business users. |
-| **Smart widgets increase engineering complexity** | Medium | High | Start with one pattern (card-expand) and expand; use existing component library (FeatureCard, StatCard, ItemsList, StatusLegend). |
+| **Smart widgets increase engineering complexity** | Medium | High | Start with one pattern (card-expand) and expand; use existing component library (IconTitleCard, StatCard, ItemsList, StatusLegend). |
 
 ---
 

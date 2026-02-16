@@ -28,6 +28,6 @@ The component renders text in a clean, readable sans-serif font by default, with
 ## Works Well With
 - SlideTitle for complete text content sections
 - SlideImage when providing captions or descriptions
-- FeatureCard and StatCard for card descriptions
+- IconTitleCard and StatCard for card descriptions
 - QuoteBlock for styled quotations
 - ItemsList for list item text content

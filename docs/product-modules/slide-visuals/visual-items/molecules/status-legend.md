@@ -28,4 +28,4 @@ The component displays a group of legend entries, each consisting of a small ico
 - StatusDot for explaining dot color meanings
 - MetricDisplay when explaining metric color schemes
 - FlowNode for explaining node state meanings
-- FeatureCard when explaining feature category colors
+- IconTitleCard when explaining feature category colors

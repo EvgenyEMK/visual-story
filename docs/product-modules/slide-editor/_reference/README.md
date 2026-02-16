@@ -9,13 +9,13 @@ This folder contains data-model catalogs and technical reference documentation t
 | Folder | Description |
 |--------|-------------|
 | [animations/](./animations/) | Animation engine — element animations, grouped animations, slide transitions, trigger modes, theme system, full catalog |
-| [visual-items/](./visual-items/) | Visual building blocks — atoms (text, icons, images), molecules (cards, lists), interactive layouts (hub-spoke, bento, etc.) |
-| [content-layouts/](./content-layouts/) | Slide layout templates — columns, grids, cards, navigation patterns, slide header |
+| [visual-items/](../../slide-visuals/visual-items/) | Visual building blocks — atoms, molecules, smart widgets, interactive layouts *(moved to slide-visuals/)* |
+| [content-layouts/](../../slide-visuals/content-layouts/) | Slide layout templates — columns, grids, cards, navigation patterns, slide header *(moved to slide-visuals/)* |
 | [canvas/](./canvas/) | Technical specs for canvas components (SlideCanvas, element properties panel) |
 
 ## Cross-Referenced From
 
 - [element-editing/](../element-editing/) — uses visual-items and canvas specs
-- [layouts-and-templates/](../layouts-and-templates/) — uses content-layouts catalog
+- [layouts-and-templates/](../../slide-visuals/layouts-and-templates/) — uses content-layouts catalog
 - [animation-and-timing/](../animation-and-timing/) — uses animations catalog and engine docs
 - [theming/](../theming/) — uses animation theme system (color roles, palettes)

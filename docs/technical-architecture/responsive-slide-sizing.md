@@ -34,7 +34,7 @@ flowchart TB
   subgraph slideCanvas ["Slide Canvas (.slide-canvas)"]
     direction TB
     FS["font-size: clamp(8px, 100cqw/60, 32px)"]
-    FS --> Cards["FeatureCard, StatCard, …"]
+    FS --> Cards["IconTitleCard, StatCard, …"]
     FS --> Layouts["CardExpandLayout, GridOfCards, …"]
     FS --> Atoms["Icons, Text, Buttons, …"]
     Cards -.- emNote["em units → scale with container"]

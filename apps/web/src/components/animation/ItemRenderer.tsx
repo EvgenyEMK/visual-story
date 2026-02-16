@@ -24,9 +24,12 @@ import type {
   LayoutItem,
   CardItem,
   AtomItem,
+  WidgetItem,
   LayoutConfig,
   ElementStyle,
 } from '@/types/slide';
+import type { SmartListConfig, SmartListData } from '@/types/smart-list';
+import { SmartItemsList } from '@/components/slide-ui/widgets/SmartItemsList';
 import { em } from '@/components/slide-ui/units';
 import { DetailPopup } from '@/components/slide-ui/molecules/DetailPopup';
 import type { PopupOriginRect } from '@/components/slide-ui/molecules/DetailPopup';
@@ -562,8 +565,42 @@ function RenderItem({
     );
   }
 
+  // --- Widget ---
+  if (item.type === 'widget') {
+    const widgetItem = item as WidgetItem;
+    return (
+      <motion.div
+        data-item-id={item.id}
+        className={ringClass}
+        style={baseStyle}
+        initial={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
+        animate={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={isEditable ? handleClick : undefined}
+      >
+        {widgetItem.widgetType === 'smart-list' && (
+          <SmartItemsList
+            config={widgetItem.config as unknown as SmartListConfig}
+            data={widgetItem.data as unknown as SmartListData}
+            isEditing={isEditable}
+            onDataChange={
+              isEditable && editing.onItemUpdate
+                ? (newData) => editing.onItemUpdate!(item.id, { data: newData } as Partial<SlideItem>)
+                : undefined
+            }
+            onConfigChange={
+              isEditable && editing.onItemUpdate
+                ? (newConfig) => editing.onItemUpdate!(item.id, { config: newConfig } as Partial<SlideItem>)
+                : undefined
+            }
+          />
+        )}
+      </motion.div>
+    );
+  }
+
   // --- Atom ---
-  const isTextAtom = item.atomType === 'text';
+  const isTextAtom = (item as AtomItem).atomType === 'text';
   const isBeingEdited = editing.editingItemId === item.id && isTextAtom;
 
   return (
@@ -611,7 +648,7 @@ function RenderItem({
 function findCardById(items: SlideItem[], id: string): CardItem | null {
   for (const item of items) {
     if (item.type === 'card' && item.id === id) return item;
-    if (item.type === 'layout' || item.type === 'card') {
+    if ((item.type === 'layout' || item.type === 'card') && 'children' in item) {
       const found = findCardById(item.children, id);
       if (found) return found;
     }

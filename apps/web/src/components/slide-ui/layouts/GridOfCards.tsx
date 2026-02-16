@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { em } from '../units';
 import type { IconProp, StaggerProps, AccentColor } from '../types';
 import { entranceVariants, getEntranceMotion } from '../entrance';
-import { FeatureCard } from '../molecules/FeatureCard';
+import { IconTitleCard } from '../molecules/IconTitleCard';
+import type { IconTitleCardVariant } from '../molecules/IconTitleCard';
 
 export interface GridItem {
   icon: IconProp;
@@ -25,6 +26,8 @@ interface GridOfCardsProps extends StaggerProps {
   cardSize?: 'sm' | 'md' | 'lg' | 'xl';
   /** Card direction. */
   cardDirection?: 'vertical' | 'horizontal';
+  /** Card visual variant. */
+  cardVariant?: IconTitleCardVariant;
   /** Additional class names. */
   className?: string;
 }
@@ -42,6 +45,7 @@ export function GridOfCards({
   gap = 16,
   cardSize = 'md',
   cardDirection = 'vertical',
+  cardVariant = 'icon-title',
   entrance = 'none',
   delay = 0,
   duration,
@@ -67,11 +71,12 @@ export function GridOfCards({
       transition={containerMotion?.transition}
     >
       {items.map((item, i) => (
-        <FeatureCard
+        <IconTitleCard
           key={`${item.title}-${i}`}
           icon={item.icon}
           title={item.title}
           description={item.description}
+          variant={cardVariant}
           color={item.color ?? '#3b82f6'}
           size={cardSize}
           direction={cardDirection}

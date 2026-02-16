@@ -54,7 +54,7 @@ export function LayoutsSection({ themeMode }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* GridOfCards */}
-        <DemoBox title="GridOfCards" description="Auto-grid of FeatureCards with staggered entrance. Configurable columns, gap, card size." themeMode={themeMode}>
+        <DemoBox title="GridOfCards" description="Auto-grid of IconTitleCards with staggered entrance. Configurable columns, gap, card size, variant." themeMode={themeMode}>
           <div className="p-4 w-full h-full flex items-center">
             <GridOfCards
               items={DEMO_ITEMS}

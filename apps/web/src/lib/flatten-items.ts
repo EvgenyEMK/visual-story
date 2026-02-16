@@ -27,7 +27,7 @@ export function flattenItems(items: SlideItem[]): AtomItem[] {
   for (const item of items) {
     if (item.type === 'atom') {
       result.push(item);
-    } else {
+    } else if (item.type !== 'widget' && 'children' in item) {
       // LayoutItem and CardItem both have `children`
       result.push(...flattenItems(item.children));
     }
@@ -82,7 +82,7 @@ export function findItemById(
 ): SlideItem | undefined {
   for (const item of items) {
     if (item.id === id) return item;
-    if (item.type !== 'atom') {
+    if (item.type !== 'atom' && item.type !== 'widget' && 'children' in item) {
       const found = findItemById(item.children, id);
       if (found) return found;
     }
@@ -101,7 +101,7 @@ export function findParentId(
 ): string | undefined {
   for (const item of items) {
     if (item.id === targetId) return parentId;
-    if (item.type !== 'atom') {
+    if (item.type !== 'atom' && item.type !== 'widget' && 'children' in item) {
       const found = findParentId(item.children, targetId, item.id);
       if (found !== undefined) return found;
     }
@@ -116,7 +116,7 @@ export function collectItemIds(items: SlideItem[]): string[] {
   const ids: string[] = [];
   for (const item of items) {
     ids.push(item.id);
-    if (item.type !== 'atom') {
+    if (item.type !== 'atom' && item.type !== 'widget' && 'children' in item) {
       ids.push(...collectItemIds(item.children));
     }
   }
@@ -210,7 +210,7 @@ export function appendChildrenToItem(
   let changed = false;
 
   const result = items.map((item) => {
-    if (item.id === parentId && item.type !== 'atom') {
+    if (item.id === parentId && item.type !== 'atom' && item.type !== 'widget' && 'children' in item) {
       changed = true;
       return { ...item, children: [...item.children, ...newChildren] };
     }
@@ -248,7 +248,7 @@ export function deepCloneItemsWithNewIds(items: SlideItem[]): SlideItem[] {
   return items.map((item) => {
     const newId = crypto.randomUUID();
 
-    if (item.type === 'atom') {
+    if (item.type === 'atom' || item.type === 'widget') {
       return { ...item, id: newId };
     }
 

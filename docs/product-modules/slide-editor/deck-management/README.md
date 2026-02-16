@@ -232,7 +232,7 @@ Deck Management covers everything related to the overall presentation structure 
 
 ## Technical References
 
-- [_reference/content-layouts/](../_reference/content-layouts/) — Layout templates used when adding new slides
+- [content-layouts/](../../slide-visuals/content-layouts/) — Layout templates used when adding new slides
 - Architecture: Scenes + Widget State Layers (ADR-001) — Scene grouping model
 
 ## Dependencies
