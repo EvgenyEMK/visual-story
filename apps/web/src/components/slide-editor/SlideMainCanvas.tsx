@@ -31,6 +31,8 @@ interface SlideMainCanvasProps {
   onItemEditStart?: (itemId: string) => void;
   /** Callback when the user finishes inline text editing. */
   onItemEditEnd?: () => void;
+  /** Callback to append new block children to a card/layout. */
+  onAppendBlock?: (parentId: string, children: SlideItem[]) => void;
   /** Callback when a scene should be selected (menu/tab click). */
   onSceneSelect?: (sceneIndex: number) => void;
   /** Whether the canvas is in preview/playback mode (disables editing). */
@@ -244,6 +246,7 @@ export function SlideMainCanvas({
   onItemUpdate,
   onItemEditStart,
   onItemEditEnd,
+  onAppendBlock,
   onSceneSelect,
   isPreview = false,
 }: SlideMainCanvasProps) {
@@ -475,7 +478,7 @@ export function SlideMainCanvas({
   return (
     <div
       data-slide-canvas
-      className="slide-canvas relative w-full max-w-4xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900 flex flex-col"
+      className="slide-canvas relative w-full max-w-6xl shadow-xl rounded-lg overflow-hidden border bg-white dark:bg-zinc-900 flex flex-col"
       style={{ aspectRatio: '16/9' }}
       onClick={() => onElementSelect(null)}
     >
@@ -505,6 +508,7 @@ export function SlideMainCanvas({
             onItemUpdate={onItemUpdate}
             onItemEditStart={onItemEditStart}
             onItemEditEnd={onItemEditEnd}
+            onAppendBlock={onAppendBlock}
             isPreview={isPreview}
           />
         </div>

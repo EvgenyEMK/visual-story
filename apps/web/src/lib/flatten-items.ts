@@ -91,6 +91,25 @@ export function findItemById(
 }
 
 /**
+ * Find the parent ID of a given item in the tree.
+ * Returns undefined if the item is at the root level or not found.
+ */
+export function findParentId(
+  items: SlideItem[],
+  targetId: string,
+  parentId?: string,
+): string | undefined {
+  for (const item of items) {
+    if (item.id === targetId) return parentId;
+    if (item.type !== 'atom') {
+      const found = findParentId(item.children, targetId, item.id);
+      if (found !== undefined) return found;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Collect all item IDs from a tree (all types, not just atoms).
  */
 export function collectItemIds(items: SlideItem[]): string[] {
@@ -164,6 +183,50 @@ export function updateItemInTree(
       if (newChildren !== item.children || newDetailItems !== item.detailItems) {
         changed = true;
         return { ...item, children: newChildren, detailItems: newDetailItems };
+      }
+    }
+
+    return item;
+  });
+
+  return changed ? result : items;
+}
+
+// ---------------------------------------------------------------------------
+// Append child to a parent item
+// ---------------------------------------------------------------------------
+
+/**
+ * Immutably append one or more children to a card or layout item in the tree.
+ * The parent is identified by `parentId`. New children are appended after
+ * existing children. Returns the original array unchanged if the parent is
+ * not found or is an atom (atoms have no children).
+ */
+export function appendChildrenToItem(
+  items: SlideItem[],
+  parentId: string,
+  newChildren: SlideItem[],
+): SlideItem[] {
+  let changed = false;
+
+  const result = items.map((item) => {
+    if (item.id === parentId && item.type !== 'atom') {
+      changed = true;
+      return { ...item, children: [...item.children, ...newChildren] };
+    }
+
+    // Recurse into children
+    if (item.type === 'layout') {
+      const updated = appendChildrenToItem(item.children, parentId, newChildren);
+      if (updated !== item.children) {
+        changed = true;
+        return { ...item, children: updated };
+      }
+    } else if (item.type === 'card') {
+      const updated = appendChildrenToItem(item.children, parentId, newChildren);
+      if (updated !== item.children) {
+        changed = true;
+        return { ...item, children: updated };
       }
     }
 

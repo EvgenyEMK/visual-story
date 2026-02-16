@@ -24,7 +24,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import type { SlideItem, AtomItem } from '@/types/slide';
+import type { SlideItem, AtomItem, CardItem } from '@/types/slide';
 import { em } from '@/components/slide-ui/units';
 
 // ---------------------------------------------------------------------------
@@ -64,9 +64,23 @@ function makeAtom(
   return { id, type: 'atom', atomType, content, style };
 }
 
+function makeCard(
+  id: string,
+  children: SlideItem[],
+  style?: CardItem['style'],
+): CardItem {
+  return { id, type: 'card', children, style };
+}
+
 /**
  * Create the SlideItem children for a given block type.
- * These replace the placeholder content inside the card.
+ * These replace the placeholder content inside the grid cell card.
+ *
+ * Compound blocks (icon-card, stat-card, quote, task-list) are wrapped
+ * in their own CardItem so they render as a bounded, centred widget
+ * inside the cell — not raw atoms stretching to fill the cell.
+ *
+ * Simple blocks (heading, text) remain as bare atoms.
  */
 export function createBlockItems(blockType: string, cellId: string): SlideItem[] {
   const p = `${cellId}-${Date.now().toString(36)}`;
@@ -74,48 +88,78 @@ export function createBlockItems(blockType: string, cellId: string): SlideItem[]
   switch (blockType) {
     case 'icon-card':
       return [
-        makeAtom(`${p}-icon`, 'icon', '🚀', { fontSize: 28 }),
-        makeAtom(`${p}-title`, 'text', 'Card Title', {
-          fontSize: 13, fontWeight: 'bold', color: '#e2e8f0',
-        }),
-        makeAtom(`${p}-desc`, 'text', 'Short description text', {
-          fontSize: 10, color: '#94a3b8',
+        makeCard(`${p}-card`, [
+          makeAtom(`${p}-icon`, 'icon', '🚀', { fontSize: 28 }),
+          makeAtom(`${p}-title`, 'text', 'Card Title', {
+            fontSize: 13, fontWeight: 'bold', color: '#e2e8f0',
+          }),
+          makeAtom(`${p}-desc`, 'text', 'Short description text', {
+            fontSize: 10, color: '#94a3b8',
+          }),
+        ], {
+          backgroundColor: '#3b82f610',
+          borderColor: '#3b82f625',
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 16,
         }),
       ];
 
     case 'task-list':
       return [
-        makeAtom(`${p}-title`, 'text', 'Tasks', {
-          fontSize: 12, fontWeight: 'bold', color: '#e2e8f0',
+        makeCard(`${p}-card`, [
+          makeAtom(`${p}-title`, 'text', 'Tasks', {
+            fontSize: 12, fontWeight: 'bold', color: '#e2e8f0',
+          }),
+          makeAtom(`${p}-t1`, 'text', '☐ Task one', { fontSize: 10, color: '#e2e8f0' }),
+          makeAtom(`${p}-t2`, 'text', '☐ Task two', { fontSize: 10, color: '#e2e8f0' }),
+          makeAtom(`${p}-t3`, 'text', '☐ Task three', { fontSize: 10, color: '#e2e8f0' }),
+        ], {
+          backgroundColor: 'rgba(255,255,255,0.03)',
+          borderRadius: 12,
+          padding: 16,
         }),
-        makeAtom(`${p}-t1`, 'text', '☐ Task one', { fontSize: 10, color: '#e2e8f0' }),
-        makeAtom(`${p}-t2`, 'text', '☐ Task two', { fontSize: 10, color: '#e2e8f0' }),
-        makeAtom(`${p}-t3`, 'text', '☐ Task three', { fontSize: 10, color: '#e2e8f0' }),
       ];
 
     case 'stat-card':
       return [
-        makeAtom(`${p}-value`, 'text', '42K', {
-          fontSize: 26, fontWeight: 'bold', color: '#e2e8f0',
-        }),
-        makeAtom(`${p}-label`, 'text', 'Metric Label', {
-          fontSize: 10, color: '#94a3b8',
-        }),
-        makeAtom(`${p}-delta`, 'text', '↑ +12%', {
-          fontSize: 10, color: '#22c55e',
+        makeCard(`${p}-card`, [
+          makeAtom(`${p}-value`, 'text', '42K', {
+            fontSize: 26, fontWeight: 'bold', color: '#e2e8f0',
+          }),
+          makeAtom(`${p}-label`, 'text', 'Metric Label', {
+            fontSize: 10, color: '#94a3b8',
+          }),
+          makeAtom(`${p}-delta`, 'text', '↑ +12%', {
+            fontSize: 10, color: '#22c55e',
+          }),
+        ], {
+          backgroundColor: '#8b5cf610',
+          borderColor: '#8b5cf625',
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 16,
         }),
       ];
 
     case 'quote':
       return [
-        makeAtom(`${p}-mark`, 'text', '\u201C', {
-          fontSize: 36, fontWeight: 'bold', color: '#3b82f640',
-        }),
-        makeAtom(`${p}-text`, 'text', 'Your quote text here', {
-          fontSize: 12, fontStyle: 'italic', color: '#e2e8f0',
-        }),
-        makeAtom(`${p}-attr`, 'text', '— Attribution', {
-          fontSize: 9, color: '#64748b',
+        makeCard(`${p}-card`, [
+          makeAtom(`${p}-mark`, 'text', '\u201C', {
+            fontSize: 36, fontWeight: 'bold', color: '#3b82f640',
+          }),
+          makeAtom(`${p}-text`, 'text', 'Your quote text here', {
+            fontSize: 12, fontStyle: 'italic', color: '#e2e8f0',
+          }),
+          makeAtom(`${p}-attr`, 'text', '— Attribution', {
+            fontSize: 9, color: '#64748b',
+          }),
+        ], {
+          backgroundColor: '#0f172a',
+          borderColor: '#334155',
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 16,
         }),
       ];
 
@@ -142,19 +186,11 @@ export function createBlockItems(blockType: string, cellId: string): SlideItem[]
 
 /**
  * Optional card-level style overrides applied when a specific block type
- * is inserted (e.g. tinted background for icon cards).
+ * is inserted. Compound blocks now carry their own CardItem styling,
+ * so this returns undefined for most types.
  */
-export function getBlockCardStyle(blockType: string): Record<string, unknown> | undefined {
-  switch (blockType) {
-    case 'icon-card':
-      return { backgroundColor: '#3b82f610', borderColor: '#3b82f625', borderWidth: 1 };
-    case 'stat-card':
-      return { backgroundColor: '#8b5cf610', borderColor: '#8b5cf625', borderWidth: 1 };
-    case 'quote':
-      return { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1 };
-    default:
-      return undefined;
-  }
+export function getBlockCardStyle(_blockType: string): Record<string, unknown> | undefined {
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -512,6 +548,190 @@ export function EmptyCardSlot({
         }}
       />
     </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AddBlockButton — Compact "+" affordance for filled cells
+// ---------------------------------------------------------------------------
+
+interface AddBlockButtonProps {
+  /** ID of the parent card to append children to. */
+  cardId: string;
+  /**
+   * Callback to append new block children to the card.
+   * Unlike EmptyCardSlot (which replaces children), this appends.
+   */
+  onAppendBlock: (
+    cardId: string,
+    children: SlideItem[],
+    style?: Record<string, unknown>,
+  ) => void;
+}
+
+export function AddBlockButton({ cardId, onAppendBlock }: AddBlockButtonProps) {
+  const [isActive, setIsActive] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    if (isActive && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isActive]);
+
+  const updateRect = useCallback(() => {
+    if (containerRef.current) {
+      setAnchorRect(containerRef.current.getBoundingClientRect());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    updateRect();
+    window.addEventListener('scroll', updateRect, true);
+    window.addEventListener('resize', updateRect);
+    return () => {
+      window.removeEventListener('scroll', updateRect, true);
+      window.removeEventListener('resize', updateRect);
+    };
+  }, [menuOpen, updateRect]);
+
+  const filterText = menuOpen && inputValue.startsWith('/') ? inputValue.slice(1) : '';
+  const filteredOptions = useMemo(
+    () =>
+      SLASH_COMMAND_OPTIONS.filter(
+        (opt) =>
+          opt.label.toLowerCase().includes(filterText.toLowerCase()) ||
+          opt.description.toLowerCase().includes(filterText.toLowerCase()),
+      ),
+    [filterText],
+  );
+
+  useEffect(() => {
+    setSelectedIdx(0);
+  }, [filterText]);
+
+  const handleSelectOption = useCallback(
+    (option: SlashCommandOption) => {
+      const newChildren = createBlockItems(option.id, cardId);
+      // Note: we don't pass style updates for appended blocks — only new items
+      onAppendBlock(cardId, newChildren);
+      setMenuOpen(false);
+      setIsActive(false);
+      setInputValue('');
+    },
+    [cardId, onAppendBlock],
+  );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setInputValue(val);
+      if (val.startsWith('/')) {
+        if (!menuOpen) {
+          updateRect();
+          setMenuOpen(true);
+        }
+      } else {
+        setMenuOpen(false);
+      }
+    },
+    [menuOpen, updateRect],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (menuOpen) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setSelectedIdx((prev) => Math.min(prev + 1, filteredOptions.length - 1));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setSelectedIdx((prev) => Math.max(prev - 1, 0));
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const option = filteredOptions[selectedIdx];
+          if (option) handleSelectOption(option);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          setMenuOpen(false);
+          setInputValue('');
+        }
+        return;
+      }
+      if (e.key === 'Escape') {
+        setIsActive(false);
+        setInputValue('');
+      } else if (e.key === 'Enter' && inputValue.trim() && !inputValue.startsWith('/')) {
+        e.preventDefault();
+        const items = createBlockItems('text', cardId);
+        const firstItem = items[0];
+        if (firstItem && firstItem.type === 'atom') {
+          (firstItem as AtomItem).content = inputValue.trim();
+        }
+        onAppendBlock(cardId, items);
+        setIsActive(false);
+        setInputValue('');
+      }
+    },
+    [menuOpen, filteredOptions, selectedIdx, handleSelectOption, cardId, inputValue, onAppendBlock],
+  );
+
+  const handleBlur = useCallback(() => {
+    setTimeout(() => {
+      setMenuOpen(false);
+      setIsActive(false);
+      setInputValue('');
+    }, 150);
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full flex items-center justify-center"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {isActive ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          placeholder="Type / for blocks…"
+          className="w-full bg-transparent outline-none text-center text-white/50 placeholder:text-white/20"
+          style={{ fontSize: em(9), caretColor: '#3b82f6' }}
+        />
+      ) : (
+        <button
+          type="button"
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors text-white/20 hover:text-white/50 hover:bg-white/5"
+          onClick={() => setIsActive(true)}
+          style={{ fontSize: em(9) }}
+        >
+          <span style={{ fontSize: em(12), lineHeight: 1 }}>+</span>
+          <span>Add block</span>
+        </button>
+      )}
+
+      <SlashCommandMenu
+        open={menuOpen}
+        filter={filterText}
+        anchorRect={anchorRect}
+        selectedIndex={selectedIdx}
+        onSelect={handleSelectOption}
+        onClose={() => {
+          setMenuOpen(false);
+          setInputValue('');
+        }}
+      />
+    </div>
   );
 }
 

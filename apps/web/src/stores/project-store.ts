@@ -12,7 +12,7 @@
 import { create } from 'zustand';
 import type { Project } from '@/types/project';
 import type { Slide, SlideElement, SlideItem } from '@/types/slide';
-import { flattenItemsAsElements, updateItemInTree, deepCloneItemsWithNewIds } from '@/lib/flatten-items';
+import { flattenItemsAsElements, updateItemInTree, appendChildrenToItem, deepCloneItemsWithNewIds } from '@/lib/flatten-items';
 import { useUndoRedoStore } from './undo-redo-store';
 
 // ---------------------------------------------------------------------------
@@ -59,6 +59,8 @@ interface ProjectActions {
   // Item operations within a slide (items tree)
   /** Immutably update a single item in the slide's items tree by ID. */
   updateItem: (slideId: string, itemId: string, updates: Partial<SlideItem>) => void;
+  /** Append new child items to a card or layout in the items tree. */
+  appendChildToItem: (slideId: string, parentId: string, newChildren: SlideItem[]) => void;
 
   // Element operations within a slide (legacy flat array)
   /** Update an element within a specific slide. */
@@ -205,6 +207,17 @@ export const useProjectStore = create<ProjectState & ProjectActions>(
           slides: state.slides.map((s) => {
             if (s.id !== slideId) return s;
             const newItems = updateItemInTree(s.items, itemId, updates);
+            if (newItems === s.items) return s;
+            return { ...s, items: newItems };
+          }),
+          isDirty: true,
+        })),
+
+      appendChildToItem: (slideId, parentId, newChildren) =>
+        setWithUndo((state) => ({
+          slides: state.slides.map((s) => {
+            if (s.id !== slideId) return s;
+            const newItems = appendChildrenToItem(s.items, parentId, newChildren);
             if (newItems === s.items) return s;
             return { ...s, items: newItems };
           }),

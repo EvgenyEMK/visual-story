@@ -114,3 +114,40 @@ Extensive product and technical documentation lives in `docs/`:
 - `docs/technical-architecture/` — architecture overview, ADRs, data models
 
 Read relevant docs before making significant architectural changes.
+
+**Mandatory:** When a new feature is added or an existing feature is enhanced, update the corresponding module documentation in `docs/product-modules/` before considering the work complete. Use templates from `docs/product-modules/_templates/` for consistency.
+
+### Slide Editor Documentation Structure
+
+The slide editor module (`docs/product-modules/slide-editor/`) is organized by **functional task clusters** — each sub-folder represents a coherent user workflow, not a UI panel. A single user action (e.g., "edit an element") may span multiple UI zones (canvas, side panel, bottom panel), so features are grouped by what the user accomplishes, not where it happens on screen.
+
+| Task Cluster | What It Covers |
+|--------------|----------------|
+| `deck-management/` | Slides CRUD, scenes, reorder, navigate, presentation title, auto-save |
+| `element-editing/` | Select, create, edit, style, position elements, element animation assignment |
+| `layouts-and-templates/` | Layout templates, slide backgrounds, alignment, grid/snap |
+| `animation-and-timing/` | Animation step sequence, grouped animations, transitions, timing, preview |
+| `narration-and-voice/` | Speaker notes, TTS generation, voice selection, audio-animation sync |
+| `theming/` | Visual themes, colors, fonts, branding |
+| `ai-assistant/` | AI prompts, script feedback, visual suggestions, regeneration |
+| `preview-and-export/` | Full-screen preview, video export, web link, sharing |
+| `_reference/` | Data-model catalogs (animations, visual-items, content-layouts, canvas specs) |
+
+The root `slide-editor/README.md` contains a **feature-to-UI-zone cross-reference matrix** mapping each cluster to the UI zones it touches.
+
+### Documentation Status Tracking
+
+Every README at each level of `docs/product-modules/` must track **status** per feature and per user story using these values:
+
+| Status | Meaning |
+|--------|---------|
+| `ToDo` | Not started — defined but no implementation work begun |
+| `InProgress` | Active development — implementation underway |
+| `Done` | Complete — implemented, tested, and working in the product |
+
+**Rules:**
+- Feature tables in each README must include a **Status** column with one of the three values above.
+- User stories must include the status inline in their heading (e.g., `#### US-CVS-001: View Slide Preview — `ToDo``).
+- When implementation of a feature or user story begins, update its status to `InProgress`.
+- When implementation is complete and verified, update its status to `Done`.
+- Parent folder READMEs must reflect the aggregate status of their sub-features (e.g., if 2 of 5 features are `Done`, the parent shows `InProgress`).

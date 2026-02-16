@@ -390,7 +390,7 @@ export function SlidePlayClient() {
           onClick={handleAdvance}
         >
           <SlideFrame
-            className="max-w-5xl mx-8 rounded-lg bg-white dark:bg-zinc-900 shadow-2xl"
+            className="max-w-7xl mx-8 rounded-lg bg-white dark:bg-zinc-900 shadow-2xl"
             header={hasStructuredHeader
               ? <SlideHeaderRenderer header={currentSlide.header!} slide={currentSlide} />
               : undefined
@@ -417,7 +417,7 @@ export function SlidePlayClient() {
         {/* Script bar */}
         {currentScriptText && (
           <div className="px-8 py-3 bg-black/80 border-t border-white/10 text-center">
-            <p className="text-sm text-white/80 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm text-white/80 max-w-4xl mx-auto leading-relaxed">
               {currentScriptText}
             </p>
           </div>

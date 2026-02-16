@@ -47,7 +47,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           >
             <div className="min-h-screen flex flex-col">
               <AppNavbarWrapper />
-              <main className="flex-1 w-full max-w-7xl mx-auto py-8 px-2 md:px-4">
+              <main className="flex-1 w-full max-w-[2560px] mx-auto py-8 px-2 md:px-6">
                 {children}
               </main>
             </div>

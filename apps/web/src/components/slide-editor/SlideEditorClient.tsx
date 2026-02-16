@@ -14,7 +14,7 @@ import type { Slide, SlideItem } from '@/types/slide';
 import type { Scene } from '@/types/scene';
 import type { SlideScript } from '@/types/script';
 import { calcSceneSteps, generateSceneStepLabels } from '@/types/scene';
-import { findItemById } from '@/lib/flatten-items';
+import { findItemById, findParentId } from '@/lib/flatten-items';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -58,6 +58,7 @@ export function SlideEditorClient() {
   // Project store — source of truth for slide data
   const slides = useProjectStore((s) => s.slides);
   const updateItem = useProjectStore((s) => s.updateItem);
+  const appendChildToItem = useProjectStore((s) => s.appendChildToItem);
   const undo = useProjectStore((s) => s.undo);
   const redo = useProjectStore((s) => s.redo);
 
@@ -189,6 +190,14 @@ export function SlideEditorClient() {
     [currentSlide, updateItem],
   );
 
+  const handleAppendBlock = useCallback(
+    (parentId: string, newChildren: SlideItem[]) => {
+      if (!currentSlide) return;
+      appendChildToItem(currentSlide.id, parentId, newChildren);
+    },
+    [currentSlide, appendChildToItem],
+  );
+
   // Resolve the selected item from the items tree for the properties panel
   const selectedItem = useMemo(() => {
     if (!selectedElementId || !currentSlide) return null;
@@ -201,13 +210,20 @@ export function SlideEditorClient() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Escape: if editing, exit edit mode (InlineTextEditor handles its own Escape);
-      // if an item is selected but not editing, deselect it.
+      // Escape navigates up the item tree (like Figma):
+      //   editing → stop editing (keep child selected)
+      //   child selected → select parent card/layout
+      //   parent selected (or root) → deselect
       if (e.key === 'Escape') {
         if (editingItemId) {
           setEditingItemId(null);
-        } else if (selectedElementId) {
-          setSelectedElementId(null);
+        } else if (selectedElementId && currentSlide) {
+          const parentId = findParentId(currentSlide.items, selectedElementId);
+          if (parentId) {
+            setSelectedElementId(parentId);
+          } else {
+            setSelectedElementId(null);
+          }
         }
       }
 
@@ -230,7 +246,7 @@ export function SlideEditorClient() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [editingItemId, selectedElementId, undo, redo]);
+  }, [editingItemId, selectedElementId, currentSlide, undo, redo]);
 
   // ---------------------------------------------------------------------------
   // Compute currentSubStep for canvas rendering
@@ -406,6 +422,7 @@ export function SlideEditorClient() {
               onItemEditStart={handleItemEditStart}
               onItemEditEnd={handleItemEditEnd}
               onItemUpdate={handleItemUpdate}
+              onAppendBlock={handleAppendBlock}
               onSceneSelect={handleSceneSelect}
             />
           </div>

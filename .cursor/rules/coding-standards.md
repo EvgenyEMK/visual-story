@@ -74,6 +74,17 @@ This is critical for React rendering, Zustand state updates, and undo/redo.
 - Fail fast with clear, actionable error messages.
 - Never trust data from: user input, API responses, URL parameters, file content.
 
+## Documentation Updates (Mandatory)
+
+When a new feature is added or an existing feature is enhanced, update the corresponding documentation in `docs/product-modules/` before considering the work complete:
+
+- **New feature:** create or update the module README (e.g., `docs/product-modules/slide-editor/README.md`) with the feature description, user stories, and acceptance criteria.
+- **Enhanced feature:** update the relevant module doc to reflect the new behaviour, changed UI, or extended API surface.
+- **New types or data model changes:** update `docs/technical-architecture/` if the change affects the architecture (new ADR, schema change, new integration).
+- **Cross-module impact:** if the change touches multiple modules (e.g., adding a new SlideItem variant affects editor, player, and export), update all affected module docs.
+
+Use the existing doc templates in `docs/product-modules/_templates/` for consistency.
+
 ## No Magic
 
 - No hardcoded values in logic — extract to named constants or config.

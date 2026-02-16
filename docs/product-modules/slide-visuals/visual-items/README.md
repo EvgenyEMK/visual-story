@@ -1,12 +1,14 @@
 # Slide Visual Items
 
-VisualStory uses a four-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
+VisualStory uses a five-tier component system for building slide content. Each tier builds on the one below, creating progressively richer visual elements.
 
 ## Component Hierarchy
 
 ```
 Interactive Layouts  — Stateful, navigational full-slide experiences (SidebarDetail, BentoLayout, ...)
   ↑ composed of
+Smart Widgets        — Self-contained interactive molecules with internal state (SmartItemsList, ...)
+  ↑ composed of / sits alongside
 Layout Molecules     — Spatial arrangements of molecules (GridOfCards, StatDashboard, ...)
   ↑ composed of
 Molecules            — Multi-part components (FeatureCard, TitleBar, StatCard, ...)
@@ -56,6 +58,28 @@ Layout molecules arrange molecules and atoms into structured visual compositions
 | [StatDashboard](./layout-molecules/stat-dashboard.md) | Grid of KPI stat cards |
 | [StackOfCards](./layout-molecules/stack-of-cards.md) | 3D perspective card stack |
 | [TitleSlide](./layout-molecules/title-slide.md) | Title bar + centered body content |
+
+## Smart Widgets — Interactive Molecules with Internal State
+
+Smart Widgets are self-contained interactive components that combine multiple molecules with internal configuration and state management. Unlike static molecules, they participate in the Scene/WidgetStateLayer system for presentation-mode behaviors (gradual disclosure, expand/collapse, click interactions). Unlike Interactive Layouts, they can be placed inside layout containers rather than occupying the full slide.
+
+Smart Widgets are backed by the `WidgetItem` type in the `SlideItem` data model, which stores widget-specific configuration and data alongside cross-widget links.
+
+| Component | Purpose | Spec |
+|-----------|---------|------|
+| SmartItemsList | Configurable list with icon sets, hierarchy, collapse/expand, gradual disclosure, snapshot comparison | [smart-item-lists](../../element-editing/smart-item-lists.md) |
+| SmartLegend | Linked legend widget that defines icon vocabulary for SmartItemsList | [smart-item-lists (SL-F07)](../../element-editing/smart-item-lists.md#sl-f07-linked-legend-widget) |
+
+### How Smart Widgets Differ from Other Tiers
+
+| Aspect | Molecules | Smart Widgets | Interactive Layouts |
+|--------|-----------|---------------|---------------------|
+| Internal state | None (stateless) | Yes (config + data) | Yes (navigation state) |
+| Interaction in presentation | Entrance animation only | Click/hover behaviors, gradual disclosure | Full navigation (clicks change displayed content) |
+| Placement | Inside any container | Inside any container | Full-slide only |
+| Data model | Composed from AtomItem/CardItem | Own `WidgetItem` SlideItem variant | Composed from LayoutItem/CardItem |
+| Scene integration | Passive (visibility only) | Active (animatedWidgetIds, interaction behaviors) | Active (scene navigation) |
+| Cross-widget links | None | Yes (e.g., legend ↔ list) | None |
 
 ## Interactive Layouts — Navigational Slide Compositions
 

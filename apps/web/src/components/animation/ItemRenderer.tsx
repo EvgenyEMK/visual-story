@@ -31,7 +31,7 @@ import { em } from '@/components/slide-ui/units';
 import { DetailPopup } from '@/components/slide-ui/molecules/DetailPopup';
 import type { PopupOriginRect } from '@/components/slide-ui/molecules/DetailPopup';
 import { InlineTextEditor } from '@/components/editor/inline-text-editor';
-import { EmptyCardSlot, isEmptyCard } from '@/components/editor/slash-command-menu';
+import { EmptyCardSlot, AddBlockButton, isEmptyCard } from '@/components/editor/slash-command-menu';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -54,6 +54,8 @@ interface EditingContext {
   onItemUpdate?: (itemId: string, updates: Partial<SlideItem>) => void;
   onItemEditStart?: (itemId: string) => void;
   onItemEditEnd?: () => void;
+  /** Append new child items to a card/layout (for adding blocks to filled cells). */
+  onAppendBlock?: (parentId: string, children: SlideItem[]) => void;
   isPreview?: boolean;
 }
 
@@ -96,6 +98,8 @@ export interface ItemRendererProps {
   onItemEditStart?: (itemId: string) => void;
   /** Called when inline text editing ends. */
   onItemEditEnd?: () => void;
+  /** Called to append new block children to a card/layout. */
+  onAppendBlock?: (parentId: string, children: SlideItem[]) => void;
   /** Whether in preview mode (disables editing). */
   isPreview?: boolean;
 }
@@ -335,10 +339,18 @@ function extractCardMeta(card: CardItem): { icon: string; title: string; descrip
 // Selection ring class helper
 // ---------------------------------------------------------------------------
 
-function selectionClasses(itemId: string, editing: EditingContext): string {
+function selectionClasses(
+  itemId: string,
+  editing: EditingContext,
+  itemType?: SlideItem['type'],
+): string {
   if (!editing.selectedItemId) return '';
   if (editing.selectedItemId !== itemId) return '';
   if (editing.editingItemId === itemId) return 'ring-2 ring-blue-500 ring-offset-1 rounded';
+  // Cards/layouts use an orange ring to visually distinguish container selection
+  // from child (atom) selection which uses the default primary ring.
+  if (itemType === 'card' || itemType === 'layout')
+    return 'ring-2 ring-orange-400 ring-offset-1 rounded';
   return 'ring-2 ring-primary ring-offset-1 rounded';
 }
 
@@ -351,11 +363,14 @@ function RenderItem({
   getVisibility,
   onItemClick,
   editing,
+  parentCardId,
 }: {
   item: SlideItem;
   getVisibility?: (id: string) => ItemVisibility;
   onItemClick?: (id: string) => void;
   editing: EditingContext;
+  /** When rendered inside a card, the parent card's ID (for drill-down click). */
+  parentCardId?: string;
 }) {
   const visibility = getVisibility?.(item.id) ?? DEFAULT_VISIBILITY;
 
@@ -367,20 +382,33 @@ function RenderItem({
   }
 
   const baseStyle = buildBaseStyle(item, visibility);
-  const ringClass = selectionClasses(item.id, editing);
+  const ringClass = selectionClasses(item.id, editing, item.type);
   const isEditable = !editing.isPreview && !!editing.onItemSelect;
 
-  // Click handler: select this item in edit mode, or fall back to onItemClick
+  // Click handler with drill-down for atoms inside a card:
+  // If the parent card isn't selected yet, the first click selects the card.
+  // Once the card is selected, clicking an atom selects the atom (drill-down).
+  // Nested cards (item.type === 'card') always select themselves directly —
+  // the user can reach the grid cell via Escape or clicking the cell padding.
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isEditable) {
-      editing.onItemSelect?.(item.id);
+      if (
+        parentCardId &&
+        item.type !== 'card' &&
+        editing.selectedItemId !== parentCardId
+      ) {
+        editing.onItemSelect?.(parentCardId);
+      } else {
+        editing.onItemSelect?.(item.id);
+      }
     } else {
       onItemClick?.(item.id);
     }
   };
 
-  // Double-click handler: start inline editing for text atoms
+  // Double-click handler: start inline editing for text atoms.
+  // Always goes directly to editing regardless of parent selection state.
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isEditable && item.type === 'atom' && item.atomType === 'text') {
@@ -432,7 +460,7 @@ function RenderItem({
       <motion.div
         data-item-id={item.id}
         className={ringClass}
-        style={{ ...baseStyle, ...layoutStyle }}
+        style={{ ...baseStyle, ...layoutStyle, width: '100%', height: '100%' }}
         initial={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
         animate={visibility.visible ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.3 }}
@@ -477,6 +505,9 @@ function RenderItem({
     }
 
     const hasDetail = item.detailItems && item.detailItems.length > 0;
+    const showAddBlock = isEditable && !!editing.onAppendBlock;
+    // Nested card (inside another card): centre itself and don't stretch
+    const isNestedCard = !!parentCardId;
     return (
       <motion.div
         data-item-id={item.id}
@@ -490,6 +521,9 @@ function RenderItem({
           display: 'flex',
           flexDirection: 'column',
           gap: em(8),
+          ...(isNestedCard
+            ? { alignSelf: 'center', width: 'auto', minWidth: '70%' }
+            : {}),
           cursor: isEditable || hasDetail || onItemClick ? 'pointer' : undefined,
         }}
         initial={visibility.visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
@@ -511,8 +545,19 @@ function RenderItem({
             getVisibility={getVisibility}
             onItemClick={onItemClick}
             editing={editing}
+            parentCardId={item.id}
           />
         ))}
+
+        {/* "Add block" affordance at bottom of filled cards */}
+        {showAddBlock && (
+          <AddBlockButton
+            cardId={item.id}
+            onAppendBlock={(cardId, children) => {
+              editing.onAppendBlock!(cardId, children);
+            }}
+          />
+        )}
       </motion.div>
     );
   }
@@ -592,6 +637,7 @@ export function ItemRenderer({
   onItemUpdate,
   onItemEditStart,
   onItemEditEnd,
+  onAppendBlock,
   isPreview,
 }: ItemRendererProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -604,6 +650,7 @@ export function ItemRenderer({
     onItemUpdate,
     onItemEditStart,
     onItemEditEnd,
+    onAppendBlock,
     isPreview,
   };
 
